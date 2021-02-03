@@ -53,7 +53,7 @@ const Header = ({ ...props }) => {
                     </small>
                   </span>
                 </a>
-                <div
+                {/*<div
                   class={cx('dropdown-menu', 'dropdown-menu-right', 'dropdown-menu-arrow', {
                     show: props.showDropDown
                   })}
@@ -76,7 +76,7 @@ const Header = ({ ...props }) => {
                   <a class="dropdown-item" href="" onClick={props.logout}>
                     <i class="dropdown-icon fe fe-log-out" /> <Text id="header.signOut" />
                   </a>
-                </div>
+                </div>*/}
               </div>
             </div>
             <a
@@ -118,14 +118,14 @@ const Header = ({ ...props }) => {
                     <i class="fe fe-message-square" /> <Text id="header.chat" />
                   </Link>
                 </li>
-                <li class="nav-item">
+                {/*<li class="nav-item">
                   <Link
                     href="/dashboard/integration"
                     class={props.currentUrl.startsWith('/dashboard/integration') ? 'active nav-link' : 'nav-link'}
                   >
                     <i class="fe fe-grid" /> <Text id="header.integrations" />
                   </Link>
-                </li>
+                </li>*/}
                 <li class="nav-item">
                   <Link
                     href="/dashboard/calendar"
@@ -147,14 +147,14 @@ const Header = ({ ...props }) => {
                     <i class="fe fe-map" /> <Text id="header.maps" />
                   </Link>
                 </li>
-                <li class="nav-item">
+                {/*<li class="nav-item">
                   <Link
                     href="/dashboard/scene"
                     class={props.currentUrl.startsWith('/dashboard/scene') ? 'active nav-link' : 'nav-link'}
                   >
                     <i class="fe fe-play" /> <Text id="header.scenes" />
                   </Link>
-                </li>
+                </li>*/}
               </ul>
             </div>
           </div>

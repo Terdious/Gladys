@@ -23,64 +23,120 @@ const actionsFunc = {
     return self.device.setValue(device, deviceFeature, action.value);
   },
   [ACTIONS.LIGHT.TURN_ON]: async (self, action, scope) => {
-    await Promise.map(action.devices, async (deviceSelector) => {
-      try {
-        const device = self.stateManager.get('device', deviceSelector);
-        const deviceFeature = getDeviceFeature(
-          device,
-          DEVICE_FEATURE_CATEGORIES.LIGHT,
-          DEVICE_FEATURE_TYPES.LIGHT.BINARY,
-        );
+    let device;
+    let deviceFeature;
+    try {
+      if (action.device_feature) {
+        deviceFeature = self.stateManager.get('deviceFeature', action.device_feature);
+        device = self.stateManager.get('deviceById', deviceFeature.device_id);
         await self.device.setValue(device, deviceFeature, 1);
-      } catch (e) {
-        logger.warn(e);
       }
-    });
+      if (action.device_features) {
+        await Promise.map(action.device_features, async (deviceFeatureSelector) => {
+          deviceFeature = self.stateManager.get('deviceFeature', deviceFeatureSelector);
+          device = self.stateManager.get('deviceById', deviceFeature.device_id);
+          await self.device.setValue(device, deviceFeature, 1);
+        });
+      }
+      if (action.devices) {
+        await Promise.map(action.devices, async (deviceSelector) => {
+          device = self.stateManager.get('device', deviceSelector);
+          deviceFeature = getDeviceFeature(device, DEVICE_FEATURE_CATEGORIES.LIGHT, DEVICE_FEATURE_TYPES.LIGHT.BINARY);
+          await self.device.setValue(device, deviceFeature, 1);
+        });
+      }
+    } catch (e) {
+      logger.warn(e);
+    }
   },
   [ACTIONS.LIGHT.TURN_OFF]: async (self, action, scope) => {
-    await Promise.map(action.devices, async (deviceSelector) => {
-      try {
-        const device = self.stateManager.get('device', deviceSelector);
-        const deviceFeature = getDeviceFeature(
-          device,
-          DEVICE_FEATURE_CATEGORIES.LIGHT,
-          DEVICE_FEATURE_TYPES.LIGHT.BINARY,
-        );
+    let device;
+    let deviceFeature;
+    try {
+      if (action.device_feature) {
+        deviceFeature = self.stateManager.get('deviceFeature', action.device_feature);
+        device = self.stateManager.get('deviceById', deviceFeature.device_id);
         await self.device.setValue(device, deviceFeature, 0);
-      } catch (e) {
-        logger.warn(e);
       }
-    });
+      if (action.device_features) {
+        await Promise.map(action.device_features, async (deviceFeatureSelector) => {
+          deviceFeature = self.stateManager.get('deviceFeature', deviceFeatureSelector);
+          device = self.stateManager.get('deviceById', deviceFeature.device_id);
+          await self.device.setValue(device, deviceFeature, 0);
+        });
+      }
+      if (action.devices) {
+        await Promise.map(action.devices, async (deviceSelector) => {
+          device = self.stateManager.get('device', deviceSelector);
+          deviceFeature = getDeviceFeature(device, DEVICE_FEATURE_CATEGORIES.LIGHT, DEVICE_FEATURE_TYPES.LIGHT.BINARY);
+          await self.device.setValue(device, deviceFeature, 0);
+        });
+      }
+    } catch (e) {
+      logger.warn(e);
+    }
   },
   [ACTIONS.SWITCH.TURN_ON]: async (self, action, scope) => {
-    await Promise.map(action.devices, async (deviceSelector) => {
-      try {
-        const device = self.stateManager.get('device', deviceSelector);
-        const deviceFeature = getDeviceFeature(
-          device,
-          DEVICE_FEATURE_CATEGORIES.SWITCH,
-          DEVICE_FEATURE_TYPES.SWITCH.BINARY,
-        );
+    let device;
+    let deviceFeature;
+    try {
+      if (action.device_feature) {
+        deviceFeature = self.stateManager.get('deviceFeature', action.device_feature);
+        device = self.stateManager.get('deviceById', deviceFeature.device_id);
         await self.device.setValue(device, deviceFeature, 1);
-      } catch (e) {
-        logger.warn(e);
       }
-    });
+      if (action.device_features) {
+        await Promise.map(action.device_features, async (deviceFeatureSelector) => {
+          deviceFeature = self.stateManager.get('deviceFeature', deviceFeatureSelector);
+          device = self.stateManager.get('deviceById', deviceFeature.device_id);
+          await self.device.setValue(device, deviceFeature, 1);
+        });
+      }
+      if (action.devices) {
+        await Promise.map(action.devices, async (deviceSelector) => {
+          device = self.stateManager.get('device', deviceSelector);
+          deviceFeature = getDeviceFeature(
+            device,
+            DEVICE_FEATURE_CATEGORIES.SWITCH,
+            DEVICE_FEATURE_TYPES.SWITCH.BINARY,
+          );
+          await self.device.setValue(device, deviceFeature, 1);
+        });
+      }
+    } catch (e) {
+      logger.warn(e);
+    }
   },
   [ACTIONS.SWITCH.TURN_OFF]: async (self, action, scope) => {
-    await Promise.map(action.devices, async (deviceSelector) => {
-      try {
-        const device = self.stateManager.get('device', deviceSelector);
-        const deviceFeature = getDeviceFeature(
-          device,
-          DEVICE_FEATURE_CATEGORIES.SWITCH,
-          DEVICE_FEATURE_TYPES.SWITCH.BINARY,
-        );
+    let device;
+    let deviceFeature;
+    try {
+      if (action.device_feature) {
+        deviceFeature = self.stateManager.get('deviceFeature', action.device_feature);
+        device = self.stateManager.get('deviceById', deviceFeature.device_id);
         await self.device.setValue(device, deviceFeature, 0);
-      } catch (e) {
-        logger.warn(e);
       }
-    });
+      if (action.device_features) {
+        await Promise.map(action.device_features, async (deviceFeatureSelector) => {
+          deviceFeature = self.stateManager.get('deviceFeature', deviceFeatureSelector);
+          device = self.stateManager.get('deviceById', deviceFeature.device_id);
+          await self.device.setValue(device, deviceFeature, 0);
+        });
+      }
+      if (action.devices) {
+        await Promise.map(action.devices, async (deviceSelector) => {
+          device = self.stateManager.get('device', deviceSelector);
+          deviceFeature = getDeviceFeature(
+            device,
+            DEVICE_FEATURE_CATEGORIES.SWITCH,
+            DEVICE_FEATURE_TYPES.SWITCH.BINARY,
+          );
+          await self.device.setValue(device, deviceFeature, 0);
+        });
+      }
+    } catch (e) {
+      logger.warn(e);
+    }
   },
   [ACTIONS.TIME.DELAY]: async (self, action, scope) =>
     new Promise((resolve) => {

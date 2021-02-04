@@ -4,50 +4,85 @@ import { Text } from 'preact-i18n';
 import Select from 'react-select';
 
 import { ACTIONS } from '../../../../../../server/utils/constants';
+import { getDeviceFeatureName } from '../../../../utils/device';
 
 @connect('httpClient', {})
 class TurnOnOffSwitch extends Component {
   getOptions = async () => {
     try {
-      const devices = await this.props.httpClient.get('/api/v1/device', {
+      // we get the rooms with the devices
+      const rooms = await this.props.httpClient.get('/api/v1/room?expand=devices', {
         device_feature_category: 'switch',
         device_feature_type: 'binary'
       });
-      // keep only write switches, not read only
-      const devicesFiltered = devices.filter(device => {
-        const writeSwitch = device.features.find(f => f.read_only === false);
-        return writeSwitch !== undefined;
+      const deviceOptions = [];
+
+      const deviceDictionnary = {};
+      const deviceFeaturesDictionnary = {};
+
+      // and compose the multi-level options
+      rooms.forEach(room => {
+        const roomDeviceFeatures = [];
+        room.devices.forEach(device => {
+          device.features.forEach(feature => {
+            if (feature.category === 'switch' && feature.type === 'binary') {
+              // keep device / deviceFeature in dictionnary
+              deviceFeaturesDictionnary[feature.selector] = feature;
+              deviceDictionnary[feature.selector] = device;
+
+              roomDeviceFeatures.push({
+                value: feature.selector,
+                label: getDeviceFeatureName(this.context.intl.dictionary, device, feature)
+              });
+            }
+          });
+        });
+        if (roomDeviceFeatures.length > 0) {
+          roomDeviceFeatures.sort((a, b) => {
+            if (a.label < b.label) {
+              return -1;
+            } else if (a.label > b.label) {
+              return 1;
+            }
+            return 0;
+          });
+          deviceOptions.push({
+            label: room.name,
+            options: roomDeviceFeatures
+          });
+        }
       });
-      const deviceOptions = devicesFiltered.map(device => ({
-        value: device.selector,
-        label: device.name
-      }));
-      await this.setState({ deviceOptions });
-      this.refreshSelectedOptions(this.props);
+      await this.setState({ deviceOptions, deviceFeaturesDictionnary, deviceDictionnary });
+      await this.refreshSelectedOptions(this.props);
       return deviceOptions;
     } catch (e) {
       console.log(e);
     }
   };
   handleChange = selectedOptions => {
+    //const { deviceFeaturesDictionnary, deviceDictionnary } = this.state;
+    const switchs = selectedOptions.map(selectedOption => selectedOption.value);
     if (selectedOptions) {
-      const switches = selectedOptions.map(selectedOption => selectedOption.value);
-      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'devices', switches);
+      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'device_features', switchs);
     } else {
-      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'devices', []);
+      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'device_features', []);
     }
+    this.setState({ selectedOptions }); // this.setState({ deviceFeature, device });
   };
-  refreshSelectedOptions = nextProps => {
+
+  refreshSelectedOptions = async nextProps => {
     const selectedOptions = [];
-    if (nextProps.action.devices && this.state.deviceOptions) {
-      nextProps.action.devices.forEach(switches => {
-        const deviceOption = this.state.deviceOptions.find(deviceOption => deviceOption.value === switches);
-        if (deviceOption) {
-          selectedOptions.push(deviceOption);
-        }
+    if (nextProps.action.device_features && this.state.deviceOptions) {
+      nextProps.action.device_features.forEach(switchBinary => {
+        this.state.deviceOptions.forEach(room => {
+          const deviceOption = room.options.find(deviceOption => deviceOption.value === switchBinary);
+          if (deviceOption) {
+            selectedOptions.push(deviceOption);
+          }
+        });
       });
     }
-    this.setState({ selectedOptions });
+    await this.setState({ selectedOptions });
   };
   constructor(props) {
     super(props);

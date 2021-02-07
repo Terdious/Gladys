@@ -11,6 +11,9 @@ const { NotFoundError } = require('../../utils/coreErrors');
  * device.setValue(device, deviceFeature);
  */
 async function setValue(device, deviceFeature, value) {
+  if (value === null) {
+    console.info(`setValue - Nouvelle valeur = ${value}`)
+  }
   const service = this.serviceManager.getService(device.service.name);
   if (service === null) {
     throw new NotFoundError(`Service ${device.service.name} was not found.`);

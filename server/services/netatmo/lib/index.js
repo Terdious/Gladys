@@ -8,6 +8,7 @@ const { getHomeStatusData } = require('./commands/netatmo.getHomeStatusData.js')
 const { getHomeData } = require('./commands/netatmo.getHomeData.js');
 const { getStationsData } = require('./commands/netatmo.getStationsData.js');
 const { getHealthyHomeCoachData } = require('./commands/netatmo.getHealthyHomeCoachData.js');
+const { setRoomThermPoint } = require('./commands/netatmo.setRoomThermPoint.js');
 // update
 const { updateNetatmo } = require('./update/netatmo.updateNetatmo.js');
 const { updateFeature } = require('./update/netatmo.update.js');
@@ -45,6 +46,7 @@ const NetatmoManager = function NetatmoManager(gladys, serviceId) {
   this.baseUrl = 'https://api.netatmo.net';
   this.token = undefined;
   this.pollFrequencies = DEVICE_POLL_FREQUENCIES;
+  this.setThermostat = {};
 };
 
 NetatmoManager.prototype.connect = connect;
@@ -56,6 +58,7 @@ NetatmoManager.prototype.getHomeStatusData = getHomeStatusData;
 NetatmoManager.prototype.getHomeData = getHomeData;
 NetatmoManager.prototype.getStationsData = getStationsData;
 NetatmoManager.prototype.getHealthyHomeCoachData = getHealthyHomeCoachData;
+NetatmoManager.prototype.setRoomThermPoint = setRoomThermPoint;
 
 NetatmoManager.prototype.updateNetatmo = updateNetatmo;
 NetatmoManager.prototype.updateFeature = updateFeature;

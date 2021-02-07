@@ -5,10 +5,7 @@ import NetatmoPage from '../NetatmoPage';
 import DeviceTab from './DeviceTab';
 import { WEBSOCKET_MESSAGE_TYPES } from '../../../../../../../server/utils/constants';
 
-@connect(
-  'session,user,netatmoSensors,netatmoDevices,getNetatmoNewDevicesStatus,getNetatmoDevicesStatus',
-  actions
-)
+@connect('session,user,netatmoSensors,netatmoDevices,getNetatmoNewDevicesStatus,getNetatmoDevicesStatus', actions)
 class NetatmoDevicePage extends Component {
   componentWillMount() {
     this.props.getHouses();
@@ -17,7 +14,10 @@ class NetatmoDevicePage extends Component {
     this.props.session.dispatcher.addListener(WEBSOCKET_MESSAGE_TYPES.NETATMO.NEW_DEVICE, this.props.getNetatmoSensors);
   }
   componentWillUnmount() {
-    this.props.session.dispatcher.removeListener(WEBSOCKET_MESSAGE_TYPES.NETATMO.NEW_DEVICE, this.props.getNetatmoSensors);
+    this.props.session.dispatcher.removeListener(
+      WEBSOCKET_MESSAGE_TYPES.NETATMO.NEW_DEVICE,
+      this.props.getNetatmoSensors
+    );
   }
 
   render(props, {}) {

@@ -20,7 +20,7 @@ const DEFAULT_OPTIONS = {
  */
 async function saveState(deviceFeature, newValue) {
   if (newValue === null) {
-    logger.info(`Nouvelle valeur = ${newValue}`)
+    logger.info(`Nouvelle valeur = ${newValue}`);
   }
   const optionsWithDefault = Object.assign({}, DEFAULT_OPTIONS);
   logger.debug(`device.saveState of deviceFeature ${deviceFeature.selector}`);

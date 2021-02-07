@@ -43,15 +43,15 @@ async function updateNetatmo(typeUpdate) {
       await this.updateThermostat(key, device, deviceSelector);
       if (this.devices[key].type === 'NATherm1') {
         if (this.devices[key].therm_relay_cmd > 0) {
-          this.setThermostat.thermostatHeatingRequest = 1
+          this.setThermostat.thermostatHeatingRequest = 1;
         } else {
-          this.setThermostat.thermostatHeatingRequest = 0
+          this.setThermostat.thermostatHeatingRequest = 0;
         }
         this.setThermostat.tempThermostat = this.devices[key].measured.temperature;
       }
       if (this.devices[key].type === 'NRV') {
         if (this.devices[key].room.heating_power_request > 0) {
-          this.setThermostat.valvesHeatingRequest = this.setThermostat.valvesHeatingRequest + 1
+          this.setThermostat.valvesHeatingRequest = this.setThermostat.valvesHeatingRequest + 1;
         }
       }
     } else if (

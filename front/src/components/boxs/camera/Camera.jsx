@@ -8,7 +8,22 @@ import get from 'get-value';
 
 const CameraBox = ({ children, ...props }) => (
   <div class="card">
-    {props.image && <img class="card-img-top" src={`data:${props.image}`} alt={props.roomName} />}
+
+    
+
+    {props.image && 
+      <img 
+        class="card-img-top" 
+        src={`data:${props.image}`} 
+        alt={props.roomName}  
+        title={(
+          props.date &&
+            Intl.DateTimeFormat('fr-FR',{dateStyle: 'full',timeStyle: 'long'}).format(new Date(props.date))
+          ) 
+          || !props.date && <Text id="dashboard.boxes.camera.noHistoric" />
+        }
+      />
+    }
     {props.error && (
       <div>
         <p class="alert alert-danger">
@@ -19,10 +34,11 @@ const CameraBox = ({ children, ...props }) => (
         </p>
       </div>
     )}
+    {console.log(props)}
     <div class="card-body d-flex flex-column">
       {!props.image && props.boxStatus === RequestStatus.Getting && (
-        <div class="dimmer active">
-          <div class="dimmer-content" style={{ height: '100px' }} />
+        <div class="dimmer active" title="Coucou">
+          <div class="dimmer-content" style={{ height: '100px' }}  />
           <div class="loader" />
         </div>
       )}
@@ -56,8 +72,9 @@ class CameraBoxComponent extends Component {
     const boxData = get(props, `${DASHBOARD_BOX_DATA_KEY}Camera.${props.x}_${props.y}`);
     const boxStatus = get(props, `${DASHBOARD_BOX_STATUS_KEY}Camera.${props.x}_${props.y}`);
     const image = get(boxData, 'image');
+    const date = get(boxData, 'date');
     const error = boxStatus === RequestStatus.Error;
-    return <CameraBox {...props} image={image} boxStatus={boxStatus} error={error} />;
+    return <CameraBox {...props} image={image} date={date} boxStatus={boxStatus} error={error} />;
   }
 }
 

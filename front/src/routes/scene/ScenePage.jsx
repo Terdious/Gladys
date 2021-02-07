@@ -4,6 +4,8 @@ import cx from 'classnames';
 import SceneCards from './SceneCards';
 import EmptyState from './EmptyState';
 import style from './style.css';
+import SceneMenu from './SceneMenu';
+import SceneGroup from './SceneGroup';
 
 const ScenePage = ({ children, ...props }) => (
   <div class="page">
@@ -41,21 +43,46 @@ const ScenePage = ({ children, ...props }) => (
               </Link>
             </div>
           </div>
-          <div
-            class={cx('dimmer', {
-              active: props.loading
-            })}
-          >
-            <div class="loader" />
-            <div class={cx('dimmer-content', style.sceneListContainer)}>
-              <div class="row">
-                <div class="col-lg-12">
-                  {props.scenes && <SceneCards {...props} />}
-                  {props.scenes && props.scenes.length === 0 && <EmptyState />}
+
+          <div class="row">
+            <div class="col-lg-3">
+              {console.log(props)}
+              <SceneMenu currentUrl={props.currentUrl} />
+            </div>
+            {/*<div class="col-lg-9">
+              <div class="row row-cards">
+                {integrations &&
+                  integrations.map(integration => (
+                    <SceneGroup currentUrl={currentUrl} />
+                  ))}
+              </div>
+            </div>*/}
+            <div class="col-lg-9">
+              <div class="row row-cards"></div>
+                <div
+                  class={cx('dimmer', {
+                    active: props.loading
+                  })}
+                >
+                  <div class="loader" />
+                  <div class={cx('dimmer-content', style.sceneListContainer)}>
+                    <div class="row">
+                      <div class="col-lg-12">
+                        {props.scenes && <SceneCards {...props} />}
+                        {props.scenes && props.scenes.length === 0 && <EmptyState />}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+
+
+
+
+
+
+          
         </div>
       </div>
     </div>

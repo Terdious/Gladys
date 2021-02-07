@@ -48,6 +48,7 @@ class IntegrationPage extends Component {
                 </div>
               </div>
               <div class="row">
+              {console.log(currentUrl)}
                 <div class="col-lg-3">
                   <IntegrationMenu currentUrl={currentUrl} />
                 </div>

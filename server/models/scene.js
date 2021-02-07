@@ -3,6 +3,13 @@ const { ACTION_LIST, EVENT_LIST } = require('../utils/constants');
 const { addSelector } = require('../utils/addSelector');
 const iconList = require('../config/icons.json');
 
+const groupSchema = Joi.array().items(
+  Joi.object().keys({
+      groupPrimary: Joi.string(),
+      groupSecondary : Joi.string(),
+  })
+);
+
 const actionSchema = Joi.array().items(
   Joi.array().items(
     Joi.object().keys({
@@ -111,6 +118,10 @@ module.exports = (sequelize, DataTypes) => {
             }
           },
         },
+      },
+      group: {
+        allowNull: false,
+        type: DataTypes.JSON,
       },
       last_executed: {
         type: DataTypes.DATE,

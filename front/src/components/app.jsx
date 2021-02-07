@@ -207,8 +207,11 @@ const AppRouter = connect(
         <MapPage path="/dashboard/maps" />
         <CalendarPage path="/dashboard/calendar" />
         <ScenePage path="/dashboard/scene" />
+        
+        <ScenePage path="/dashboard/scene/:scene_group" />
+
         <NewScenePage path="/dashboard/scene/new" />
-        <EditScenePage path="/dashboard/scene/:scene_selector" />
+        <EditScenePage path="/dashboard/scene/edit/:scene_selector" />
         <TriggerPage path="/dashboard/trigger" />
         <ProfilePage path="/dashboard/profile" />
         <SettingsSessionPage path="/dashboard/settings/session" />

@@ -35,6 +35,19 @@ module.exports = function HouseController(gladys) {
   async function get(req, res) {
     const cameras = await gladys.device.camera.get();
     res.json(cameras);
+  }  
+  /**
+   * @api {post} /api/v1/camera/:camera_selector get Camera
+   * @apiName getCamera
+   * @apiGroup Camera
+   * 
+   * @apiSuccessExample {json} Success-Response:
+   * image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z/C/HgAGgwJ/lK3Q6wAAAABJRU5ErkJggg==
+   * 
+   */
+  async function getCamera(req, res) {
+    const camera = await gladys.device.camera.getCamera(req.params.camera_selector);
+    res.send(camera);
   }
   /**
    * @api {post} /api/v1/camera/:camera_selector/image set Image
@@ -70,6 +83,7 @@ module.exports = function HouseController(gladys) {
   return Object.freeze({
     setImage: asyncMiddleware(setImage),
     getImage: asyncMiddleware(getImage),
+    getCamera: asyncMiddleware(getCamera),
     get: asyncMiddleware(get),
   });
 };

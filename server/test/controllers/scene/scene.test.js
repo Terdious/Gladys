@@ -63,10 +63,10 @@ describe('GET /api/v1/scene', () => {
   });
 });
 
-describe('PATCH /api/v1/scene/:scene_selector', () => {
+describe('PATCH /api/v1/scene/edit/:scene_selector', () => {
   it('should update scene', async () => {
     await authenticatedRequest
-      .patch('/api/v1/scene/test-scene')
+      .patch('/api/v1/scene/edit/test-scene')
       .send({
         name: 'New name',
       })
@@ -78,10 +78,10 @@ describe('PATCH /api/v1/scene/:scene_selector', () => {
   });
 });
 
-describe('GET /api/v1/scene/:scene_selector', () => {
+describe('GET /api/v1/scene/edit/:scene_selector', () => {
   it('should get scene by selector', async () => {
     await authenticatedRequest
-      .get('/api/v1/scene/test-scene')
+      .get('/api/v1/scene/edit/test-scene')
       .expect('Content-Type', /json/)
       .expect(200)
       .then((res) => {
@@ -90,10 +90,10 @@ describe('GET /api/v1/scene/:scene_selector', () => {
   });
 });
 
-describe('DELETE /api/v1/scene/:scene_selector', () => {
+describe('DELETE /api/v1/scene/edit/:scene_selector', () => {
   it('should delete scene', async () => {
     await authenticatedRequest
-      .delete('/api/v1/scene/test-scene')
+      .delete('/api/v1/scene/edit/test-scene')
       .expect('Content-Type', /json/)
       .expect(200)
       .then((res) => {
@@ -104,10 +104,10 @@ describe('DELETE /api/v1/scene/:scene_selector', () => {
   });
 });
 
-describe('POST /api/v1/scene/:scene_selector/start', () => {
+describe('POST /api/v1/scene/edit/:scene_selector/start', () => {
   it('should start a scene', async () => {
     await authenticatedRequest
-      .post('/api/v1/scene/test-scene/start')
+      .post('/api/v1/scene/edit/test-scene/start')
       .expect('Content-Type', /json/)
       .expect(200)
       .then((res) => {

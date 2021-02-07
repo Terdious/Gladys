@@ -1,6 +1,7 @@
 const { command } = require('./camera.command');
 const { setImage } = require('./camera.setImage');
 const { getImage } = require('./camera.getImage');
+const { getCamera } = require('./camera.getCamera');
 const { get } = require('./camera.get');
 const { getImageInRoom } = require('./camera.getImageInRoom');
 const { INTENTS } = require('../../../utils/constants');
@@ -16,6 +17,7 @@ const Camera = function Camera(stateManager, messageManager, eventManager, devic
 Camera.prototype.command = command;
 Camera.prototype.setImage = setImage;
 Camera.prototype.getImage = getImage;
+Camera.prototype.getCamera = getCamera;
 Camera.prototype.get = get;
 Camera.prototype.getImageInRoom = getImageInRoom;
 

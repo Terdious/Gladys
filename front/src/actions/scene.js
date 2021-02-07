@@ -9,6 +9,7 @@ extend('$auto', function(value, object) {
 function createActions(store) {
   const actions = {
     async getScenes(state) {
+        console.log("Coucou")
       store.setState({
         scenesGetStatus: RequestStatus.Getting
       });
@@ -20,6 +21,7 @@ function createActions(store) {
         if (state.sceneSearch && state.sceneSearch.length) {
           params.search = state.sceneSearch;
         }
+        console.log(params)
         const scenes = await state.httpClient.get('/api/v1/scene', params);
         store.setState({
           scenes,
@@ -30,6 +32,41 @@ function createActions(store) {
           scenesGetStatus: RequestStatus.Error
         });
       }
+    },
+    async getGroupsScene(state,groups) {
+      store.setState({
+        scenesGetStatus: RequestStatus.Getting
+      });
+      try {
+        const orderDir = state.getScenesOrderDir || 'asc';
+        const params = {
+          order_dir: orderDir
+        };
+        if (state.sceneSearch && state.sceneSearch.length) {
+          params.search = state.sceneSearch;
+        }
+        console.log("Coucou2")
+        const scenes = await state.httpClient.get('/api/v1/scene/:scene_group', params);
+        sceneGroups.map(group => {
+
+        })
+        store.setState({
+          scenes,
+          scenesGetStatus: RequestStatus.Success
+        });
+      } catch (e) {
+        store.setState({
+          scenesGetStatus: RequestStatus.Error
+        });
+      }
+
+      const selectedIntegrations = sceneBy[group] || scenes;
+      store.setState({
+        integrations: selectedIntegrations,
+        totalSize: selectedIntegrations.length,
+        sceneGroups: groups,
+        searchKeyword: ''
+      });
     },
     async search(state, e) {
       store.setState({

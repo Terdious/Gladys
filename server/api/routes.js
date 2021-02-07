@@ -149,6 +149,10 @@ function getRoutes(gladys) {
       authenticated: true,
       controller: cameraController.get,
     },
+    'get /api/v1/camera/:camera_selector': {
+      authenticated: true,
+      controller: cameraController.getCamera,
+    },
     'get /api/v1/camera/:camera_selector/image': {
       authenticated: true,
       controller: cameraController.getImage,
@@ -394,19 +398,23 @@ function getRoutes(gladys) {
       authenticated: true,
       controller: sceneController.get,
     },
-    'get /api/v1/scene/:scene_selector': {
+    'get /api/v1/scene/:scene_group': {
+      authenticated: true,
+      controller: sceneController.get,
+    },
+    'get /api/v1/scene/edit/:scene_selector': {
       authenticated: true,
       controller: sceneController.getBySelector,
     },
-    'patch /api/v1/scene/:scene_selector': {
+    'patch /api/v1/scene/edit/:scene_selector': {
       authenticated: true,
       controller: sceneController.update,
     },
-    'delete /api/v1/scene/:scene_selector': {
+    'delete /api/v1/scene/edit/:scene_selector': {
       authenticated: true,
       controller: sceneController.destroy,
     },
-    'post /api/v1/scene/:scene_selector/start': {
+    'post /api/v1/scene/edit/:scene_selector/start': {
       authenticated: true,
       controller: sceneController.start,
     },

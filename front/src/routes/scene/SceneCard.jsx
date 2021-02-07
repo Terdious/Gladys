@@ -8,7 +8,7 @@ class SceneCard extends Component {
   startScene = async () => {
     try {
       await this.setState({ saving: true });
-      await this.props.httpClient.post(`/api/v1/scene/${this.props.scene.selector}/start`);
+      await this.props.httpClient.post(`/api/v1/scene/edit/${this.props.scene.selector}/start`);
     } catch (e) {
       console.log(e);
     }
@@ -28,7 +28,12 @@ class SceneCard extends Component {
           >
             <div class="loader" />
             <div class="dimmer-content">
+              {console.log(props.scene)}
               <div class="card-body p-3 text-center">
+                {console.log(props.scene.group)}
+                {props.scene.group  !== null && (props.scene.group[0] && (
+                  <h4>Groupe {props.scene.group[0].groupPrimary}</h4>
+                ))}
                 <div class={style.scene_icon}>
                   <i class={`fe fe-${props.scene.icon}`} />
                 </div>
@@ -37,7 +42,7 @@ class SceneCard extends Component {
               </div>
               <div class="card-footer">
                 <div class="btn-list text-center">
-                  <Link href={`${props.currentUrl}/${props.scene.selector}`} class="btn btn-outline-primary btn-sm">
+                  <Link href={`${props.currentUrl}/edit/${props.scene.selector}`} class="btn btn-outline-primary btn-sm">
                     <i class="fe fe-edit" />
                     <Text id="scene.editButton" />
                   </Link>

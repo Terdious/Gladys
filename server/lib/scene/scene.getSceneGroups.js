@@ -3,7 +3,7 @@ const Sequelize = require('sequelize');
 const db = require('../../models');
 
 const DEFAULT_OPTIONS = {
-  fields: ['id', 'name', 'icon', 'selector', 'last_executed', 'updated_at','group'],
+  fields: ['group'],
   skip: 0,
   order_dir: 'ASC',
   order_by: 'name',
@@ -18,9 +18,7 @@ const DEFAULT_OPTIONS = {
  *  skip: 0
  * });
  */
-async function get(options) {
-      console.log("coucou scene get")
-      
+async function getSceneGroups(options) {
   const optionsWithDefault = Object.assign({}, DEFAULT_OPTIONS, options);
 
   const queryParams = {
@@ -42,10 +40,12 @@ async function get(options) {
   const scenes = await db.Scene.findAll(queryParams);
 
   const scenesPlain = scenes.map((scene) => scene.get({ plain: true }));
-console.log(scenesPlain)
-  return scenesPlain;
+
+  const groupPrimary = scenesPlain.map((group) => group.groupPrimary.get({ plain: true }));
+  console.log(groupPrimary)
+  return groupPrimary;
 }
 
 module.exports = {
-  get,
+  getSceneGroups,
 };

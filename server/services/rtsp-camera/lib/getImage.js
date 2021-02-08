@@ -28,6 +28,8 @@ async function getImage(device) {
       this.gladys.config.tempFolder,
       `camera-${device.id}-${now.getMilliseconds()}-${now.getSeconds()}-${now.getMinutes()}-${now.getHours()}.jpg`,
     );
+    console.log(cameraUrlParam)
+    console.log(this)
     // we create a writestream
     const writeStream = fse.createWriteStream(filePath);
     // and send a camera thumbnail to this stream

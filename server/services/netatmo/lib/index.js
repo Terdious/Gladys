@@ -29,14 +29,16 @@ const { pollManual } = require('./event/netatmo.pollManual.js');
 
 const { DEVICE_POLL_FREQUENCIES } = require('../../../utils/constants');
 /**
- * @param {Object} gladys - The gladys object.
+ * @param {Object} gladys - The gladys object..
+ * @param {Object} ffmpeg - Ffmpeg library.
  * @param {string} serviceId - Identification of the service.
  * @description Create all device if not exist
  * @example
- * NetatmoManager(gladys, serviceId)
+ * NetatmoManager(gladys, ffmpeg, serviceId)
  */
-const NetatmoManager = function NetatmoManager(gladys, serviceId) {
+const NetatmoManager = function NetatmoManager(gladys, ffmpeg, serviceId) {
   this.gladys = gladys;
+  this.ffmpeg = ffmpeg;
   this.serviceId = serviceId;
   this.sensors = {};
   this.devices = {};

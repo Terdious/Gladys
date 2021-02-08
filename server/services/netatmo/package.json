@@ -13,12 +13,15 @@
   ],
   "scripts": {},
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.0.20",
     "axios": "^0.21.1",
     "bluebird": "^3.7.2",
     "bottleneck": "^2.19.5",
     "btoa": "^1.2.1",
+    "fluent-ffmpeg": "^2.1.2",
+    "fs-extra": "^9.1.0",
     "netatmo": "^2.3.0",
     "resize-base64": "^1.0.12",
-    "sharp": "^0.26.3"
+    "sharp": "^0.27.1"
   }
 }

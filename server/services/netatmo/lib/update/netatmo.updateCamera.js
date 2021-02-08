@@ -48,7 +48,6 @@ async function updateCamera(key, device, deviceSelector) {
           .outputOptions('-qscale:v 15')
           .output(writeStream)
           .on('end', async () => {
-            console.log("coucou")
             const image = await fse.readFile(filePath);
             
             // convert binary data to base64 encoded string

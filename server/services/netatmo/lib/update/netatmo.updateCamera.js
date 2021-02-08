@@ -2,9 +2,6 @@ const fse = require('fs-extra');
 const path = require('path');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
-const axios = require('axios');
-const sharp = require('sharp');
-const btoa = require('btoa');
 const logger = require('../../../../utils/logger');
 const { NETATMO_VALUES } = require('../constants');
 const { NotFoundError } = require('../../../../utils/coreErrors');
@@ -27,80 +24,47 @@ async function updateCamera(key, device, deviceSelector) {
       try {
         const externalIdCamera = `netatmo:${this.devices[key].id}`;
         const selectorCamera = externalIdCamera.replace(/:/gi, '-');
-
-
-
-
-    let cameraUrlParam =  device.params && device.params.find((param) => param.name.includes(DEVICE_PARAM_CAMERA_URL));
-    
-    console.log(cameraUrlParam)
-    cameraUrlParam =  `${this.devices[key].vpn_url}/live/snapshot_720.jpg`;
-    if (!cameraUrlParam || cameraUrlParam.length === 0) {
-      throw new NotFoundError('CAMERA_URL_SHOULD_NOT_BE_EMPTY');
-    }
-    // we create a temp folder
-    const now = new Date();
-    const filePath = path.join(
-      this.gladys.config.tempFolder,
-      `camera-${device.id}-${now.getMilliseconds()}-${now.getSeconds()}-${now.getMinutes()}-${now.getHours()}.jpg`,
-    );
-    console.log(cameraUrlParam)
-    // we create a writestream
-    const writeStream = fse.createWriteStream(filePath);
-    // and send a camera thumbnail to this stream
-    
-    ffmpeg.setFfmpegPath(ffmpegPath);
-    this.ffmpeg(cameraUrlParam)
-      .format('image2')
-      .outputOptions('-vframes 1')
-      // resize the image with max width = 640
-      .outputOptions('-vf scale=640:-1')
-      //  Effective range for JPEG is 2-31 with 31 being the worst quality.
-      .outputOptions('-qscale:v 15')
-      .output(writeStream)
-      .on('end', async () => {
-        console.log("coucou")
-        const image = await fse.readFile(filePath);
+        const cameraUrlParam =  `${this.devices[key].vpn_url}/live/snapshot_720.jpg`;
+        if (!cameraUrlParam || cameraUrlParam.length === 0) {
+          throw new NotFoundError('CAMERA_URL_SHOULD_NOT_BE_EMPTY');
+        }
+        // we create a temp folder
+        const now = new Date();
+        const filePath = path.join(
+          this.gladys.config.tempFolder,
+          `camera-${device.id}-${now.getMilliseconds()}-${now.getSeconds()}-${now.getMinutes()}-${now.getHours()}.jpg`,
+        );
+        // we create a writestream
+        const writeStream = fse.createWriteStream(filePath);
+        // and send a camera thumbnail to this stream
         
-        // convert binary data to base64 encoded string
-        const cameraImageBase = Buffer.from(image).toString('base64');
-        const cameraImage = `image/png;base64,${cameraImageBase}`;
-        // logger.debug(cameraImage);
-        this.gladys.device.camera.setImage(selectorCamera, cameraImage);
-        await fse.remove(filePath);
-      })
-      .on('error', async (err, stdout, stderr) => {
-        logger.debug(`Cannot process video: ${err.message}`);
-        logger.debug(stderr);
-        logger.debug(err.message);
-        await fse.remove(filePath);
-      })
-      .run();
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        ffmpeg.setFfmpegPath(ffmpegPath);
+        this.ffmpeg(cameraUrlParam)
+          .format('image2')
+          .outputOptions('-vframes 1')
+          // resize the image with max width = 640
+          .outputOptions('-vf scale=640:-1')
+          //  Effective range for JPEG is 2-31 with 31 being the worst quality.
+          .outputOptions('-qscale:v 15')
+          .output(writeStream)
+          .on('end', async () => {
+            console.log("coucou")
+            const image = await fse.readFile(filePath);
+            
+            // convert binary data to base64 encoded string
+            const cameraImageBase = Buffer.from(image).toString('base64');
+            const cameraImage = `image/png;base64,${cameraImageBase}`;
+            // logger.debug(cameraImage);
+            this.gladys.device.camera.setImage(selectorCamera, cameraImage);
+            await fse.remove(filePath);
+          })
+          .on('error', async (err, stdout, stderr) => {
+            logger.debug(`Cannot process video: ${err.message}`);
+            logger.debug(stderr);
+            logger.debug(err.message);
+            await fse.remove(filePath);
+          })
+          .run();
       } catch (e) {
         logger.error(
           `Netatmo : File netatmo.updateCamera.js - Camera ${this.devices[key].type} ${this.devices[key].name} - vpn_url - error : ${e}`,

@@ -33,8 +33,8 @@ async function updateCamera(key, device, deviceSelector) {
         // we create a writestream
         const writeStream = fse.createWriteStream(filePath);
         // and send a camera thumbnail to this stream
-        logger.info(filePath)
-        logger.info(cameraUrlParam)
+    console.log(cameraUrlParam)
+    console.log(filePath)
         this.ffmpeg(cameraUrlParam)
           .format('image2')
           .outputOptions('-vframes 1')
@@ -46,12 +46,12 @@ async function updateCamera(key, device, deviceSelector) {
           .on('end', async () => {
             const image = await fse.readFile(filePath);
             
-        logger.info(image)
+        console.log(image)
             // convert binary data to base64 encoded string
             const cameraImageBase = Buffer.from(image).toString('base64');
             const cameraImage = `image/png;base64,${cameraImageBase}`;
-        logger.info(selectorCamera)
-        logger.info(cameraImage)
+        console.log(selectorCamera)
+        console.log(cameraImage)
             // logger.debug(cameraImage);
             this.gladys.device.camera.setImage(selectorCamera, cameraImage);
             await fse.remove(filePath);

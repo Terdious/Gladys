@@ -12,6 +12,8 @@ const DashboardSettings = ({ children, ...props }) => (
                 <Text id="integration.netatmo.title" />
               </h3>
               <div>
+                    {console.log(this)}
+                    {console.log(props)}
                 <div class="list-group list-group-transparent mb-0">
                   <Link
                     href="/dashboard/integration/device/netatmo"

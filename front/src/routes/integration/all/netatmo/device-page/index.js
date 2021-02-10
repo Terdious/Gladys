@@ -5,7 +5,7 @@ import NetatmoPage from '../NetatmoPage';
 import DeviceTab from './DeviceTab';
 import { WEBSOCKET_MESSAGE_TYPES } from '../../../../../../../server/utils/constants';
 
-@connect('session,user,netatmoSensors,netatmoDevices,getNetatmoNewDevicesStatus,getNetatmoDevicesStatus', actions)
+@connect('session,user,housesWithRooms,netatmoSensors,netatmoDevices,getNetatmoNewDevicesStatus,getNetatmoDevicesStatus', actions)
 class NetatmoDevicePage extends Component {
   componentWillMount() {
     this.props.getHouses();
@@ -22,7 +22,7 @@ class NetatmoDevicePage extends Component {
 
   render(props, {}) {
     return (
-      <NetatmoPage>
+      <NetatmoPage user={props.user}>
         <DeviceTab {...props} />
       </NetatmoPage>
     );

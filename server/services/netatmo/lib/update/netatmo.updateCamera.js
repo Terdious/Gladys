@@ -1,12 +1,8 @@
 const fse = require('fs-extra');
 const path = require('path');
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
-const ffmpeg = require('fluent-ffmpeg');
 const logger = require('../../../../utils/logger');
 const { NETATMO_VALUES } = require('../constants');
 const { NotFoundError } = require('../../../../utils/coreErrors');
-
-const DEVICE_PARAM_CAMERA_URL = 'CAMERA_URL';
 
 /**
  * @description Poll value of a Netatmo devices
@@ -37,8 +33,8 @@ async function updateCamera(key, device, deviceSelector) {
         // we create a writestream
         const writeStream = fse.createWriteStream(filePath);
         // and send a camera thumbnail to this stream
-        
-        ffmpeg.setFfmpegPath(ffmpegPath);
+        logger.info(filePath)
+        logger.info(cameraUrlParam)
         this.ffmpeg(cameraUrlParam)
           .format('image2')
           .outputOptions('-vframes 1')
@@ -50,9 +46,12 @@ async function updateCamera(key, device, deviceSelector) {
           .on('end', async () => {
             const image = await fse.readFile(filePath);
             
+        logger.info(image)
             // convert binary data to base64 encoded string
             const cameraImageBase = Buffer.from(image).toString('base64');
             const cameraImage = `image/png;base64,${cameraImageBase}`;
+        logger.info(selectorCamera)
+        logger.info(cameraImage)
             // logger.debug(cameraImage);
             this.gladys.device.camera.setImage(selectorCamera, cameraImage);
             await fse.remove(filePath);

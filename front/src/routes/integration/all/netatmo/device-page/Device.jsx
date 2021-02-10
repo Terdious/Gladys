@@ -51,7 +51,7 @@ class NetatmoDeviceBox extends Component {
     this.refreshDeviceProperty();
   }
 
-  render(props, { batteryLevel, loading, error }) {
+  render(props, { housesWithRooms, batteryLevel, loading, error }) {
     return (
       <div class="col-md-6">
         <div class="card">
@@ -90,11 +90,16 @@ class NetatmoDeviceBox extends Component {
                     <option value="">
                       <Text id="global.emptySelectOption" />
                     </option>
-                    {props.houses &&
-                      props.houses.map(house => (
+                    {console.log("housesWithRooms")}
+                    {console.log(props)}
+                    {console.log(this)}
+                    {housesWithRooms &&
+                      housesWithRooms.map(house => (
                         <optgroup label={house.name}>
+                          {console.log(house)}
                           {house.rooms.map(room => (
                             <option selected={room.id === props.device.room_id} value={room.id}>
+                          {console.log(room)}
                               {room.name}
                             </option>
                           ))}

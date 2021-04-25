@@ -1,6 +1,7 @@
-const { assert, fake } = require('sinon');
+const { assert, fake, useFakeTimers } = require('sinon');
 const chaiAssert = require('chai').assert;
 const { expect } = require('chai');
+const dayjs = require('dayjs');
 const EventEmitter = require('events');
 const { ACTIONS } = require('../../../utils/constants');
 const { AbortScene } = require('../../../utils/coreErrors');
@@ -325,6 +326,60 @@ describe('scene.executeActions', () => {
     );
     assert.calledWith(house.userLeft, 'my-house', 'john');
   });
+  it('should execute action user.checkPresence and not call userLeft because user was seen', async () => {
+    const stateManager = new StateManager(event);
+    stateManager.setState('deviceFeature', 'my-device', {
+      last_value_changed: Date.now(),
+    });
+    const house = {
+      userSeen: fake.resolves(null),
+      userLeft: fake.resolves(null),
+    };
+    const scope = {};
+    await executeActions(
+      { stateManager, event, house },
+      [
+        [
+          {
+            type: ACTIONS.USER.CHECK_PRESENCE,
+            user: 'john',
+            house: 'my-house',
+            minutes: 10,
+            device_features: ['my-device'],
+          },
+        ],
+      ],
+      scope,
+    );
+    assert.notCalled(house.userLeft);
+  });
+  it('should execute action user.checkPresence and call userLeft because user was not seen', async () => {
+    const stateManager = new StateManager(event);
+    stateManager.setState('deviceFeature', 'my-device', {
+      last_value_changed: Date.now() - 15 * 60 * 1000,
+    });
+    const house = {
+      userSeen: fake.resolves(null),
+      userLeft: fake.resolves(null),
+    };
+    const scope = {};
+    await executeActions(
+      { stateManager, event, house },
+      [
+        [
+          {
+            type: ACTIONS.USER.CHECK_PRESENCE,
+            user: 'john',
+            house: 'my-house',
+            minutes: 10,
+            device_features: ['my-device'],
+          },
+        ],
+      ],
+      scope,
+    );
+    assert.calledWith(house.userLeft, 'my-house', 'john');
+  });
   it('should execute action http.request', async () => {
     const stateManager = new StateManager(event);
     const http = {
@@ -352,6 +407,33 @@ describe('scene.executeActions', () => {
       scope,
     );
     assert.calledWith(http.request, 'post', 'http://test.test', { toto: 'toto' }, { authorization: 'token' });
+  });
+  it('should execute action http.request with empty body', async () => {
+    const stateManager = new StateManager(event);
+    const http = {
+      request: fake.resolves({ success: true }),
+    };
+    const scope = {};
+    await executeActions(
+      { stateManager, event, http },
+      [
+        [
+          {
+            type: ACTIONS.HTTP.REQUEST,
+            method: 'post',
+            url: 'http://test.test',
+            headers: [
+              {
+                key: 'authorization',
+                value: 'token',
+              },
+            ],
+          },
+        ],
+      ],
+      scope,
+    );
+    assert.calledWith(http.request, 'post', 'http://test.test', undefined, { authorization: 'token' });
   });
   it('should abort scene, condition is not verified', async () => {
     const stateManager = new StateManager(event);
@@ -457,5 +539,102 @@ describe('scene.executeActions', () => {
       scope,
     );
     assert.calledWith(message.sendToUser, 'pepper', 'Temperature in the living room is 15 °C.');
+  });
+  it('should execute condition.check-time, and send message because condition is true', async () => {
+    const stateManager = new StateManager(event);
+    const message = {
+      sendToUser: fake.resolves(null),
+    };
+    const scope = {};
+    const todayAt12 = dayjs().hour(12);
+    const fiveMinutesAgo = todayAt12.subtract(5, 'minute');
+    const inFiveMinutes = todayAt12.add(5, 'minute');
+    const clock = useFakeTimers(todayAt12.valueOf());
+    await executeActions(
+      { stateManager, event, message },
+      [
+        [
+          {
+            type: ACTIONS.CONDITION.CHECK_TIME,
+            after: fiveMinutesAgo.format('hh:mm'),
+            before: inFiveMinutes.format('hh:mm'),
+            days_of_the_week: [todayAt12.format('dddd').toLowerCase()],
+          },
+        ],
+        [
+          {
+            type: ACTIONS.MESSAGE.SEND,
+            user: 'pepper',
+            text: 'hello',
+          },
+        ],
+      ],
+      scope,
+    );
+    assert.calledWith(message.sendToUser, 'pepper', 'hello');
+    clock.restore();
+  });
+  it('should abort scene because condition is not verified', async () => {
+    const stateManager = new StateManager(event);
+    const scope = {};
+    const todayAt12 = dayjs().hour(12);
+    const fiveMinutesAgo = todayAt12.subtract(5, 'minute');
+    const clock = useFakeTimers(todayAt12.valueOf());
+    const promise = executeActions(
+      { stateManager, event },
+      [
+        [
+          {
+            type: ACTIONS.CONDITION.CHECK_TIME,
+            before: fiveMinutesAgo.format('hh:mm'),
+          },
+        ],
+      ],
+      scope,
+    );
+    await chaiAssert.isRejected(promise, AbortScene);
+    clock.restore();
+  });
+  it('should abort scene because condition is not verified', async () => {
+    const stateManager = new StateManager(event);
+    const scope = {};
+    const todayAt12 = dayjs().hour(12);
+    const inFiveMinutes = todayAt12.add(5, 'minute');
+    const clock = useFakeTimers(todayAt12.valueOf());
+    const promise = executeActions(
+      { stateManager, event },
+      [
+        [
+          {
+            type: ACTIONS.CONDITION.CHECK_TIME,
+            after: inFiveMinutes.format('hh:mm'),
+          },
+        ],
+      ],
+      scope,
+    );
+    await chaiAssert.isRejected(promise, AbortScene);
+    clock.restore();
+  });
+  it('should abort scene because condition is not verified', async () => {
+    const stateManager = new StateManager(event);
+    const scope = {};
+    const todayAt12 = dayjs().hour(12);
+    const tomorrow = todayAt12.add(1, 'day');
+    const clock = useFakeTimers(todayAt12.valueOf());
+    const promise = executeActions(
+      { stateManager, event },
+      [
+        [
+          {
+            type: ACTIONS.CONDITION.CHECK_TIME,
+            days_of_the_week: [tomorrow.format('dddd').toLowerCase()],
+          },
+        ],
+      ],
+      scope,
+    );
+    await chaiAssert.isRejected(promise, AbortScene);
+    clock.restore();
   });
 });

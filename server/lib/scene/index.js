@@ -1,3 +1,6 @@
+const sunCalc = require('suncalc');
+const schedule = require('node-schedule');
+
 const queue = require('queue');
 const { addScene } = require('./scene.addScene');
 const { create } = require('./scene.create');
@@ -11,6 +14,7 @@ const { getSceneGroups } = require('./scene.getSceneGroups');
 const { getBySelector } = require('./scene.getBySelector');
 const { executeSingleAction } = require('./scene.executeSingleAction');
 const { update } = require('./scene.update');
+const { dailyUpdate } = require('./scene.dailyUpdate');
 
 const { EVENTS } = require('../../utils/constants');
 const { eventFunctionWrapper } = require('../../utils/functionsWrapper');
@@ -31,10 +35,17 @@ const SceneManager = function SceneManager(stateManager, event, device, message,
   this.queue = queue({
     autostart: true,
   });
+  this.sunCalc = sunCalc;
+  this.schedule = schedule;
+  this.jobs = [];
   this.event.on(EVENTS.TRIGGERS.CHECK, eventFunctionWrapper(this.checkTrigger.bind(this)));
   this.event.on(EVENTS.ACTION.TRIGGERED, eventFunctionWrapper(this.executeSingleAction.bind(this)));
   // on timezone change, reload all scenes
   this.event.on(EVENTS.SYSTEM.TIMEZONE_CHANGED, eventFunctionWrapper(this.init.bind(this)));
+
+  this.event.on(EVENTS.HOUSE.CREATED, eventFunctionWrapper(this.dailyUpdate.bind(this)));
+  this.event.on(EVENTS.HOUSE.UPDATED, eventFunctionWrapper(this.dailyUpdate.bind(this)));
+  this.event.on(EVENTS.HOUSE.DELETED, eventFunctionWrapper(this.dailyUpdate.bind(this)));
 };
 
 SceneManager.prototype.addScene = addScene;
@@ -45,6 +56,7 @@ SceneManager.prototype.destroy = destroy;
 SceneManager.prototype.get = get;
 SceneManager.prototype.getSceneGroups = getSceneGroups;
 SceneManager.prototype.init = init;
+SceneManager.prototype.dailyUpdate = dailyUpdate;
 SceneManager.prototype.getBySelector = getBySelector;
 SceneManager.prototype.execute = execute;
 SceneManager.prototype.executeSingleAction = executeSingleAction;

@@ -2,6 +2,7 @@ import { Text, Localizer } from 'preact-i18n';
 import cx from 'classnames';
 import { Link } from 'preact-router/match';
 import { isUrlInArray } from '../../utils/url';
+import { USER_ROLE } from '../../../../server/utils/constants';
 
 const PAGES_WITHOUT_HEADER = [
   '/login',
@@ -48,22 +49,24 @@ const Header = ({ ...props }) => {
                   <span class="ml-2 d-none d-lg-block">
                     <span class="text-default">{props.user.firstname}</span>
                     <small class="text-muted d-block mt-1">
-                      {props.user.role === 'admin' && <Text id="profile.adminRole" />}
-                      {props.user.role !== 'admin' && <Text id="profile.userRole" />}
+                      {props.user.role === USER_ROLE.ADMIN && <Text id="profile.adminRole" />}
+                      {props.user.role !== USER_ROLE.ADMIN && <Text id="profile.userRole" />}
                     </small>
                   </span>
                 </a>
-                {/*<div
-                  class={cx('dropdown-menu', 'dropdown-menu-right', 'dropdown-menu-arrow', {
-                    show: props.showDropDown
-                  })}
-                >
-                  <a class="dropdown-item" href="/dashboard/profile">
-                    <i class="dropdown-icon fe fe-user" /> <Text id="header.profile" />
-                  </a>
-                  <a class="dropdown-item" href="/dashboard/settings/house">
-                    <i class="dropdown-icon fe fe-settings" /> <Text id="header.settings" />
-                  </a>
+                  <div
+                    class={cx('dropdown-menu', 'dropdown-menu-right', 'dropdown-menu-arrow', {
+                      show: props.showDropDown
+                    })}
+                  >
+                    <a class="dropdown-item" href="/dashboard/profile">
+                      <i class="dropdown-icon fe fe-user" /> <Text id="header.profile" />
+                    </a>
+                    {props.user.role === USER_ROLE.ADMIN && (
+                      <a class="dropdown-item" href="/dashboard/settings/house">
+                        <i class="dropdown-icon fe fe-settings" /> <Text id="header.settings" />
+                      </a>
+                  )}
                   <div class="dropdown-divider" />
                   <a
                     class="dropdown-item"
@@ -76,7 +79,7 @@ const Header = ({ ...props }) => {
                   <a class="dropdown-item" href="" onClick={props.logout}>
                     <i class="dropdown-icon fe fe-log-out" /> <Text id="header.signOut" />
                   </a>
-                </div>*/}
+                </div>
               </div>
             </div>
             <a
@@ -118,14 +121,14 @@ const Header = ({ ...props }) => {
                     <i class="fe fe-message-square" /> <Text id="header.chat" />
                   </Link>
                 </li>
-                {/*<li class="nav-item">
+                <li class="nav-item">
                   <Link
                     href="/dashboard/integration"
                     class={props.currentUrl.startsWith('/dashboard/integration') ? 'active nav-link' : 'nav-link'}
                   >
                     <i class="fe fe-grid" /> <Text id="header.integrations" />
                   </Link>
-                </li>*/}
+                </li>
                 <li class="nav-item">
                   <Link
                     href="/dashboard/calendar"
@@ -147,14 +150,16 @@ const Header = ({ ...props }) => {
                     <i class="fe fe-map" /> <Text id="header.maps" />
                   </Link>
                 </li>
-                {/*<li class="nav-item">
-                  <Link
-                    href="/dashboard/scene"
-                    class={props.currentUrl.startsWith('/dashboard/scene') ? 'active nav-link' : 'nav-link'}
-                  >
-                    <i class="fe fe-play" /> <Text id="header.scenes" />
-                  </Link>
-                </li>*/}
+                {props.user.role === USER_ROLE.ADMIN && (
+                  <li class="nav-item">
+                    <Link
+                      href="/dashboard/scene"
+                      class={props.currentUrl.startsWith('/dashboard/scene') ? 'active nav-link' : 'nav-link'}
+                    >
+                      <i class="fe fe-play" /> <Text id="header.scenes" />
+                    </Link>
+                  </li>
+                )}
               </ul>
             </div>
           </div>

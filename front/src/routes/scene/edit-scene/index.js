@@ -13,32 +13,13 @@ class EditScene extends Component {
       SceneGetStatus: RequestStatus.Getting
     });
     try {
-      const scene = await this.props.httpClient.get(`/api/v1/scene/edit/${this.props.scene_selector}`);
+      const scene = await this.props.httpClient.get(`/api/v1/scene/${this.props.scene_selector}`);
       if (scene.actions[scene.actions.length - 1].length > 0) {
         scene.actions.push([]);
-      }      
-      console.log("getSceneBySelector-2")
-      console.log(scene.triggers)
-      console.log(scene.group)
+      }
       if (!scene.triggers) {
-      console.log("getSceneBySelector-1")
         scene.triggers = [];
       }
-
-      if (!scene.group) {
-        scene.group = [];
-      }
-      if (!scene.group.groupPrimary) {
-        
-      console.log("getSceneBySelector")
-        scene.group.push({
-          groupPrimary: null,
-          groupSecondary: null
-        })
-      }
-      console.log("getSceneBySelector2")
-      console.log(scene)
-
       const variables = [];
       scene.actions.forEach(actionGroup => {
         variables.push(actionGroup.map(action => []));
@@ -57,7 +38,7 @@ class EditScene extends Component {
   startScene = async () => {
     this.setState({ saving: true });
     try {
-      await this.props.httpClient.post(`/api/v1/scene/edit/${this.props.scene_selector}/start`);
+      await this.props.httpClient.post(`/api/v1/scene/${this.props.scene_selector}/start`);
       this.setState({ saving: false });
     } catch (e) {
       this.setState({ saving: false });
@@ -69,15 +50,10 @@ class EditScene extends Component {
     }
     this.setState({ saving: true, error: false });
     try {
-      console.log(this.state)
-      console.log(this.state)
-      await this.props.httpClient.patch(`/api/v1/scene/edit/${this.props.scene_selector}`, this.state.scene);
-      this.setState({ 
-        isNameEditable: false,
-        isGroupEditable: false,
-       });
+      await this.props.httpClient.patch(`/api/v1/scene/${this.props.scene_selector}`, this.state.scene);
+      this.setState({ isNameEditable: false });
     } catch (e) {
-      console.log(e);
+      console.error(e);
       this.setState({ error: true });
     }
     this.setState({ saving: false });
@@ -192,7 +168,7 @@ class EditScene extends Component {
   deleteScene = async () => {
     this.setState({ saving: true });
     try {
-      await this.props.httpClient.delete(`/api/v1/scene/edit/${this.props.scene_selector}`);
+      await this.props.httpClient.delete(`/api/v1/scene/${this.props.scene_selector}`);
       this.setState({ saving: false });
       route('/dashboard/scene');
     } catch (e) {
@@ -283,41 +259,12 @@ class EditScene extends Component {
     });
   };
 
-  toggleIsGroupEditable = async () => {
-    await this.setState(prevState => ({ isGroupEditable: !prevState.isGroupEditable }));
-    if (this.state.isGroupEditable) {
-      this.groupInput.focus();
-    }
-  };
-
-  setGroupInputRef = groupInput => {
-    this.groupInput = groupInput;
-  };
-
-  updateSceneGroup = e => {
-    this.setState(prevState => {
-      const newState = update(prevState, {
-        scene: {
-          group: {
-            [0]: {
-              groupPrimary: {
-                $set: e.target.value
-              }
-            }
-          }
-        }
-      });
-      return newState;
-    });
-  };
-
   constructor(props) {
     super(props);
     this.state = {
       scene: null,
       variables: {},
-      isNameEditable: false,
-      isGroupEditable: false
+      isNameEditable: false
     };
   }
 
@@ -331,7 +278,7 @@ class EditScene extends Component {
     );
   }
 
-  render(props, { saving, error, variables, scene, isNameEditable, isGroupEditable }) {
+  render(props, { saving, error, variables, scene, isNameEditable }) {
     return (
       scene && (
         <EditScenePage
@@ -354,10 +301,6 @@ class EditScene extends Component {
           isNameEditable={isNameEditable}
           updateSceneName={this.updateSceneName}
           setNameInputRef={this.setNameInputRef}
-          toggleIsGroupEditable={this.toggleIsGroupEditable}
-          isGroupEditable={isGroupEditable}
-          updateSceneGroup={this.updateSceneGroup}
-          setGroupInputRef={this.setGroupInputRef}
         />
       )
     );

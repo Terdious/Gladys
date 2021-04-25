@@ -2,37 +2,35 @@ import { Component } from 'preact';
 import { connect } from 'unistore/preact';
 import { Text } from 'preact-i18n';
 import Select from 'react-select';
+import withIntlAsProp from '../../../../utils/withIntlAsProp';
 
 import { ACTIONS } from '../../../../../../server/utils/constants';
 import { getDeviceFeatureName } from '../../../../utils/device';
 
 @connect('httpClient', {})
 class TurnOnOffLight extends Component {
-  getOptions = async () => {
+getOptions = async () => {
     try {
       // we get the rooms with the devices
       const rooms = await this.props.httpClient.get('/api/v1/room?expand=devices', {
-        device_feature_category: 'light',
+        device_feature_category: 'switch',
         device_feature_type: 'binary'
       });
       const deviceOptions = [];
-
       const deviceDictionnary = {};
       const deviceFeaturesDictionnary = {};
-
       // and compose the multi-level options
       rooms.forEach(room => {
         const roomDeviceFeatures = [];
         room.devices.forEach(device => {
           device.features.forEach(feature => {
-            if (feature.category === 'light' && feature.type === 'binary') {
+            if (feature.category === 'light' && feature.type === 'binary' && feature.read_only === false) {
               // keep device / deviceFeature in dictionnary
               deviceFeaturesDictionnary[feature.selector] = feature;
               deviceDictionnary[feature.selector] = device;
-
               roomDeviceFeatures.push({
                 value: feature.selector,
-                label: getDeviceFeatureName(this.context.intl.dictionary, device, feature)
+                label: getDeviceFeatureName(this.props.intl.dictionary, device, feature) //this.context.
               });
             }
           });
@@ -56,7 +54,7 @@ class TurnOnOffLight extends Component {
       await this.refreshSelectedOptions(this.props);
       return deviceOptions;
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   };
   handleChange = selectedOptions => {
@@ -66,21 +64,20 @@ class TurnOnOffLight extends Component {
     } else {
       this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'device_features', []);
     }
-    this.setState({ selectedOptions });
   };
-  refreshSelectedOptions = async nextProps => {
+  refreshSelectedOptions = nextProps => {
     const selectedOptions = [];
     if (nextProps.action.device_features && this.state.deviceOptions) {
-      nextProps.action.device_features.forEach(light => {
+      nextProps.action.device_features.forEach(lightBinary => {
         this.state.deviceOptions.forEach(room => {
-          const deviceOption = room.options.find(deviceOption => deviceOption.value === light);
+          const deviceOption = room.options.find(deviceOption => deviceOption.value === lightBinary);
           if (deviceOption) {
             selectedOptions.push(deviceOption);
           }
         });
       });
     }
-    await this.setState({ selectedOptions });
+    this.setState({ selectedOptions });
   };
   constructor(props) {
     super(props);
@@ -116,4 +113,4 @@ class TurnOnOffLight extends Component {
   }
 }
 
-export default TurnOnOffLight;
+export default withIntlAsProp(TurnOnOffLight);

@@ -15,7 +15,10 @@ const actions = store => ({
       store.setState({
         telegramApiKey: variable.value
       });
+      console.log(variable);
+      
       const { link } = await state.httpClient.get('/api/v1/service/telegram/link');
+      console.log(link);
       store.setState({
         telegramCustomLink: link,
         telegramGetApiKeyStatus: RequestStatus.Success

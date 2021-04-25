@@ -2,6 +2,7 @@ import { Component } from 'preact';
 import { connect } from 'unistore/preact';
 import { Text } from 'preact-i18n';
 import Select from 'react-select';
+import withIntlAsProp from '../../../../utils/withIntlAsProp';
 
 import { ACTIONS } from '../../../../../../server/utils/constants';
 import { getDeviceFeatureName } from '../../../../utils/device';
@@ -16,23 +17,20 @@ class TurnOnOffSwitch extends Component {
         device_feature_type: 'binary'
       });
       const deviceOptions = [];
-
       const deviceDictionnary = {};
       const deviceFeaturesDictionnary = {};
-
       // and compose the multi-level options
       rooms.forEach(room => {
         const roomDeviceFeatures = [];
         room.devices.forEach(device => {
           device.features.forEach(feature => {
-            if (feature.category === 'switch' && feature.type === 'binary') {
+            if (feature.category === 'switch' && feature.type === 'binary' && feature.read_only === false) {
               // keep device / deviceFeature in dictionnary
               deviceFeaturesDictionnary[feature.selector] = feature;
               deviceDictionnary[feature.selector] = device;
-
               roomDeviceFeatures.push({
                 value: feature.selector,
-                label: getDeviceFeatureName(this.context.intl.dictionary, device, feature)
+                label: getDeviceFeatureName(this.props.intl.dictionary, device, feature) //this.context.
               });
             }
           });
@@ -56,21 +54,28 @@ class TurnOnOffSwitch extends Component {
       await this.refreshSelectedOptions(this.props);
       return deviceOptions;
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   };
+ /* handleChange = selectedOptions => {
+    if (selectedOptions) {
+      const switches = selectedOptions.map(selectedOption => selectedOption.value);
+      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'devices', switches);
+    } else {
+      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'devices', []);
+    }
+  };*/
   handleChange = selectedOptions => {
     //const { deviceFeaturesDictionnary, deviceDictionnary } = this.state;
-    const switchs = selectedOptions.map(selectedOption => selectedOption.value);
+    const switches = selectedOptions.map(selectedOption => selectedOption.value);
     if (selectedOptions) {
-      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'device_features', switchs);
+      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'device_features', switches);
     } else {
       this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'device_features', []);
     }
-    this.setState({ selectedOptions }); // this.setState({ deviceFeature, device });
+    //this.setState({ selectedOptions }); // this.setState({ deviceFeature, device });
   };
-
-  refreshSelectedOptions = async nextProps => {
+  refreshSelectedOptions = nextProps => {
     const selectedOptions = [];
     if (nextProps.action.device_features && this.state.deviceOptions) {
       nextProps.action.device_features.forEach(switchBinary => {
@@ -82,7 +87,7 @@ class TurnOnOffSwitch extends Component {
         });
       });
     }
-    await this.setState({ selectedOptions });
+    this.setState({ selectedOptions });
   };
   constructor(props) {
     super(props);
@@ -118,4 +123,4 @@ class TurnOnOffSwitch extends Component {
   }
 }
 
-export default TurnOnOffSwitch;
+export default withIntlAsProp(TurnOnOffSwitch);

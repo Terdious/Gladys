@@ -9,11 +9,7 @@ const EditScenePage = ({ children, ...props }) => (
     <div class="page-main">
       <div class="my-3 my-md-5">
         <div class="container">
-          <div class="page-header"
-              style={{
-                marginRight: '20px',
-                marginBottom: '0rem'
-              }}>
+          <div class="page-header">
             <h1
               class="page-title"
               style={{
@@ -24,28 +20,20 @@ const EditScenePage = ({ children, ...props }) => (
                 <Text id="global.backButton" />
               </Link>
             </h1>
-            <h4
-              class="page-title"
-              style={{
-                marginRight: '10px'
-              }}
-            >
-              {/*"Nom de scène :"*/}
-            </h4>
-            <h1 class="page-title" > 
+            <h1 class="page-title">
               {props.isNameEditable ? (
                 <form onSubmit={this.saveScene}>
                   <div class="input-group">
-                      <Localizer>
-                        <input
-                          type="text"
-                          class="col-20 form-control form-control-sm"
-                          onChange={props.updateSceneName}
-                          value={props.scene.name}
-                          ref={props.setNameInputRef}
-                          placeholder={<Text id="editScene.editNamePlaceholder" />}
-                        />
-                      </Localizer>
+                    <Localizer>
+                      <input
+                        type="text"
+                        class="form-control form-control-sm "
+                        onChange={props.updateSceneName}
+                        value={props.scene.name}
+                        ref={props.setNameInputRef}
+                        placeholder={<Text id="editScene.editNamePlaceholder" />}
+                      />
+                    </Localizer>
                     <div class="input-group-append">
                       <button class="btn btn-primary btn-sm" onClick={props.saveScene}>
                         <Text id="global.save" />
@@ -68,46 +56,6 @@ const EditScenePage = ({ children, ...props }) => (
                 <Text id="editScene.deleteButton" /> <i class="fe fe-trash" />
               </button>
             </div>
-          </div>
-          <div class="page-header"
-            style={{
-              marginTop: '0rem'
-            }}
-          >
-            <h4
-              class="page-title"
-              style={{
-                marginRight: '10px'
-              }}
-            >
-              
-            </h4>
-              {/*console.log(props)*/}
-            <h4 class="page-title">
-              {props.isGroupEditable ? (
-                <form onSubmit={this.saveScene}>
-                  <div class="input-group">
-                    <Localizer>
-                      <input
-                        type="text"
-                        class="form-control form-control-sm "
-                        onChange={props.updateSceneGroup}
-                        value={props.scene.group[0].groupPrimary}
-                        ref={props.setGroupInputRef}
-                        placeholder={<Text id="editScene.editNamePlaceholder" />}
-                      />
-                    </Localizer>
-                    <div class="input-group-append">
-                      <button class="btn btn-primary btn-sm" onClick={props.saveScene}>
-                        <Text id="global.save" />
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              ) : (
-                <span onClick={props.toggleIsGroupEditable}>{props.scene.group[0].groupPrimary ? (props.scene.group[0].groupPrimary) :  ('coucou')}</span>
-              )}
-            </h4>
           </div>
           <div>
             {props.error && (

@@ -8,8 +8,8 @@ const TriggerGroup = ({ children, ...props }) => (
     <div class="card">
       <div class="card-status bg-green" />
       <div class="card-header">
-        <h4 class="text-center card-title" title="Coucou">
-          <Text id="editScene.triggersTitle"/>
+        <h4 class="text-center card-title ">
+          <Text id="editScene.triggersTitle" />
         </h4>
         <div class="card-options">
           <button class="btn btn-outline-primary" onClick={props.addTrigger}>

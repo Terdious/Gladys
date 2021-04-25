@@ -13,7 +13,11 @@
     "percent": "%",
     "degreeValue": "{{value}}°",
     "workInProgress": "Travail en cours...",
-    "save": "Enregistrer"
+    "save": "Enregistrer",
+    "celsius": "C",
+    "fahrenheit": "F",
+    "metersPerSec": "m/s",
+    "milesPerHour": "m/h"
   },
   "calendar": {
     "allDay": "Toute la journée",
@@ -174,6 +178,7 @@
     "boxTitle": {
       "weather": "Météo",
       "temperature-in-room": "Température de la pièce",
+      "humidity-in-room": "Humidité de la pièce",
       "user-presence": "Utilisateurs présent",
       "camera": "Caméra",
       "devices-in-room": "Appareils de la pièce"
@@ -207,6 +212,10 @@
       "temperatureInRoom": {
         "editRoomLabel": "Sélectionnez la pièce que vous souhaitez afficher ici.",
         "noTemperatureRecorded": "Aucune température enregistrée récemment."
+      },
+      "humidityInRoom": {
+        "editRoomLabel": "Sélectionnez la pièce que vous souhaitez afficher ici.",
+        "noHumidityRecorded": "Aucune mesure d'humidité enregistrée récemment."
       },
       "userPresence": {
         "description": "Cette box affiche qui est à la maison et qui ne l'est pas. Vous pouvez changer la présence d'un utilisateur dans les scènes.",
@@ -308,7 +317,8 @@
       "title": "Bluetooth",
       "description": "Contrôler vos appareils Bluetooth.",
       "deviceTab": "Appareils",
-      "setupTab": "Configuration",
+      "discoverTab": "Découverte",
+      "setupTab": "Scanner de présence",
       "bluetoothNotReadyError": "Le module Bluetooth n'est pas disponible, merci de vérifier qu'il est bien activé.",
       "device": {
         "title": "Appareils Bluetooth",
@@ -321,6 +331,7 @@
         "externalIdLabel": "ID externe",
         "manufacturerLabel": "Fabricant",
         "modelLabel": "Modèle",
+        "presenceSensorLabel": "Utiliser cet appareil comme un détecteur de présence",
         "featuresLabel": "Fonctionnalités",
         "noFeatureDiscovered": "Aucune fonctionnalité détectée.",
         "featureNamePlaceholder": "Nom de la fonctionnalité",
@@ -328,10 +339,9 @@
         "deleteButton": "Supprimer",
         "editButton": "Editer"
       },
-      "setup": {
-        "title": "Configuration Bluetooth",
+      "discover": {
+        "title": "Découverte Bluetooth",
         "scanButton": "Rechercher",
-        "reloadButton": "Recharger",
         "noDeviceFound": "Aucun périphérique Bluetooth détecté.",
         "createDeviceInGladys": "Connecter dans Gladys",
         "updateDeviceInGladys": "Mettre à jour dans Gladys",
@@ -348,6 +358,18 @@
           "cancelLabel": "Annuler",
           "successLabel": "Effectué"
         }
+      },
+      "setup": {
+        "title": "Scanner de présence",
+        "noConfigLabel": "La configuration n'est pas chargée, merci de réessayer.",
+        "errorLabel": "Une erreur est survenue lors du chargement de la configuration.",
+        "presenceScannerDescription": "Le scanner de présence effectue un scan Bluetooth à interval régulier. Dès qu’un appareil est détecté, l'appareil est marqué comme \"présent\" dans Gladys. Dans les scènes, vous avez la possibilité de créer un déclencheur qui écoute sur cet état. Ainsi, vous pouvez facilement faire une scène qui vous met comme présent à la maison dès qu'un appareil bluetooth est détecté.",
+        "presenceScannerStatusLabel": "Activer ou désactiver l'analyse de présence d'appareils",
+        "presenceScannerFrequencyLabel": "Fréquence de scan bluetooth",
+        "presenceScannerFrequencyUnit": "minutes",
+        "presenceScannerFrequencyError": "Seul un nombre entier est autorisé.",
+        "presenceScannerButton": "Scanner la présence maintenant",
+        "saveLabel": "Enregistrer"
       }
     },
     "telegram": {
@@ -495,6 +517,83 @@
         "saveError": "Erreur lors de la sauvegarde, veuillez réessayer.",
         "deleteError": "Erreur lors de la suppression, veuillez réessayer."
       }
+    },
+    "zigbee2mqtt": {
+      "title": "Zigbee2mqtt",
+      "description": "Contrôlez vos appareils Zigbee.",
+      "deviceTab": "Appareils",
+      "discoverTab": "Découverte Zigbee",
+      "settingsTab": "Paramètres",
+      "setupTab": "Configuration",
+      "status": {
+        "notConfigured": "Aucun dongle USB Zigbee2mqtt configuré, veuillez vous rendre sur ",
+        "notEnabled": "Le service Zigbee2mqtt n'est pas activé, veuillez vous rendre sur ",
+        "mqttNotInstalled": "Le broker MQTT n'a pas pu être installé.",
+        "mqttNotRunning": "Le broker MQTT n'a pas démarré.",
+        "zigbee2mqttNotInstalled": "Zigbee2mqtt n'a pas pu être installé.",
+        "zigbee2mqttNotRunning": "Zigbee2mqtt n'a pas démarré.",
+        "gladysNotConnected": "Gladys n'a pas réussi à se connecter au broker MQTT",
+        "zigbee2mqttNotConnected": "Zigbee2mqtt n'a pas réussi à se connecter au broker MQTT",
+        "settingsPageLink": "la page de paramétrage du dongle USB",
+        "setupPageLink": "la page de configuration de Zigbee2mqtt"
+      },
+      "settings": {
+        "title": "Paramétrage du dongle USB Zigbee2mqtt",
+        "description": "Pour utiliser Zigbee2mqtt avec Gladys, il faut insérer un dongle USB Zigbee2mqtt.",
+        "zigbee2mqttUsbDriverPathLabel": "Sélectionner le port USB sur lequel le dongle Zigbee2mqtt est inséré",
+        "saveButton": "Sauvegarde",
+        "refreshButton": "Rafraîchir la liste des appareils USB",
+        "notAttached": "Aucun dongle USB Zigbee2mqtt n'est attaché à Gladys.",
+        "attached": "Le dongle USB Zigbee2mqtt est configuré.",
+        "saving": "Sauvegarde de la configuration du Dongle USB Zigbee2mqtt..."
+      },
+      "setup": {
+        "title": "Configuration du service Zigbee2mqtt",
+        "description": "Ce service utilise deux containers Docker (MQTT broker and Zigbee2mqtt). Activer Zigbee2mqtt pour déployer ces containers.\nPour en savoir plus, rendez-vous sur la page de documentation Zigbee2mqtt",
+        "enableLabel": "Activation du service Zigbee2mqtt",
+        "nonDockerEnv": "Gladys ne s'exécute actuellement pas dans Docker, il est impossible d'activer Zigbee2mqtt depuis Gladys.",
+        "invalidDockerNetwork": "Gladys est basée sur une installation personalisée, pour installer Zigbee2mqtt depuis cette page, le conteneur Docker de Gladys doit être démarré avec l'option \"network=host\".",
+        "enableZigbee2mqtt": "Activer Zigbee2mqtt",
+        "containersStatus": "Conteneurs liés à Zigbee2mqtt",
+        "serviceStatus": "Etat du service Zigbee2mqtt",
+        "link": "Lien",
+        "connected": "Zigbee2mqtt démarré avec succès.",
+        "error": "Une erreur s'est produite au démarrage du service Zigbee2mqtt.",
+        "mqttZigbeeLink": "MQTT - Zigbee",
+        "gladysMqttLink": "Gladys - MQTT",
+        "zigbee2Mqtt": "Zigbee2mqtt",
+        "gladys": "Gladys",
+        "mqtt": "MQTT",
+        "status": "Status"
+      },
+      "device": {
+        "title": "Appareils Zigbee",
+        "search": "Chercher un appareil",
+        "editButton": "Editer"
+      },
+      "discover": {
+        "title": "Découverte du réseau Zigbee",
+        "device": "({{nbDevices}}) Appareils",
+        "permitJoin": "Autoriser l'association",
+        "noDeviceDiscovered": "Aucun nouvel appareil trouvé. Veuillez autoriser l'association des appareils et les appairer.\nATTENTION : Pour la sécurité de votre installation, n'oubliez pas d'interdire l'association après appairage.",
+        "scanButton": "Scanner",
+        "serverNoResponse": "Gladys n'est pas accessible.",
+        "serverNoResponseWebSocker": "Gladys n'est pas accessible. Veuillez actualiser la page.",
+        "deviceNotHandled": "L'appareil n'est pas encore géré, veuillez nous contacter pour nous aider à le connecter dans Gladys !",
+        "createGithubIssue": "Proposer ce périphérique"
+      },
+      "noDeviceFound": "Auncun appareil zigbee2mqtt n'a encore été ajouté.",
+      "nameLabel": "Nom",
+      "namePlaceholder": "Donner un nom à l'appareil",
+      "roomLabel": "Pièce",
+      "topicLabel": "Sujet MQTT",
+      "topicPlaceholder": "%topic% zigbee2mqtt MQTT value",
+      "featuresLabel": "Fonctionnalités",
+      "saveButton": "Sauvegarder",
+      "deleteButton": "Supprimer",
+      "alreadyExistsButton": "Déjà créé",
+      "saveError": "Une erreur s'est produite lors de la sauvegarde.",
+      "documentation": "Documentation Zigbee2mqtt"
     },
     "zwave": {
       "title": "Z-Wave",
@@ -804,11 +903,26 @@
         "orText": "OU",
         "orButton": "+ OU"
       },
+      "checkTime": {
+        "description": "La scène continuera si l'heure actuelle est comprise entre les bornes spécifiées, aux jours spécifiés. Si une condition est vide, elle ne sera pas prise en compte.",
+        "beforeLabel": "Avant",
+        "afterLabel": "Après",
+        "daysOfTheWeekLabel": "Jour de la semaine"
+      },
       "userPresence": {
         "userLabel": "Utilisateur",
         "houseLabel": "Maison",
         "userSeenDescription": "Cette action marque l'utilisateur comme présent à la maison.",
         "userLeftHomeDescription": "Cette action indique que l'utilisateur a quitté la maison."
+      },
+      "checkUserPresence": {
+        "description": "Lorsque cette action est exécutée, Gladys va regarder si les appareils sélectionnés ont été détectés dans les dernières minutes ( selon le nombre de minutes sélectionné ci-dessous ). Si un appareil a été détecté, Gladys ne fera rien. Si aucun n'appareil n'a été détecté, Gladys marquera l'utilisateur comme hors de la maison.",
+        "userLabel": "Utilisateur",
+        "houseLabel": "Maison",
+        "deviceLabel": "Appareils",
+        "minutesLabel": "Appareil vu il y a moins de",
+        "minutesPlaceholder": "Durée (en minutes)",
+        "minutes": "minutes"
       },
       "httpRequest": {
         "description": "Cette action permet d'envoyer une requête HTTP.",
@@ -824,7 +938,10 @@
         "bodyPlaceholder": "Body",
         "headersLabel": "Headers",
         "headersKeyPlaceholder": "Nom",
-        "headersValuePlaceholder": "Valeur"
+        "headersValuePlaceholder": "Valeur",
+        "responseData": "Réponse",
+        "tryButton": "Essayer",
+        "requestError": "Une erreur est survenue lors de la requête. Êtes vous sûr d'avoir bien rempli le formulaire ?"
       }
     },
     "actions": {
@@ -851,11 +968,13 @@
         "stop": "Arrêter le service"
       },
       "condition": {
-        "only-continue-if": "Continuer seulement si"
+        "only-continue-if": "Continuer seulement si",
+        "check-time": "Condition temporelle"
       },
       "user": {
         "set-seen-at-home": "Utilisateur vu à la maison",
-        "set-out-of-home": "Utilisateur parti de la maison"
+        "set-out-of-home": "Utilisateur parti de la maison",
+        "check-presence": "Vérifier la présence"
       },
       "http": {
         "request": "Faire une requête HTTP"
@@ -873,7 +992,17 @@
         "new-state": "Changement d'état de l'appareil"
       },
       "time": {
-        "changed": "Déclenchement programmé"
+        "changed": "Déclenchement programmé",
+        "sunrise": "A chaque lever de soleil",
+        "sunset": "A chaque coucher de soleil"
+      },
+      "user": {
+        "back-home": "Retour à la maison",
+        "left-home": "Départ de la maison"
+      },
+      "house": {
+        "empty": "La maison est vide",
+        "no-longer-empty": "La maison n'est plus vide"
       }
     },
     "triggersCard": {
@@ -887,6 +1016,7 @@
         "valuePlaceholder": "Valeur",
         "on": "On",
         "off": "Off",
+        "deviceSeen": "Si l'appareil est détecté",
         "onlyExecuteAtThreshold": "Exécuter seulement lorsque le seuil est passé ( et non pas à chaque valeur envoyée )"
       },
       "scheduledTrigger": {
@@ -917,7 +1047,22 @@
           "friday": "Vendredi",
           "saturday": "Samedi",
           "sunday": "Dimanche"
-        }
+        },
+        "house": "Maison"
+      },
+      "warning": {
+        "houseWithoutCoordinate": "Votre maison n'a pas de coordonnées renseignées. Ce déclencheur ne peut fonctionner sans cette donnée. Veuillez-vous rendre dans Paramètres/Maisons et cliquer sur la carte pour définir les coordonnées de cette maison."
+      },
+      "userPresence": {
+        "backAtHomeDescription": "Cette scène s'exécutera lorsque l'utilisateur sélectionné rentrera à la maison sélectionnée.",
+        "leftHomeDescription": "Cette scène s'exécutera lorsque l'utilisateur sélectionné partira de la maison sélectionnée.",
+        "userLabel": "Utilisateur",
+        "houseLabel": "Maison"
+      },
+      "houseEmptyOrNot": {
+        "houseEmptyDescription": "Ce déclencheur lancera la scène dès qu'un utilisateur quitte la maison et est le dernier à la quitter.",
+        "houseNoLongerEmptyDescription": "Ce déclencheur lancera la scène dès qu'un utilisateur rentre à la maison et qu'elle était vide avant son retour.",
+        "houseLabel": "Maison"
       }
     }
   },
@@ -926,12 +1071,15 @@
     "editYourProfileTitle": "Editez votre profil",
     "userRole": "Utilisateur",
     "adminRole": "Administrateur",
+    "roleDescription": "Un administrateur a tous les accès de l'instance Gladys. Un utilisateur ne peut gérer que son tableau de bord, discuter avec Gladys, voir son calendrier et la carte. Il ne peut pas créer de scènes, éditer les préférences, ni gérer les intégrations.",
     "invitationPending": "En attente",
     "invitationSuccess": "Acceptée",
     "firstnameLabel": "Prénom",
     "firstnamePlaceholder": "Entrez votre prénom",
+    "firstnameOtherUserPlaceholder": "Entrez le prénom",
     "lastnameLabel": "Nom de famille",
     "lastnamePlaceholder": "Entrez votre nom de famille",
+    "lastnameOtherUserPlaceholder": "Entrez le nom de famille",
     "selectorLabel": "Sélecteur",
     "birthdateLabel": "Date de naissance",
     "year": "Année",
@@ -942,13 +1090,18 @@
     "chooseFileLabel": "Choisir un fichier",
     "emailLabel": "E-mail",
     "emailPlaceholder": "Entrez votre e-mail",
+    "emailOtherUserPlaceholder": "Entrez un e-mail",
     "languageLabel": "Langue",
     "english": "English",
     "french": "Français",
+    "roleLabel": "Rôle",
     "passwordLabel": "Mot de passe (min 8 caractères)",
     "passwordPlaceholder": "Entrez votre mot de passe",
     "passwordRepeatLabel": "Répétez votre mot de passe",
     "passwordRepeatPlaceholder": "Répétez votre mot de passe",
+    "passwordOtherUserPlaceholder": "Entrez le mot de passe",
+    "passwordOtherUserRepeatLabel": "Répétez le mot de passe",
+    "passwordRepeatOtherUserPlaceholder": "Répétez le mot de passe",
     "saveButton": "Sauvegarder votre profil",
     "firstnameError": "Le prénom est requis.",
     "lastnameError": "Le nom de famille est requis.",
@@ -965,13 +1118,14 @@
   "settings": {
     "title": "Réglages",
     "housesTab": "Maisons",
+    "usersTab": "Utilisateurs",
     "sessionsTab": "Sessions",
     "systemTab": "Système",
     "gatewayTab": "Gladys Plus",
     "backupTab": "Sauvegardes",
     "serviceTab": "Services",
     "billingTab": "Facturation",
-    "gatewayUsersTab": "Utilisateurs",
+    "gatewayUsersTab": "Utilisateurs Plus",
     "gatewayOpenApiTab": "Open API"
   },
   "housesSettings": {
@@ -981,6 +1135,29 @@
     "orderDirDesc": "Z - A",
     "defaultNewHouseName": "Nouvelle Maison",
     "noHouseFound": "Aucune maison trouvée"
+  },
+  "usersSettings": {
+    "title": "Utilisateurs",
+    "searchPlaceholder": "Chercher un utilisateur",
+    "newUserButton": "Nouveau",
+    "editUserButton": "Editer",
+    "noUsersFound": "Aucuns utilisateurs trouvés avec cette recherche.",
+    "deleteUserButton": "Supprimer",
+    "confirmDeleteUserButton": "Confirmer",
+    "cancelDeleteUser": "Annuler",
+    "deleteUserWarning": "Supprimer un utilisateur supprimera toutes les données associées à cet utilisateur (tableau de bord, localisation, préférences). Confirmez vous la suppression de cet utilisateur ?",
+    "createUser": {
+      "title": "Créer un nouvel utilisateur",
+      "createUserButton": "Créer utilisateur"
+    },
+    "editUser": {
+      "title": "Editer utilisateur",
+      "resetPassword": "Réinitialiser le mot de passe",
+      "editPreferences": "Editer les préférences",
+      "resetPasswordButton": "Réinitialiser",
+      "saveButton": "Enregistrer",
+      "success": "Profil enregistré avec succès !"
+    }
   },
   "sessionsSettings": {
     "registered": "Connexion",
@@ -1078,6 +1255,7 @@
     "operations": "Opérations",
     "upToDate": "Gladys est à jour",
     "newUpgradeAvailable": "Mise à jour disponible",
+    "newUpgradeAvailableText": "Gladys se mettra à jour automatiquement si vous utilisez l'image Raspberry Pi OS Gladys officielle. Pour une installation manuellle, vous devez avoir configuré Watchtower pour que Gladys Assistant se mette à jour.",
     "download": "Télécharger",
     "notAvailable": "Indisponible sur l'installation personnalisée.",
     "containers": "Conteneurs",
@@ -1201,10 +1379,11 @@
     "fahrenheit": "Fahrenheit (°F)",
     "percent": "Pourcent (%)",
     "pascal": "Pascal (Pa)",
+    "hectoPascal": "Hectopascal (hPa)",
     "lux": "Lux",
     "watt": "Watt",
     "kilowatt": "Kilowatt",
-    "kilowatt-hour": "Kilowatt heure (kW/h)",
+    "kilowatt-hour": "Kilowatt heure (kWh)",
     "ampere": "Ampère (A)",
     "volt": "Volt (V)",
     "ppm": "Partie par million (ppm)",
@@ -1216,10 +1395,11 @@
     "fahrenheit": "°F",
     "percent": "%",
     "pascal": "Pa",
+    "hectoPascal": "hPa",
     "lux": "lx",
     "watt": "W",
     "kilowatt": "KW",
-    "kilowatt-hour": "kW/h",
+    "kilowatt-hour": "kWh",
     "ampere": "A",
     "volt": "V",
     "ppm": "ppm",

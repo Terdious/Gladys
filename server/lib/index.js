@@ -53,7 +53,7 @@ function Gladys(params = {}) {
   const stateManager = new StateManager(event);
   const system = new System(db.sequelize, event, config);
   const http = new Http(system);
-  const house = new House(event);
+  const house = new House(event, stateManager);
   const room = new Room(brain);
   const service = new Service(services, stateManager);
   const message = new MessageHandler(event, brain, service, stateManager);
@@ -64,7 +64,7 @@ function Gladys(params = {}) {
   const scene = new Scene(stateManager, event, device, message, variable, house, http);
   const scheduler = new Scheduler(event);
   const weather = new Weather(service, event, message, house);
-  const gateway = new Gateway(variable, event, system, db.sequelize, config, user);
+  const gateway = new Gateway(variable, event, system, db.sequelize, config, user, stateManager);
 
   const gladys = {
     version: '0.1.0', // todo, read package.json
@@ -74,6 +74,7 @@ function Gladys(params = {}) {
     dashboard,
     event,
     house,
+    http,
     gateway,
     location,
     message,

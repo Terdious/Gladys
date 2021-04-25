@@ -45,6 +45,9 @@ import TriggerPage from '../routes/trigger';
 import ProfilePage from '../routes/profile';
 import SettingsSessionPage from '../routes/settings/settings-session';
 import SettingsHousePage from '../routes/settings/settings-house';
+import SettingsUserPage from '../routes/settings/settings-users';
+import SettingsEditUserPage from '../routes/settings/settings-users/edit-user';
+import SettingsCreateUserPage from '../routes/settings/settings-users/create-user';
 import SettingsSystemPage from '../routes/settings/settings-system';
 import SettingsServicePage from '../routes/settings/settings-service';
 import SettingsGateway from '../routes/settings/settings-gateway';
@@ -75,6 +78,13 @@ import MqttDevicePage from '../routes/integration/all/mqtt/device-page';
 import MqttDeviceSetupPage from '../routes/integration/all/mqtt/device-page/setup';
 import MqttSetupPage from '../routes/integration/all/mqtt/setup-page';
 
+// Zigbee2mqtt
+import Zigbee2mqttPage from '../routes/integration/all/zigbee2mqtt/device-page';
+import Zigbee2mqttDiscoverPage from '../routes/integration/all/zigbee2mqtt/discover-page';
+import Zigbee2mqttSettingsPage from '../routes/integration/all/zigbee2mqtt/settings-page';
+import Zigbee2mqttSetupPage from '../routes/integration/all/zigbee2mqtt/setup-page';
+import Zigbee2mqttEditPage from '../routes/integration/all/zigbee2mqtt/edit-page';
+
 // Tasmota
 import TasmotaPage from '../routes/integration/all/tasmota/device-page';
 import TasmotaEditPage from '../routes/integration/all/tasmota/edit-page';
@@ -86,6 +96,7 @@ import BluetoothDevicePage from '../routes/integration/all/bluetooth/device-page
 import BluetoothEditDevicePage from '../routes/integration/all/bluetooth/edit-page';
 import BluetoothSetupPage from '../routes/integration/all/bluetooth/setup-page';
 import BluetoothSetupPeripheralPage from '../routes/integration/all/bluetooth/setup-page/setup-peripheral';
+import BluetoothSettingsPage from '../routes/integration/all/bluetooth/settings-page';
 
 // EweLink
 import EweLinkPage from '../routes/integration/all/ewelink/device-page';
@@ -187,6 +198,11 @@ const AppRouter = connect(
         <MqttDeviceSetupPage path="/dashboard/integration/device/mqtt/edit" />
         <MqttDeviceSetupPage path="/dashboard/integration/device/mqtt/edit/:deviceSelector" />
         <MqttSetupPage path="/dashboard/integration/device/mqtt/setup" />
+        <Zigbee2mqttPage path="/dashboard/integration/device/zigbee2mqtt" />
+        <Zigbee2mqttDiscoverPage path="/dashboard/integration/device/zigbee2mqtt/discover" />
+        <Zigbee2mqttSettingsPage path="/dashboard/integration/device/zigbee2mqtt/settings" />
+        <Zigbee2mqttSetupPage path="/dashboard/integration/device/zigbee2mqtt/setup" />
+        <Zigbee2mqttEditPage path="/dashboard/integration/device/zigbee2mqtt/edit/:deviceSelector" />
         <XiaomiPage path="/dashboard/integration/device/xiaomi" />
         <EditXiaomiPage path="/dashboard/integration/device/xiaomi/edit/:deviceSelector" />
         <TasmotaPage path="/dashboard/integration/device/tasmota" />
@@ -202,20 +218,21 @@ const AppRouter = connect(
         <BluetoothEditDevicePage path="/dashboard/integration/device/bluetooth/:deviceSelector" />
         <BluetoothSetupPage path="/dashboard/integration/device/bluetooth/setup" />
         <BluetoothSetupPeripheralPage path="/dashboard/integration/device/bluetooth/setup/:uuid" />
+        <BluetoothSettingsPage path="/dashboard/integration/device/bluetooth/config" />
 
         <ChatPage path="/dashboard/chat" />
         <MapPage path="/dashboard/maps" />
         <CalendarPage path="/dashboard/calendar" />
         <ScenePage path="/dashboard/scene" />
-        
-        <ScenePage path="/dashboard/scene/:scene_group" />
-
         <NewScenePage path="/dashboard/scene/new" />
-        <EditScenePage path="/dashboard/scene/edit/:scene_selector" />
+        <EditScenePage path="/dashboard/scene/:scene_selector" />
         <TriggerPage path="/dashboard/trigger" />
         <ProfilePage path="/dashboard/profile" />
         <SettingsSessionPage path="/dashboard/settings/session" />
         <SettingsHousePage path="/dashboard/settings/house" />
+        <SettingsUserPage path="/dashboard/settings/user" />
+        <SettingsEditUserPage path="/dashboard/settings/user/edit/:user_selector" />
+        <SettingsCreateUserPage path="/dashboard/settings/user/new" />
         <SettingsSystemPage path="/dashboard/settings/system" />
         <SettingsGateway path="/dashboard/settings/gateway" />
         <SettingsServicePage path="/dashboard/settings/service" />

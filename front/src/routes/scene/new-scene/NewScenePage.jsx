@@ -6,26 +6,15 @@ import get from 'get-value';
 import iconList from '../../../../../server/config/icons.json';
 import style from './style.css';
 
-/*const handleChange = selectedOptions => {
-    const lights = selectedOptions.map(selectedOption => selectedOption.value);
-    if (selectedOptions) {
-      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'device_features', lights);
-    } else {
-      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'device_features', []);
-    }
-    this.setState({ selectedOptions });
-  };*/
-
 const NewScenePage = ({ children, ...props }) => (
   <div class={cx('container', style.containerWithMargin)}>
-  //{console.log(props)}
     <Link href="/dashboard/scene" class="btn btn-secondary btn-sm">
       <Text id="global.backButton" />
     </Link>
     <div class="row">
       <div class="col col-login mx-auto">
         <form onSubmit={props.createScene} class="card">
-          <div class="card-body p-10">
+          <div class="card-body p-6">
             <div class="card-title">
               <Text id="newScene.cardTitle" />
             </div>
@@ -47,44 +36,6 @@ const NewScenePage = ({ children, ...props }) => (
                   placeholder={<Text id="newScene.nameLabel" />}
                   value={get(props, 'newScene.name')}
                   onInput={props.updateNewSceneName}
-                />
-              </Localizer>
-              <div class="invalid-feedback">
-                <Text id="newScene.invalidName" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">
-                <Text id="newScene.groupLabel" />
-              </label>
-              <Localizer>
-                <input
-                  type="text"
-                  class={cx('form-control', {
-                    'is-invalid': get(props, 'newSceneErrors.groupPrimary')
-                  })}
-                  placeholder={<Text id="newScene.groupPrimaryLabel" />}
-                  value={get(props, 'newScene.groupPrimary')}
-                  onInput={props.updateNewSceneGroupPrimary}
-                />
-              </Localizer>
-              <div class="invalid-feedback">
-                <Text id="newScene.invalidName" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">
-                <Text id="newScene.groupLabel" />
-              </label>
-              <Localizer>
-                <input
-                  type="text"
-                  class={cx('form-control', {
-                    'is-invalid': get(props, 'newSceneErrors.groupPrimary')
-                  })}
-                  placeholder={<Text id="newScene.groupPrimaryLabel" />}
-                  value={get(props, 'newScene.groupPrimary')}
-                  onInput={props.updateNewSceneGroupSecondary}
                 />
               </Localizer>
               <div class="invalid-feedback">

@@ -51,8 +51,8 @@ async function syncUserCalendars(userId) {
         return savedCalendar;
       }
 
-      // Else update it if events change
-      if (formatedCalendar.ctag !== gladysCalendar[0].ctag) {
+      // Else update it if sync is enable on calendar & events change
+      if (gladysCalendar[0].sync && formatedCalendar.ctag !== gladysCalendar[0].ctag) {
         await this.gladys.calendar.update(gladysCalendar[0].selector, formatedCalendar);
         return gladysCalendar[0];
       }
@@ -76,7 +76,7 @@ async function syncUserCalendars(userId) {
       await Promise.map(
         eventsToUpdate,
         async (eventToUpdate) => {
-          // Delete existing event if pops is empty
+          // Delete existing event if props is empty
           if (JSON.stringify(eventToUpdate.props) === JSON.stringify({})) {
             const eventToDelete = await this.gladys.calendar.getEvents(userId, { url: eventToUpdate.href });
             if (eventToDelete.length === 1) {

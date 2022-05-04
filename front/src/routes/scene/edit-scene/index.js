@@ -24,9 +24,14 @@ class EditScene extends Component {
       scene.actions.forEach(actionGroup => {
         variables.push(actionGroup.map(action => []));
       });
+      const triggersVariables = [];
+      scene.triggers.forEach(trigger => {
+        triggersVariables.push([]);
+      });
       this.setState({
         scene,
         variables,
+        triggersVariables,
         SceneGetStatus: RequestStatus.Success
       });
     } catch (e) {
@@ -42,6 +47,40 @@ class EditScene extends Component {
       this.setState({ saving: false });
     } catch (e) {
       this.setState({ saving: false });
+    }
+  };
+  switchActiveScene = async () => {
+    this.setState({ saving: true });
+    try {
+      await this.setState(prevState => {
+        const newState = update(prevState, {
+          scene: {
+            active: {
+              $set: !prevState.scene.active
+            }
+          }
+        });
+        return newState;
+      });
+      await this.props.httpClient.patch(`/api/v1/scene/${this.props.scene_selector}`, {
+        active: this.state.scene.active
+      });
+      this.setState({ saving: false });
+    } catch (e) {
+      console.error(e);
+      await this.setState(prevState => {
+        const newState = update(prevState, {
+          saving: {
+            $set: false
+          },
+          scene: {
+            active: {
+              $set: !prevState.scene.active
+            }
+          }
+        });
+        return newState;
+      });
     }
   };
   saveScene = async e => {
@@ -186,6 +225,9 @@ class EditScene extends Component {
               }
             ]
           }
+        },
+        triggersVariables: {
+          $push: [[]]
         }
       });
       return newState;
@@ -198,6 +240,9 @@ class EditScene extends Component {
           triggers: {
             $splice: [[index, 1]]
           }
+        },
+        triggersVariables: {
+          $splice: [[index, 1]]
         }
       });
       return newState;
@@ -235,6 +280,19 @@ class EditScene extends Component {
     });
   };
 
+  setVariablesTrigger = (index, variables) => {
+    this.setState(prevState => {
+      const newState = update(prevState, {
+        triggersVariables: {
+          [index]: {
+            $set: variables
+          }
+        }
+      });
+      return newState;
+    });
+  };
+
   toggleIsNameEditable = async () => {
     await this.setState(prevState => ({ isNameEditable: !prevState.isNameEditable }));
     if (this.state.isNameEditable) {
@@ -264,6 +322,7 @@ class EditScene extends Component {
     this.state = {
       scene: null,
       variables: {},
+      triggersVariables: [],
       isNameEditable: false
     };
   }
@@ -278,7 +337,7 @@ class EditScene extends Component {
     );
   }
 
-  render(props, { saving, error, variables, scene, isNameEditable }) {
+  render(props, { saving, error, variables, scene, isNameEditable, triggersVariables }) {
     return (
       scene && (
         <EditScenePage
@@ -296,7 +355,10 @@ class EditScene extends Component {
           saving={saving}
           error={error}
           variables={variables}
+          triggersVariables={triggersVariables}
           setVariables={this.setVariables}
+          setVariablesTrigger={this.setVariablesTrigger}
+          switchActiveScene={this.switchActiveScene}
           toggleIsNameEditable={this.toggleIsNameEditable}
           isNameEditable={isNameEditable}
           updateSceneName={this.updateSceneName}

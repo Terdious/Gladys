@@ -159,7 +159,11 @@ module.exports = function CalendarController(gladys) {
    * }]
    */
   async function get(req, res) {
-    const calendars = await gladys.calendar.get(req.user.id);
+    // cast shared boolean
+    if (typeof req.query.shared === 'string') {
+      req.query.shared = req.query.shared === 'true';
+    }
+    const calendars = await gladys.calendar.get(req.user.id, req.query);
     res.json(calendars);
   }
 

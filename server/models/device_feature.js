@@ -64,18 +64,36 @@ module.exports = (sequelize, DataTypes) => {
       min: {
         allowNull: false,
         type: DataTypes.DOUBLE,
+        validate: {
+          isFloat: true,
+        },
       },
       max: {
         allowNull: false,
         type: DataTypes.DOUBLE,
+        validate: {
+          isFloat: true,
+        },
       },
       last_value: {
         type: DataTypes.DOUBLE,
+        validate: {
+          isFloat: true,
+        },
       },
       last_value_string: {
         type: DataTypes.TEXT,
       },
       last_value_changed: {
+        type: DataTypes.DATE,
+      },
+      last_hourly_aggregate: {
+        type: DataTypes.DATE,
+      },
+      last_daily_aggregate: {
+        type: DataTypes.DATE,
+      },
+      last_monthly_aggregate: {
         type: DataTypes.DATE,
       },
     },

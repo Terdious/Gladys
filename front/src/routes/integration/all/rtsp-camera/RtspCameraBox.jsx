@@ -46,11 +46,13 @@ class RtspCameraBox extends Component {
     try {
       await this.props.testConnection(this.props.cameraIndex);
       this.setState({
-        testConnectionError: null
+        testConnectionError: null,
+        testConnectionErrorMessage: null
       });
     } catch (e) {
       this.setState({
-        testConnectionError: RequestStatus.Error
+        testConnectionError: RequestStatus.Error,
+        testConnectionErrorMessage: get(e, 'response.data.error')
       });
     }
     this.setState({
@@ -66,13 +68,17 @@ class RtspCameraBox extends Component {
   updateCameraUrl = e => {
     this.props.updateCameraUrl(this.props.cameraIndex, e.target.value);
   };
+  updateCameraRotation = e => {
+    const newValue = e.target.checked ? '1' : '0';
+    this.props.updateCameraRotation(this.props.cameraIndex, newValue);
+  };
   updateCameraRoom = e => {
     const newRoom = e.target.value === '' ? null : e.target.value;
     this.props.updateCameraField(this.props.cameraIndex, 'room_id', newRoom);
   };
   componentWillMount() {}
 
-  render(props, { loading, saveError, testConnectionError }) {
+  render(props, { loading, saveError, testConnectionError, testConnectionErrorMessage }) {
     return (
       <div class="col-md-4">
         <div class="card">
@@ -97,6 +103,7 @@ class RtspCameraBox extends Component {
                     <Text id="integration.rtspCamera.testConnectionError" />
                   </div>
                 )}
+                {testConnectionErrorMessage && <div class="alert alert-danger">{testConnectionErrorMessage}</div>}
                 <div class="form-group">
                   <label>
                     <Text id="integration.rtspCamera.nameLabel" />
@@ -168,6 +175,22 @@ class RtspCameraBox extends Component {
                   </Localizer>
                 </div>
                 <div class="form-group">
+                  <label class="custom-switch">
+                    <input
+                      type="checkbox"
+                      id="cameraRotate"
+                      name="cameraRotate"
+                      class="custom-switch-input"
+                      checked={get(props, 'camera.cameraRotation.value') === '1'}
+                      onClick={this.updateCameraRotation}
+                    />
+                    <span class="custom-switch-indicator" />
+                    <span class="custom-switch-description">
+                      <Text id="integration.rtspCamera.rotate180Label" />
+                    </span>
+                  </label>
+                </div>
+                <div class="form-group">
                   <button onClick={this.testConnection} class="btn btn-info mr-2">
                     <Text id="integration.rtspCamera.testConnectionButton" />
                   </button>
@@ -186,5 +209,4 @@ class RtspCameraBox extends Component {
     );
   }
 }
-
 export default RtspCameraBox;

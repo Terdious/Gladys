@@ -19,6 +19,14 @@
     "metersPerSec": "m/s",
     "milesPerHour": "m/h"
   },
+  "color": {
+    "blue": "Bleu",
+    "red": "Rouge",
+    "green": "Vert",
+    "black": "Noir",
+    "yellow": "Jaune",
+    "purple": "Violet"
+  },
   "calendar": {
     "allDay": "Toute la journée",
     "previous": "précédent",
@@ -31,7 +39,11 @@
     "date": "date",
     "time": "heure",
     "event": "événement",
-    "noEventsInRange": "Aucuns évènements trouvés dans cette période."
+    "noEventsInRange": "Aucuns évènements trouvés dans cette période.",
+    "noCalendarsConnected": "Vous n'avez connecté aucun calendrier. Pour connecter un calendrier, vous pouvez vous rendre dans l'onglet intégrations, ou demander à ce qu'un autre membre de cette instance Gladys partage un de ses calendriers."
+  },
+  "device": {
+    "noFeatures": "Aucune fonctionnalité"
   },
   "login": {
     "title": "Gladys Assistant",
@@ -156,39 +168,47 @@
       "cancelDeleteHouse": "Annuler",
       "conflictError": "Une maison avec le même non existe déjà.",
       "roomConflictError": "Une pièce avec le même non existe déjà.",
-      "validationError": "Erreur de validation : une maison ne peut pas avoir un nom vide.",
+      "validationError": "Erreur de validation : Le nom d'une maison doit-être compris entre 1 et 40 caractères.",
       "validationErrorRoom": "Erreur de validation : le nom d'une pièce doit être entre 1 et 40 caractères."
     },
     "success": {
       "title": "Merci 🙏",
       "introduction": "Je m'appelle <a href=\"https://twitter.com/pierregillesl\"> Pierre-Gilles Leymarie </a>, et j'ai fondé Gladys Assistant en 2013.",
       "thanksForChoosingOpenSource": "Je voudrais vous remercier d'avoir choisi Gladys 🙌 J'espère que vous apprécierez utiliser ce logiciel.",
-      "ifYouWantToSupportThisSotware": "Gladys étant mon activité principale, je compte sur vos contributions pour rendre ce projet durable. Si vous souhaitez accéder à des fonctionnalités supplémentaires et supporter ce projet open-source, rendez-vous sur <a href=\"https://gladysassistant.com/fr/pricing\">Gladys Plus</a>.",
+      "ifYouWantToSupportThisSotware": "Gladys étant mon activité principale, je compte sur vos contributions pour rendre ce projet durable. Si vous souhaitez accéder à des fonctionnalités supplémentaires et supporter ce projet open-source, rendez-vous sur <a href=\"https://gladysassistant.com/fr/plus\">Gladys Plus</a>.",
       "goToDashboardButton": "Accéder au tableau de bord"
     }
   },
   "dashboard": {
     "title": "Tableau de bord",
     "editDashboardButton": "Editer",
+    "newDashboardButton": "Nouveau",
     "editDashboardCancelButton": "Annuler",
+    "editDashboardDeleteButton": "Supprimer",
     "editDashboardSaveButton": "Sauvegarder",
+    "enableFullScreen": "Plein écran",
+    "disableFullScreen": "Quitter plein écran",
+    "editDashboardTitle": "Editer le tableau de bord",
     "emptyDashboardSentenceTop": "Votre tableau de bord n'est pas encore configuré.",
     "emptyDashboardSentenceBottom": "Cliquez sur le bouton \"Editer\" pour le compléter.",
+    "noDashboardSentenceBottom": "Cliquez sur le bouton \"Nouveau\" pour créer un tableau de bord.",
     "gatewayInstanceNotFoundError": "Votre instance Gladys n'est pas connectée à Gladys Plus.",
+    "editDashboardNameLabel": "Nom",
     "boxTitle": {
       "weather": "Météo",
       "temperature-in-room": "Température de la pièce",
       "humidity-in-room": "Humidité de la pièce",
       "user-presence": "Utilisateurs présent",
       "camera": "Caméra",
-      "devices-in-room": "Appareils de la pièce"
+      "devices-in-room": "Appareils de la pièce",
+      "chart": "Graphique"
     },
     "boxes": {
       "column": "Colonne {{index}}",
       "dragAndDrop": "Glissez et déposez moi ici",
       "deleteButton": "Supprimer",
       "weather": {
-        "editHouseLabel": "Sélectionnez une maison. J'utiliserais les latitude/longitude pour obtenir la météo.",
+        "editHouseLabel": "Sélectionnez une maison. J'utiliserai les latitude/longitude pour obtenir la météo.",
         "houseHasNoCoordinates": "Les coordonnées de votre maison ne sont pas définies. Accédez aux paramètres Gladys pour définir la position de votre maison.",
         "serviceNotConfigured": "Le service OpenWeather n'est pas configuré. Veuillez accéder à l'onglet «Intégrations» et configurer le service OpenWeather.",
         "requestToThirdPartyFailed": "La requête à l'API OpenWeather a échouée. Votre instance Gladys est-elle connectée à Internet? Veuillez vous rendre dans le panneau de configuration de OpenWeather pour résoudre ce problème.",
@@ -204,7 +224,7 @@
       },
       "devicesInRoom": {
         "editRoomLabel": "Sélectionnez la pièce que vous souhaitez afficher ici.",
-        "editDeviceFeaturesLabel": "Sélectionnez les appareils que vous voulez afficher ici. Seules les capteurs / et interrupteurs on/off sont supportés.",
+        "editDeviceFeaturesLabel": "Sélectionnez les appareils que vous voulez afficher ici. Seuls les capteurs / et interrupteurs on/off sont supportés.",
         "noValue": "Aucune valeur enregistrée.",
         "deviceTitle": "{{name}} - {{type}}",
         "noDevices": "Vous n'avez pas d'appareil dans votre maison ! <br/> Définissez votre appareil dans la page de l'intégration."
@@ -218,20 +238,55 @@
         "noHumidityRecorded": "Aucune mesure d'humidité enregistrée récemment."
       },
       "userPresence": {
-        "description": "Cette box affiche qui est à la maison et qui ne l'est pas. Vous pouvez changer la présence d'un utilisateur dans les scènes.",
+        "description": "Cette box affiche qui est à la maison et qui ne l'est pas. Vous pouvez changer la présence d'un utilisateur dans les scènes, et sélectionner ici quels utilisateurs afficher.",
         "left": "Absent ({{since}})",
         "atHome": "A la maison",
         "neverSeenAtHome": "Jamais vu à la maison",
         "error": "Une erreur réseau s'est produite lors de la récupération de la liste des utilisateurs. Merci de rafraîchir la page.",
-        "emptyText": "Il n'y a aucun utilisateurs à afficher ici. Vous pouvez ajouter des utilisateurs dans les paramètres Gladys."
+        "emptyText": "Il n'y a aucun utilisateurs sélectionnés. Vous pouvez éditer cette box pour sélectionner des utilisateurs à afficher."
       },
       "camera": {
         "editCameraLabel": "Sélectionnez la caméra que vous souhaitez afficher ici.",
         "noImageToShow": "Aucune image à afficher",
         "editBoxNameLabel": "Entrez le nom que vous souhaitez donner à la box :",
         "editBoxNamePlaceholder": "Nom de la box"
+      },
+      "chart": {
+        "defaultInterval": "Intervalle par défaut",
+        "lastHour": "Dernière heure",
+        "lastDay": "Dernières 24h",
+        "lastSevenDays": "Derniers 7 jours",
+        "lastThirtyDays": "Derniers 30 jours",
+        "lastThreeMonths": "Derniers 3 mois",
+        "lastYear": "Dernière année",
+        "noValue": "Pas de valeurs sur cet intervalle.",
+        "noValueWarning": "Attention, si vous venez de configurer cet appareil, les données peuvent mettre un certain temps avant d'être aggrégées. Pour les intervalles supérieurs à 24h, cela prend jusqu'à 24h le temps que Gladys collecte assez de données.",
+        "editNameLabel": "Entrez le nom de cette box",
+        "editNamePlaceholder": "Nom affiché sur le tableau de bord",
+        "editDeviceFeaturesLabel": "Sélectionnez les appareils que vous voulez afficher",
+        "editRoomLabel": "Sélectionnez une pièce",
+        "chartType": "Sélectionner le type de graphique",
+        "line": "Ligne",
+        "area": "Aire",
+        "bar": "Histogramme",
+        "stepline": "Ligne droite",
+        "displayAxes": "Afficher les axes ?",
+        "displayVariation": "Afficher la variation ?",
+        "yes": "Oui",
+        "no": "Non",
+        "preview": "Prévisualisation",
+        "showPreviewButton": "Afficher une prévisualisation"
       }
     }
+  },
+  "newDashboard": {
+    "cardTitle": "Créer un tableau de bord",
+    "description": "Vous pouvez créer autant de tableau de bord que vous voulez pour pouvoir mieux organiser l'affichage de vos données.",
+    "nameLabel": "Nom",
+    "dashboardAlreadyExist": "Un tableau de bord avec ce nom existe déjà.",
+    "unknownError": "Une erreur inconnue s'est produite. Merci de réessayer !",
+    "validationError": "Le tableau de bord n'est pas valide, êtes-vous sûr d'avoir rempli tous les champs ?",
+    "createDashboardButton": "Créer"
   },
   "integration": {
     "root": {
@@ -253,8 +308,13 @@
     },
     "caldav": {
       "title": "CalDAV",
+      "accountTab": "Compte",
+      "syncTab": "Synchronisation",
+      "shareTab": "Partage",
       "description": "Synchonisez vos calendriers CalDAV.",
-      "introduction": "Pour synchroniser Gladys avec un calendrier CalDAV, vous devez avoir un calendrier compatible et entrer la configuration ci-dessous.",
+      "accountIntroduction": "Pour synchroniser Gladys avec un calendrier CalDAV, vous devez avoir un calendrier compatible et entrer la configuration ci-dessous.",
+      "syncIntroduction": "Choisissez les calendriers que vous souhaitez synchroniser.",
+      "shareIntroduction": "Choisissez les calendriers que vous voulez partager avec les autres utilisateurs de Gladys.",
       "hostLabel": "Hébergement CalDAV",
       "hostInfo": "Choisissez le type de calendrier que vous utilisez pour être aidé pendant la configuration.",
       "services": {
@@ -309,6 +369,9 @@
       "synchronizationRequestCalendarsError": "Impossible de récupérer les calendriers CalDAV, vérifiez la configuration et l'état du serveur CalDAV.",
       "synchronizationRequestChangesError": "Impossible de récupérer les changements, vérifiez la configuration et l'état du serveur CalDAV.",
       "synchronizationRequestEventsError": "Impossible de récupérer les détails des évènements, vérifiez la configuration et l'état du serveur CalDAV.",
+      "synchronizationNeeded": "Une première synchronisation est nécessaire pour lister les calendriers.",
+      "calendarChoiceSuccess": "Choix enregistrés avec succès.",
+      "calendarChoiceError": "Une erreur est survenue lors de la sauvegarde.",
       "buttonSave": "Sauvegarder",
       "buttonCleanUp": "Remettre à zéro",
       "buttonSync": "Synchroniser"
@@ -324,7 +387,6 @@
         "title": "Appareils Bluetooth",
         "search": "Chercher un appareil",
         "noDevices": "Aucun appareil Bluetooth n'a encore été ajouté.",
-        "noFeatures": "Aucune fonctionnalité",
         "nameLabel": "Nom de l'appareil",
         "namePlaceholder": "Entrez le nom de votre appareil",
         "roomLabel": "Pièce",
@@ -333,7 +395,6 @@
         "modelLabel": "Modèle",
         "presenceSensorLabel": "Utiliser cet appareil comme un détecteur de présence",
         "featuresLabel": "Fonctionnalités",
-        "noFeatureDiscovered": "Aucune fonctionnalité détectée.",
         "featureNamePlaceholder": "Nom de la fonctionnalité",
         "saveButton": "Sauvegarder",
         "deleteButton": "Supprimer",
@@ -429,6 +490,7 @@
       "testConnectionButton": "Tester",
       "saveButton": "Sauvegarder",
       "deleteButton": "Supprimer",
+      "rotate180Label": "Rotation 180°",
       "saveError": "Une erreur s'est produite lors de l'enregistrement de la caméra.",
       "testConnectionError": "Une erreur s'est produite lors de l'obtention du flux RTSP. Êtes-vous sûr que l'URL fournie est correcte et accessible à partir de l'instance Gladys ?"
     },
@@ -503,7 +565,6 @@
         "noNameLabel": "Pas de nom",
         "roomLabel": "Pièce",
         "featuresLabel": "Fonctionnalités",
-        "noFeatures": "Aucune fonctionnalité",
         "search": "Recherche d'appareils",
         "connectButton": "Connecter/Reconnecter",
         "scanButton": "Recherche sur le réseau",
@@ -573,10 +634,8 @@
       },
       "discover": {
         "title": "Découverte du réseau Zigbee",
-        "device": "({{nbDevices}}) Appareils",
         "permitJoin": "Autoriser l'association",
         "noDeviceDiscovered": "Aucun nouvel appareil trouvé. Veuillez autoriser l'association des appareils et les appairer.\nATTENTION : Pour la sécurité de votre installation, n'oubliez pas d'interdire l'association après appairage.",
-        "scanButton": "Scanner",
         "serverNoResponse": "Gladys n'est pas accessible.",
         "serverNoResponseWebSocker": "Gladys n'est pas accessible. Veuillez actualiser la page.",
         "deviceNotHandled": "L'appareil n'est pas encore géré, veuillez nous contacter pour nous aider à le connecter dans Gladys !",
@@ -591,9 +650,24 @@
       "featuresLabel": "Fonctionnalités",
       "saveButton": "Sauvegarder",
       "deleteButton": "Supprimer",
+      "updateButton": "Mettre à jour",
       "alreadyExistsButton": "Déjà créé",
       "saveError": "Une erreur s'est produite lors de la sauvegarde.",
       "documentation": "Documentation Zigbee2mqtt"
+    },
+    "googleHome": {
+      "title": "Gladys Assistant",
+      "cardTitle": "Voulez-vous connecter Gladys Assistant à Google ?",
+      "description": "En vous connectant, vous authorizez Google à accéder à vos appareils.",
+      "error": "Une erreur est survenue. Merci de réessayer.",
+      "connectedAs": "Connecté en tant que",
+      "googleWillBeAble": "Google pourra :",
+      "seeDevices": "Lister les appareils présents chez vous",
+      "controlDevices": "Contrôler vos appareils",
+      "getNewDeviceValues": "Récupérer périodiquement les états de vos appareils",
+      "privacyPolicy": "Lire la <a href=\"http://policies.google.com/?hl=fr\">politique de confidentialité de Google</a>.",
+      "cancelButton": "Annuler",
+      "connectButton": "Lier"
     },
     "zwave": {
       "title": "Z-Wave",
@@ -610,7 +684,6 @@
         "nameLabel": "Nom",
         "roomLabel": "Pièce",
         "featuresLabel": "Fonctionnalités",
-        "noFeatures": "Pas de fonctionnalités",
         "saveButton": "Sauvegarder",
         "deleteButton": "Supprimer",
         "editButton": "Editer",
@@ -632,7 +705,6 @@
         "createDeviceInGladys": "Connecter dans Gladys",
         "features": "Fonctionnalités",
         "params": "Paramètre",
-        "noFeatures": "Aucune fonctionnalité",
         "nodeId": "Noeud",
         "zwaveNotConfiguredError": "Ce service Z-wave n'est pas configuré. Veuillez sélectionner le port USB où votre clé Z-Wave est branchée dans les paramètres.",
         "createDeviceError": "Une erreur s'est produite lors de la création de cet appareil dans Gladys.",
@@ -643,7 +715,12 @@
         "createGithubIssue": "Signaler un bug avec cet appareil"
       },
       "network": {
-        "title": "Réseau Z-Wave"
+        "title": "Réseau Z-Wave",
+        "nodeId": "ID",
+        "nodeName": "Nom",
+        "nodeNeighbors": "Voisins",
+        "nodeAsleep": "Le noeud z-wave doit être en endormi ou mort.",
+        "node": "Noeud"
       },
       "settings": {
         "title": "Paramètres Z-Wave",
@@ -697,7 +774,6 @@
         "externalIdLabel": "ID externe",
         "roomLabel": "Pièce",
         "featuresLabel": "Fonctionnalités",
-        "noFeatures": "Aucune fonctionnalité",
         "saveButton": "Sauvegarder",
         "deleteButton": "Supprimer",
         "returnButton": "Retour",
@@ -722,7 +798,10 @@
         "readOnlyLabel": "Est-ce un capteur ?",
         "readOnlyButton": "Oui, ce capteur ne fait qu'envoyer des données à Gladys.",
         "addButton": "Ajouter une fonctionnalité",
-        "mqttTopicExampleLabel": "Topic MQTT",
+        "mqttTopicToPublishExampleLabel": "Topic MQTT pour publier",
+        "mqttTopicToPublishExampleDescription": "Gladys écoute ce topic. Si vous publiez une valeur dedans, Gladys l'associera à cette fonctionnalité. ( voir <a href=\"https://gladysassistant.com/fr/docs/api/mqtt-api/\" target=\"_blank\" rel=\"noopener noreferrer\">doc</a> )",
+        "mqttTopicToListenExampleLabel": "Topic MQTT à écouter",
+        "mqttTopicToListenExampleDescription": "Gladys publiera un message dans ce topic si cet appareil est contrôlé depuis Gladys. Vous devez écouter ce topic. ( voir <a href=\"https://gladysassistant.com/fr/docs/api/mqtt-api/\" target=\"_blank\" rel=\"noopener noreferrer\">doc</a> )",
         "copyMqttTopic": "Copier le topic MQTT",
         "copied": "Copié !",
         "copyFailed": "Erreur lors de la copie",
@@ -747,7 +826,7 @@
         "passwordPlaceholder": "Entrez le mot de passe du broker MQTT",
         "saveLabel": "Sauvegarder la configuration",
         "error": "Une erreur s'est produite lors de l'enregistrement de la configuration.",
-        "connecting": "Configuration enregistrée. Maintenant, connectez-vous à votre broker MQTT...",
+        "connecting": "Configuration enregistrée. Connexion au broker MQTT en cours...",
         "connected": "Connecté au broker MQTT avec succès !",
         "connectionError": "Erreur lors de la connexion, veuillez vérifier votre configuration.",
         "disconnected": "Déconnecté du broker MQTT."
@@ -766,8 +845,7 @@
         "featuresLabel": "Fonctionnalités",
         "saveButton": "Sauvegarder",
         "deleteButton": "Supprimer",
-        "editButton": "Editer les détails",
-        "noFeatures": "Aucune fonctionnalité"
+        "editButton": "Editer les détails"
       },
       "setup": {
         "title": "Aucun appareil Xiaomi dans Gladys",
@@ -800,10 +878,12 @@
       "updateButton": "Mettre à jour",
       "alreadyCreatedButton": "Déjà créé",
       "deleteButton": "Supprimer",
-      "unmanagedModelButton": "Modèle non pris en charge",
+      "unmanagedModelButton": "Modèle non pris en charge ou non disponible",
       "status": {
         "notConnected": "Gladys n'a pas réussi à se connecter au compte cloud eWeLink, plus d'informations sur la ",
-        "setupPageLink": "page de configuration eWeLink."
+        "setupPageLink": "page de configuration eWeLink.",
+        "online": "En ligne",
+        "offline": "Hors ligne"
       },
       "device": {
         "title": "Appareils eWeLink dans Gladys",
@@ -844,7 +924,6 @@
     "editNamePlaceholder": "Entrez un nom de scène",
     "startButton": "Démarrer",
     "saveButton": "Sauvegarder",
-    "runButton": "Jouer",
     "deleteButton": "Supprimer",
     "triggersTitle": "Déclencheurs",
     "newTrigger": "Nouveau déclencheur",
@@ -855,15 +934,10 @@
     "addActionButton": "Nouvelle action",
     "noTriggersYet": "Aucun déclencheur n'a encore été ajouté. Il n'est pas obligatoire d'avoir un déclencheur dans une scène.",
     "noActionsYet": "Aucune action n'a encore été ajoutée. Cliquez sur le bouton + pour ajouter une action à cette scène.",
-    "triggersDescription": "Chaque déclencheur est indépendant. Lorsque l'un de ces déclencheurs est déclenché, la scène s'exécute.",
+    "triggersDescription": "Chaque déclencheur est indépendant. Lorsque les conditions de l'un ces déclencheurs sont respectées, la scène s'exécute.",
     "actionsDescription": "Toutes les actions de ce bloc s'exécuteront en parallèle. Pour effectuer une séquence d'actions, ajoutez des actions au bloc suivant.",
     "addNewTriggerButton": "Nouveau déclencheur",
     "saveSceneError": "Une erreur s'est produite lors de l'enregistrement de votre scène. Veuillez vérifier que toutes les actions / déclencheurs sont remplis et corrects.",
-    "triggerCard": {
-      "title": "Déclencheurs",
-      "searchPlaceholder": "Chercher un déclencheur",
-      "leavingHomeTitle": "Départ la maison"
-    },
     "actionsCard": {
       "delay": {
         "label": " Ce bloc attendra la durée spécifiée.",
@@ -894,6 +968,11 @@
       "deviceGetValue": {
         "description": "La scène récupèrera le dernier état de l'appareil sélectionné, vous pourrez l'utiliser plus tard dans celle-ci.",
         "deviceLabel": "Sélectionnez un appareil"
+      },
+      "deviceSetValue": {
+        "description": "Cette action vous permet de contrôler un appareil.",
+        "deviceLabel": "Appareil",
+        "valueLabel": "Valeur"
       },
       "onlyContinueIf": {
         "variableLabel": "Variable",
@@ -942,11 +1021,34 @@
         "responseData": "Réponse",
         "tryButton": "Essayer",
         "requestError": "Une erreur est survenue lors de la requête. Êtes vous sûr d'avoir bien rempli le formulaire ?"
+      },
+      "scene": {
+        "label": "Choisir une scène",
+        "notice": "Les conditions de déclenchements de la scène appelée seront ignorées. Si une scène appelle une autre scène, et vice-versa, Gladys ne tombera pas dans une boucle infinie: chaque scène ne sera exécutée qu'une seule fois"
+      },
+      "houseEmptyOrNot": {
+        "houseIsEmptyDescription": "Si la maison est vide, cette scène continuera. Sinon, la scène s'arrêtera.",
+        "houseIsNotEmptyDescription": "Si la maison n'est pas vide, cette scène continuera. Sinon, la scène s'arrêtera.",
+        "houseLabel": "Maison"
+      },
+      "calendarEventIsRunning": {
+        "description": "Cette action vous permet de stopper une scène si un évènement est actuellement en cours ou si au contraire aucun n'évènement n'est en cours. Cette condition ne cherche que dans les calendriers partagés.",
+        "calendarLabel": "Dans les calendriers partagés suivants",
+        "nameLabel": "Si le nom",
+        "namePlaceholder": "Entrez un nom",
+        "whenFoundLabel": "Si un évènement est trouvé",
+        "whenNotFoundLabel": "Si aucun évènement n'est trouvé",
+        "stopScene": "Arrêter la scène",
+        "continueScene": "Continuer la scène"
       }
     },
     "actions": {
+      "calendar": {
+        "is-event-running": "Condition sur un évènement d'un calendrier"
+      },
       "device": {
-        "get-value": "Récupérer le dernier état"
+        "get-value": "Récupérer le dernier état",
+        "set-value": "Contrôler un appareil"
       },
       "message": {
         "send": "Envoyer un message"
@@ -978,6 +1080,10 @@
       },
       "http": {
         "request": "Faire une requête HTTP"
+      },
+      "house": {
+        "is-empty": "Si la maison est vide",
+        "is-not-empty": "Si la maison n'est pas vide"
       }
     },
     "variables": {
@@ -985,6 +1091,12 @@
         "get-value": {
           "last_value": "Dernière valeur de l'appareil"
         }
+      },
+      "calendar": {
+        "eventName": "Nom de l'évènement",
+        "eventLocation": "Lieu de l'évènement",
+        "eventStart": "Date de début",
+        "eventEnd": "Date de fin"
       }
     },
     "triggers": {
@@ -1003,6 +1115,13 @@
       "house": {
         "empty": "La maison est vide",
         "no-longer-empty": "La maison n'est plus vide"
+      },
+      "area": {
+        "user-entered": "Utilisateur entre dans la zone",
+        "user-left": "Utilisateur quitte la zone"
+      },
+      "calendar": {
+        "event-is-coming": "Un évènement dans le calendrier arrive"
       }
     },
     "triggersCard": {
@@ -1032,7 +1151,7 @@
         "intervalLabel": "Intervalle",
         "daysOfTheWeekLabel": "Jour de la semaine",
         "dayOfTheMonthLabel": "Jour du mois",
-        "dateFormat": "MM-dd-yyyy",
+        "dateFormat": "dd/MM/yyyy",
         "timeCaption": "Heure",
         "units": {
           "second": "seconde(s)",
@@ -1063,6 +1182,30 @@
         "houseEmptyDescription": "Ce déclencheur lancera la scène dès qu'un utilisateur quitte la maison et est le dernier à la quitter.",
         "houseNoLongerEmptyDescription": "Ce déclencheur lancera la scène dès qu'un utilisateur rentre à la maison et qu'elle était vide avant son retour.",
         "houseLabel": "Maison"
+      },
+      "area": {
+        "userEnteredDescription": "Ce déclencheur lancera la scène dès que l'utilisateur sélectionné entrera dans la zone sélectionnée. Vous pouvez créer des zones dans l'onglet plans.",
+        "userLeftDescription": "Ce déclencheur lancera la scène dès que l'utilisateur sélectionné quittera la zone sélectionnée. Vous pouvez créer des zones dans l'onglet plans.",
+        "userLabel": "Utilisateur",
+        "areaLabel": "Zone"
+      },
+      "calendarEventIsComing": {
+        "description": "Ce déclencheur lancera la scène lorsqu'un évènement dans l'un des calendriers sélectionnés répondra aux différentes contraintes. Seuls les calendriers partagés sont affichés.",
+        "calendarLabel": "Dans les calendriers partagés suivants",
+        "nameLabel": "Si le nom",
+        "isExactly": "est exactement",
+        "contains": "contient",
+        "startsWith": "commence par",
+        "endsWith": "finit par",
+        "hasAnyName": "a n'importe quel nom",
+        "namePlaceholder": "Texte",
+        "durationName": "Et l'évènement",
+        "startingIn": "commence dans",
+        "endingIn": "finit dans",
+        "durationPlaceholder": "Durée",
+        "minute": "minutes",
+        "hour": "heures",
+        "day": "jours"
       }
     }
   },
@@ -1125,6 +1268,7 @@
     "backupTab": "Sauvegardes",
     "serviceTab": "Services",
     "billingTab": "Facturation",
+    "jobsTab": "Tâches",
     "gatewayUsersTab": "Utilisateurs Plus",
     "gatewayOpenApiTab": "Open API"
   },
@@ -1245,6 +1389,27 @@
     "unknownError": "Une erreur inconnue s'est produite. Veuillez réessayer ou contacter Gladys community.",
     "networkError": "Erreur réseau : nous n'avons pas réussi à contacter votre instance Gladys. Êtes-vous connecté au réseau ? Votre instance Gladys est-elle en cours d'exécution ?"
   },
+  "jobsSettings": {
+    "jobsTitle": "Tâches en arrière-plan",
+    "jobsDescription": "Cette vue est un peu plus technique que le reste de Gladys. Le but de cette vue est de pouvoir comprendre ce qui se passe en arrière-plan dans Gladys, et de mieux pouvoir comprendre ce qui s'est passé, ou mal passé. Nous essayons de traduire les erreurs connues, mais quand une erreur inconnue survient, nous l'affichons telle quelle pour vous permettre de débugger.",
+    "jobType": "Type",
+    "jobProgress": "%",
+    "jobStatus": "Statut",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "jobTypes": {
+      "monthly-device-state-aggregate": "Aggrégation donnée capteur mensuelle",
+      "daily-device-state-aggregate": "Aggrégation donnée capteur journalière",
+      "hourly-device-state-aggregate": "Aggrégation donnée capteur horaire"
+    },
+    "jobErrors": {
+      "purged-when-restarted": "Gladys Assistant a redémarré alors que cette tâche était en cours. Cela ne veut pas dire que cette tâche a échouée, c'est un comportement normal."
+    },
+    "jobStatuses": {
+      "success": "Succès",
+      "failed": "Echec"
+    }
+  },
   "systemSettings": {
     "connected": "Connecté",
     "ping": "{{time}} ms ping",
@@ -1267,6 +1432,8 @@
     "configurationTitle": "Configuration",
     "timezone": "Fuseau horaire",
     "timezoneText": "Le fuseau horaire est utilisé dans les scènes programmées.",
+    "deviceStateRetentionTime": "Conserver l'historique des états des appareils",
+    "deviceStateRetentionTimeDescription": "La période pendant laquelle Gladys gardera en base de données les états des appareils.",
     "containerState": {
       "created": "Créé",
       "restarting": "Redémarrage",
@@ -1276,6 +1443,24 @@
       "exited": "Arrêté",
       "dead": "Mort"
     }
+  },
+  "newArea": {
+    "createNewZoneButton": "Créer une zone",
+    "cardTitleCreate": "Créer une nouvelle zone",
+    "cardTitleEdit": "Editer une zone",
+    "cardDescription": "Dans Gladys, vous pouvez définir des \"zones\". Ces zones sont utiles dans les scènes, où vous pouvez créer des scènes qui se déclenchent quand un utilisateur entre/quitte une zone.",
+    "nameLabel": "Nom",
+    "namePlaceholder": "Entrez un nom pour votre zone",
+    "radiusLabel": "Rayon (en mètre)",
+    "radiusPlaceholder": "Entrez le rayon de votre zone en mètre",
+    "colorLabel": "Couleur",
+    "mapLabel": "Cliquez sur la carte où votre zone doit être située",
+    "createButton": "Créer une zone",
+    "updateButton": "Mettre à jour la zone",
+    "deleteButton": "Supprimer la zone",
+    "createAreaError": "Une erreur est survenue lors de la création de votre zone. Avez-vous bien rempli tous les champs, et cliqué sur la carte pour positionner votre zone ?",
+    "deleteAreaError": "Impossible de supprimer cette zone. Rafraichissez cette page et réessayez.",
+    "getAreaError": "Impossible de récupérer les informations de cette zone. Merci de rafraichir cette page et de réessayer."
   },
   "newScene": {
     "cardTitle": "Nouvelle scène",
@@ -1320,24 +1505,17 @@
     "gatewayConnectedSuccessTitle": "Gladys Plus est connecté avec succès !",
     "gatewayConnectedSuccessDescription": "Votre instance de Gladys s'est connectée avec succès.",
     "gatewayConnectedSuccessBackupKey": "Une sauvegarde sera faite chaque jour, encodée avec la clé suivante. Ainsi vous pourrez restaurer votre instance plus tard, merci d'enregistrer cette clé de chiffrement quelque part, en dehors de Gladys. Sans cette clé, il vous sera impossible de restaurer Gladys.",
-    "gatewayConnectedSuccessButton": "J'ai enregistré la clé de sauvegarde !"
+    "gatewayConnectedSuccessButton": "J'ai enregistré la clé de sauvegarde !",
+    "accountExpired": "Votre compte Gladys Plus a expiré. Pour réactiver votre compte, merci de mettre à jour votre moyen de paiement dans <a href=\"/dashboard/settings/billing\">l'onglet facturation</a>."
   },
   "gatewayPricing": {
-    "pricingTitle": "Tarification",
-    "pricingSentence": "Gladys Assistant est gratuit à utiliser, mais vous pouvez vous abonner à Gladys Plus pour des fonctionnalités supplémentaires !",
-    "free": "Gratuit",
-    "gladysPlus": "Gladys Plus",
-    "currentPlan": "Choix actuel",
-    "subscribeButton": "Abonnez-vous (9,99 € / mois)",
-    "alreadyGladysPlusSubscriber": "Déjà abonné Gladys Plus ? Cliquez ici pour vous identifier.",
-    "openSourceSoftware": "Logiciel Open-Source",
-    "endToEndEncryptedRemoteAccess": "Accès à distance chiffré de bout en bout",
-    "dailyEncryptedBackups": "Sauvegardes chiffrées quotidiennes",
-    "oneClickRestore": "Restauration en un clic",
-    "remoteWebhooks": "Webhooks à distance",
-    "ownTracksApiServer": "Serveur API Owntracks",
-    "privateSlackCommunity": "Communauté Slack privée",
-    "supportOpenSourceSoftware": "Support logiciel Open-Source"
+    "pricingTitle": "Gladys Plus",
+    "pricingSentence": "Gladys Assistant est gratuit à utiliser, mais vous pouvez vous abonner à Gladys Plus pour des fonctionnalités supplémentaires tel que l'accès à distance chiffré de bout en bout, les sauvegardes automatiques, l'accès à une API REST ouverte accessible de partout dans le monde.",
+    "whyIsGladysPlusPaid": "Pourquoi Gladys Plus est-il payant et pas gratuit comme Gladys ?",
+    "whyIsGladysPlusPaidAnswer": "Gladys Plus est un service en ligne qui a des coûts: hébergement, bande passante, stockage, développement et maintenance. Pour supporter ces coûts, nous préférons demander une modeste participation mensuelle plutôt que de mettre de la publicité, ou vendre les données des utilisateurs: ce n'est pas la philosophie du projet ! Nous sommes des fervents défenseurs du libre, et souhaitons que chacun reste propriétaire de ses données, surtout quand cela touche à un sujet aussi important que la maison connectée.",
+    "supportOpenSource": "En vous abonnant à Gladys Plus, vous supportez le développement d'une alternative open-source et respectueuse de la vie privée. Merci d'avance pour votre soutien ! 🙂",
+    "knowMoreButton": "En savoir plus sur Gladys Plus",
+    "alreadyGladysPlusSubscriber": "Déjà abonné Gladys Plus ? Cliquez ici pour vous identifier !"
   },
   "gatewayLogin": {
     "cardTitle": "Connexion à Gladys Plus",
@@ -1368,7 +1546,8 @@
     "restoreButton": "Restaurer",
     "confirmRestore": "Confirmer",
     "cancelRestore": "Annuler",
-    "restoreInProgressTitle": "Restauration de la sauvegarde en cours ...",
+    "restoreInProgressTitle": "Restauration de la sauvegarde en cours...",
+    "gladysRestartingTitle": "Gladys Assistant est entrain de redémarrer...",
     "backupNowButton": "Sauvegarder maintenant",
     "backupStarted": "Début de la sauvegarde...",
     "notConfigured": "Gladys Plus doit être configuré pour activer les sauvegardes. Accédez à l'onglet Gladys Plus pour le configurer.",
@@ -1379,12 +1558,13 @@
     "fahrenheit": "Fahrenheit (°F)",
     "percent": "Pourcent (%)",
     "pascal": "Pascal (Pa)",
-    "hectoPascal": "Hectopascal (hPa)",
+    "hPa": "Hectopascal (hPa)",
     "lux": "Lux",
     "watt": "Watt",
     "kilowatt": "Kilowatt",
     "kilowatt-hour": "Kilowatt heure (kWh)",
     "ampere": "Ampère (A)",
+    "millivolt": "Millivolt (mV)",
     "volt": "Volt (V)",
     "ppm": "Partie par million (ppm)",
     "cm": "Centimètre (cm)",
@@ -1395,16 +1575,35 @@
     "fahrenheit": "°F",
     "percent": "%",
     "pascal": "Pa",
-    "hectoPascal": "hPa",
+    "hPa": "hPa",
     "lux": "lx",
     "watt": "W",
-    "kilowatt": "KW",
+    "kilowatt": "kW",
     "kilowatt-hour": "kWh",
     "ampere": "A",
+    "millivolt": "mV",
     "volt": "V",
     "ppm": "ppm",
     "cm": "cm",
     "mm": "mm"
+  },
+  "deviceFeatureValue": {
+    "type": {
+      "binary": {
+        "other": "Aucune valeur reçue",
+        "zero": "Inactif",
+        "one": "Actif"
+      }
+    },
+    "category": {
+      "co-sensor": {
+        "binary": {
+          "other": "Aucune valeur reçue",
+          "zero": "Sain",
+          "one": "CO détecté"
+        }
+      }
+    }
   },
   "deviceFeatureCategory": {
     "light": {
@@ -1425,6 +1624,10 @@
     },
     "temperature-sensor": {
       "shortCategoryName": "Capteur température",
+      "decimal": "Température"
+    },
+    "device-temperature-sensor": {
+      "shortCategoryName": "Température de l'appareil",
       "decimal": "Température"
     },
     "motion-sensor": {
@@ -1465,6 +1668,10 @@
       "shortCategoryName": "Détecteur de fumée",
       "binary": "Capteur de fumée - Oui/Non",
       "decimal": "Valeur de fumée décimale"
+    },
+    "co-sensor": {
+      "shortCategoryName": "Capteur de monxyde de carbon (CO)",
+      "binary": "Détection de CO"
     },
     "co2-sensor": {
       "shortCategoryName": "Capteur de Co2",
@@ -1511,12 +1718,47 @@
     },
     "vibration-sensor": {
       "shortCategoryName": "Capteur de vibration",
+      "binary": "Vibration (Oui/Non)",
       "status": "Etat",
       "tilt-angle": "Angle d'inclinaison",
       "acceleration-x": "Accélération X",
       "acceleration-y": "Accélération Y",
       "acceleration-z": "Accélération Z",
       "bed-activity": "Activité Lit"
+    },
+    "signal": {
+      "shortCategoryName": "Signal",
+      "integer": "Intensité du signal"
+    },
+    "television": {
+      "shortCategoryName": "Télévision",
+      "binary": "Power",
+      "source": "Source",
+      "channel": "Chaîne",
+      "guide": "Guide",
+      "menu": "Menu",
+      "volume-up": "Augmenter volume",
+      "volume-mute": "Muet",
+      "volume-down": "Diminuer volume",
+      "volume": "Volume",
+      "channel-up": "Chaîne suivante",
+      "channel-previous": "Dernière chaîne",
+      "channel-down": "Chaîne précédente",
+      "tools": "Outils",
+      "info": "Info",
+      "return": "Retour",
+      "exit": "Quitter",
+      "up": "Haut",
+      "down": "Bas",
+      "left": "Gauche",
+      "right": "Droite",
+      "enter": "Entrer",
+      "rewind": "Retour rapide",
+      "forward": "Avance rapide",
+      "play": "Lecture",
+      "pause": "Pause",
+      "stop": "Stop",
+      "record": "Enregistrer"
     },
     "unknown": {
       "shortCategoryName": "Inconnu",
@@ -1570,7 +1812,7 @@
     "nameLabel": "Nom",
     "roomLabel": "Pièce",
     "featuresLabel": "Fonctionnalités",
-    "noFeatures": "Aucune fonctionnalité",
+    "featureCategoryLabel": "Catégorie",
     "namePlaceholder": "Entrez un nom",
     "externalIdLabel": "ID externe",
     "externalIdPlaceholder": "Entrez une ID externe",
@@ -1646,8 +1888,8 @@
   },
   "gatewayOpenApi": {
     "title": "Open API",
-    "description": "L'Open API vous permet d'envoyer des informations à Gladys en dehors de votre réseau. Pour l'instant, il vous permet d'envoyer uniquement des données Owntracks.",
-    "moreInformations": "<a href=\"https://gladysassistant.com/fr/docs/integrations/owntracks\">Plus d'informations.</a>",
+    "description": "L'Open API vous permet d'envoyer des informations à Gladys en dehors de votre réseau.",
+    "moreInformations": "<a href=\"https://gladysassistant.com/fr/docs/plus/open-api\">Plus d'informations.</a>",
     "warningKeyDisappear": "Avertissement: vous ne verrez la clé qu'une seule fois. Copiez/collez votre clé et enregistrez-la quelque part.",
     "keyName": "Nom",
     "keyLastUsed": "Dernière utilisation",
@@ -1661,6 +1903,7 @@
   "gatewayTwoFactorAuth": {
     "title": "Gladys Gateway",
     "configureTitle": "Configurer l'authentification Two-Factor (\"2FA\")",
+    "configureButton": "Configurer la 2FA",
     "securityIsImportant": "La sécurité de votre compte Gladys Gateway est vraiment importante pour nous.",
     "securityApps": "Pour garantir la sécurité de votre compte, veuillez activer l'authentification à deux facteurs (\"2FA\") à l'aide d'une application à deux facteurs comme Authy sur <a href=\"https://itunes.apple.com/fr/app/authy/id494168017?mt=8\">iOS</a> ou <a href=\"https://play.google.com/store/apps/details?id=com.authy.authy\">Android</a>.",
     "invalidCode": "Le code 2FA que vous avez fourni n'est pas valide.",

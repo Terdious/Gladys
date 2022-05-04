@@ -10,23 +10,7 @@ const DiscoverTab = ({ children, ...props }) => (
   <div class="card">
     <div class="card-header">
       <h1 class="card-title">
-        <tr>
-          <td class="text-right">
-            <a href={props.zigbee2mqttFrontend} rel="noopener noreferrer" target="_blank">
-              <Text id="integration.zigbee2mqtt.discover.title" />
-            </a>
-          </td>
-          <td>
-            {props.zigbee2mqttDevices && (
-              <div>
-                <Text
-                  id="integration.zigbee2mqtt.discover.device"
-                  fields={{ nbDevices: props.zigbee2mqttDevices.length }}
-                />
-              </div>
-            )}
-          </td>
-        </tr>
+        <Text id="integration.zigbee2mqtt.discover.title" />
       </h1>
       <div class="page-options d-flex">
         <label class="custom-switch">
@@ -44,15 +28,6 @@ const DiscoverTab = ({ children, ...props }) => (
             <Text id="integration.zigbee2mqtt.discover.permitJoin" />
           </span>
         </label>
-      </div>
-      <div class="page-options d-flex">
-        <button
-          class="btn btn-outline-primary"
-          onClick={props.discover}
-          disabled={props.discoverZigbee2mqtt || !props.z2mEnabled || !props.usbConfigured}
-        >
-          <Text id="integration.zigbee2mqtt.discover.scanButton" /> <i class="fe fe-radio" />
-        </button>
       </div>
     </div>
     <div class="card-body">

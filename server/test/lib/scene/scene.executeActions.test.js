@@ -1,8 +1,7 @@
-const { assert, fake, useFakeTimers } = require('sinon');
+const { assert, fake } = require('sinon');
 const chaiAssert = require('chai').assert;
-const { expect } = require('chai');
-const dayjs = require('dayjs');
 const EventEmitter = require('events');
+const cloneDeep = require('lodash.clonedeep');
 const { ACTIONS } = require('../../../utils/constants');
 const { AbortScene } = require('../../../utils/coreErrors');
 const { executeActions } = require('../../../lib/scene/scene.executeActions');
@@ -10,6 +9,9 @@ const { executeActions } = require('../../../lib/scene/scene.executeActions');
 const StateManager = require('../../../lib/state');
 
 const event = new EventEmitter();
+
+// WE ARE SLOWLY MOVING ALL TESTS FROM THIS BIG FILE
+// TO A SMALLER SET OF FILE IN THE "ACTIONS" FOLDER.
 
 describe('scene.executeActions', () => {
   it('should execute light turn on', async () => {
@@ -251,39 +253,7 @@ describe('scene.executeActions', () => {
       1,
     );
   });
-  it('should execute action device.getValue', async () => {
-    const stateManager = new StateManager(event);
-    stateManager.setState('deviceFeature', 'my-device-feature', {
-      category: 'light',
-      type: 'binary',
-      last_value: 15,
-    });
-    const device = {
-      setValue: fake.resolves(null),
-    };
-    const scope = {};
-    await executeActions(
-      { stateManager, event, device },
-      [
-        [
-          {
-            type: ACTIONS.DEVICE.GET_VALUE,
-            device_feature: 'my-device-feature',
-          },
-        ],
-      ],
-      scope,
-    );
-    expect(scope).to.deep.equal({
-      0: {
-        0: {
-          category: 'light',
-          type: 'binary',
-          last_value: 15,
-        },
-      },
-    });
-  });
+
   it('should execute action user.setSeenAtHome', async () => {
     const stateManager = new StateManager(event);
     const house = {
@@ -380,61 +350,6 @@ describe('scene.executeActions', () => {
     );
     assert.calledWith(house.userLeft, 'my-house', 'john');
   });
-  it('should execute action http.request', async () => {
-    const stateManager = new StateManager(event);
-    const http = {
-      request: fake.resolves({ success: true }),
-    };
-    const scope = {};
-    await executeActions(
-      { stateManager, event, http },
-      [
-        [
-          {
-            type: ACTIONS.HTTP.REQUEST,
-            method: 'post',
-            url: 'http://test.test',
-            body: '{"toto":"toto"}',
-            headers: [
-              {
-                key: 'authorization',
-                value: 'token',
-              },
-            ],
-          },
-        ],
-      ],
-      scope,
-    );
-    assert.calledWith(http.request, 'post', 'http://test.test', { toto: 'toto' }, { authorization: 'token' });
-  });
-  it('should execute action http.request with empty body', async () => {
-    const stateManager = new StateManager(event);
-    const http = {
-      request: fake.resolves({ success: true }),
-    };
-    const scope = {};
-    await executeActions(
-      { stateManager, event, http },
-      [
-        [
-          {
-            type: ACTIONS.HTTP.REQUEST,
-            method: 'post',
-            url: 'http://test.test',
-            headers: [
-              {
-                key: 'authorization',
-                value: 'token',
-              },
-            ],
-          },
-        ],
-      ],
-      scope,
-    );
-    assert.calledWith(http.request, 'post', 'http://test.test', undefined, { authorization: 'token' });
-  });
   it('should abort scene, condition is not verified', async () => {
     const stateManager = new StateManager(event);
     stateManager.setState('deviceFeature', 'my-device-feature', {
@@ -471,6 +386,84 @@ describe('scene.executeActions', () => {
       scope,
     );
     return chaiAssert.isRejected(promise, AbortScene);
+  });
+  it('should abort scene, house empty is not verified', async () => {
+    const stateManager = new StateManager(event);
+    const house = {
+      isEmpty: fake.resolves(false),
+    };
+    const scope = {};
+    const promise = executeActions(
+      { stateManager, event, house },
+      [
+        [
+          {
+            type: ACTIONS.HOUSE.IS_EMPTY,
+            house: 'my-house',
+          },
+        ],
+      ],
+      scope,
+    );
+    return chaiAssert.isRejected(promise, AbortScene);
+  });
+  it('should finish, house empty is verified', async () => {
+    const stateManager = new StateManager(event);
+    const house = {
+      isEmpty: fake.resolves(true),
+    };
+    const scope = {};
+    await executeActions(
+      { stateManager, event, house },
+      [
+        [
+          {
+            type: ACTIONS.HOUSE.IS_EMPTY,
+            house: 'my-house',
+          },
+        ],
+      ],
+      scope,
+    );
+  });
+  it('should abort scene, house not empty is not verified', async () => {
+    const stateManager = new StateManager(event);
+    const house = {
+      isEmpty: fake.resolves(true),
+    };
+    const scope = {};
+    const promise = executeActions(
+      { stateManager, event, house },
+      [
+        [
+          {
+            type: ACTIONS.HOUSE.IS_NOT_EMPTY,
+            house: 'my-house',
+          },
+        ],
+      ],
+      scope,
+    );
+    return chaiAssert.isRejected(promise, AbortScene);
+  });
+  it('should finish scene, house not empty is verified', async () => {
+    const stateManager = new StateManager(event);
+    const house = {
+      isEmpty: fake.resolves(false),
+    };
+    const scope = {};
+    await executeActions(
+      { stateManager, event, house },
+      [
+        [
+          {
+            type: ACTIONS.HOUSE.IS_NOT_EMPTY,
+            house: 'my-house',
+          },
+        ],
+      ],
+      scope,
+    );
   });
   it('should finish scene, condition is verified', async () => {
     const stateManager = new StateManager(event);
@@ -540,101 +533,56 @@ describe('scene.executeActions', () => {
     );
     assert.calledWith(message.sendToUser, 'pepper', 'Temperature in the living room is 15 °C.');
   });
-  it('should execute condition.check-time, and send message because condition is true', async () => {
+
+  it('should execute action scene.start', async () => {
     const stateManager = new StateManager(event);
-    const message = {
-      sendToUser: fake.resolves(null),
+
+    const execute = fake.resolves(undefined);
+
+    const scope = {
+      alreadyExecutedScenes: new Set(),
     };
-    const scope = {};
-    const todayAt12 = dayjs().hour(12);
-    const fiveMinutesAgo = todayAt12.subtract(5, 'minute');
-    const inFiveMinutes = todayAt12.add(5, 'minute');
-    const clock = useFakeTimers(todayAt12.valueOf());
+
     await executeActions(
-      { stateManager, event, message },
+      { stateManager, event, execute },
       [
         [
           {
-            type: ACTIONS.CONDITION.CHECK_TIME,
-            after: fiveMinutesAgo.format('hh:mm'),
-            before: inFiveMinutes.format('hh:mm'),
-            days_of_the_week: [todayAt12.format('dddd').toLowerCase()],
-          },
-        ],
-        [
-          {
-            type: ACTIONS.MESSAGE.SEND,
-            user: 'pepper',
-            text: 'hello',
+            type: ACTIONS.SCENE.START,
+            scene: 'other_scene_selector',
           },
         ],
       ],
       scope,
     );
-    assert.calledWith(message.sendToUser, 'pepper', 'hello');
-    clock.restore();
+    const clonedScope = cloneDeep(scope);
+    // we try to pollute the scope, and see if the called scene was affected by this pollution
+    // it should not affect a running scene
+    scope.test = 1;
+    assert.calledWith(execute, 'other_scene_selector', clonedScope);
   });
-  it('should abort scene because condition is not verified', async () => {
+
+  it('should not execute action scene.start when the scene has already been called as part of this chain', async () => {
     const stateManager = new StateManager(event);
-    const scope = {};
-    const todayAt12 = dayjs().hour(12);
-    const fiveMinutesAgo = todayAt12.subtract(5, 'minute');
-    const clock = useFakeTimers(todayAt12.valueOf());
-    const promise = executeActions(
-      { stateManager, event },
+
+    const execute = fake.resolves(undefined);
+
+    const scope = {
+      alreadyExecutedScenes: new Set(['other_scene_selector']),
+    };
+
+    await executeActions(
+      { stateManager, event, execute },
       [
         [
           {
-            type: ACTIONS.CONDITION.CHECK_TIME,
-            before: fiveMinutesAgo.format('hh:mm'),
+            type: ACTIONS.SCENE.START,
+            scene: 'other_scene_selector',
           },
         ],
       ],
       scope,
     );
-    await chaiAssert.isRejected(promise, AbortScene);
-    clock.restore();
-  });
-  it('should abort scene because condition is not verified', async () => {
-    const stateManager = new StateManager(event);
-    const scope = {};
-    const todayAt12 = dayjs().hour(12);
-    const inFiveMinutes = todayAt12.add(5, 'minute');
-    const clock = useFakeTimers(todayAt12.valueOf());
-    const promise = executeActions(
-      { stateManager, event },
-      [
-        [
-          {
-            type: ACTIONS.CONDITION.CHECK_TIME,
-            after: inFiveMinutes.format('hh:mm'),
-          },
-        ],
-      ],
-      scope,
-    );
-    await chaiAssert.isRejected(promise, AbortScene);
-    clock.restore();
-  });
-  it('should abort scene because condition is not verified', async () => {
-    const stateManager = new StateManager(event);
-    const scope = {};
-    const todayAt12 = dayjs().hour(12);
-    const tomorrow = todayAt12.add(1, 'day');
-    const clock = useFakeTimers(todayAt12.valueOf());
-    const promise = executeActions(
-      { stateManager, event },
-      [
-        [
-          {
-            type: ACTIONS.CONDITION.CHECK_TIME,
-            days_of_the_week: [tomorrow.format('dddd').toLowerCase()],
-          },
-        ],
-      ],
-      scope,
-    );
-    await chaiAssert.isRejected(promise, AbortScene);
-    clock.restore();
+    assert.notCalled(execute);
   });
 });

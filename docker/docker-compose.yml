@@ -14,8 +14,8 @@ services:
       - /var/lib/gladysassistant:/var/lib/gladysassistant
       - /dev:/dev
     ports:
-      - '80:1443'
-      - '443:1443'
+      - '80:1445'
+      - '443:1445'
   watchtower:
     image: containrrr/watchtower
     restart: always

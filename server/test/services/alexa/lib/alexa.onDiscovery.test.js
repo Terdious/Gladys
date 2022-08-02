@@ -20,7 +20,7 @@ describe('alexa.onDiscovery', () => {
     gladys.stateManager.state.device = {};
   });
 
-  it('return one light with on/off capability', async () => {
+  it('return one light with on/off, brightness & color capability', async () => {
     gladys.stateManager.state.device = {
       device_1: {
         get: fake.returns({
@@ -29,8 +29,19 @@ describe('alexa.onDiscovery', () => {
           external_id: 'device-1-external-id',
           features: [
             {
+              read_only: false,
               category: 'light',
               type: 'binary',
+            },
+            {
+              read_only: false,
+              category: 'light',
+              type: 'brightness',
+            },
+            {
+              read_only: false,
+              category: 'light',
+              type: 'color',
             },
           ],
           model: 'device-model',
@@ -67,6 +78,34 @@ describe('alexa.onDiscovery', () => {
                   version: '3',
                   properties: { supported: [{ name: 'powerState' }], proactivelyReported: true, retrievable: true },
                 },
+                {
+                  type: 'AlexaInterface',
+                  interface: 'Alexa.BrightnessController',
+                  version: '3',
+                  properties: {
+                    supported: [
+                      {
+                        name: 'brightness',
+                      },
+                    ],
+                    proactivelyReported: true,
+                    retrievable: true,
+                  },
+                },
+                {
+                  type: 'AlexaInterface',
+                  interface: 'Alexa.ColorController',
+                  version: '3',
+                  properties: {
+                    supported: [
+                      {
+                        name: 'color',
+                      },
+                    ],
+                    proactivelyReported: true,
+                    retrievable: true,
+                  },
+                },
                 { type: 'AlexaInterface', interface: 'Alexa', version: '3' },
               ],
             },
@@ -76,5 +115,44 @@ describe('alexa.onDiscovery', () => {
     };
     expect(result).to.deep.eq(expectedResult);
     assert.calledOnce(gladys.stateManager.state.device.device_1.get);
+  });
+  it('return not return read_only devices', async () => {
+    gladys.stateManager.state.device = {
+      device_1: {
+        get: fake.returns({
+          name: 'Device 1',
+          selector: 'device-1',
+          external_id: 'device-1-external-id',
+          features: [
+            {
+              read_only: true,
+              category: 'light',
+              type: 'binary',
+            },
+          ],
+          model: 'device-model',
+          room: {
+            name: 'living-room',
+          },
+        }),
+      },
+    };
+
+    const alexaHandler = new AlexaHandler(gladys, serviceId);
+    const result = alexaHandler.onDiscovery();
+    const expectedResult = {
+      event: {
+        header: {
+          namespace: 'Alexa.Discovery',
+          name: 'Discover.Response',
+          payloadVersion: '3',
+          messageId: get(result, 'event.header.messageId'),
+        },
+        payload: {
+          endpoints: [],
+        },
+      },
+    };
+    expect(result).to.deep.eq(expectedResult);
   });
 });

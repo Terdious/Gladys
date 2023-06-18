@@ -44,12 +44,14 @@ function getDeviceParam(device, paramName) {
 
 const shouldDisplayDeviceName = (device, deviceFeature) => {
   const deviceService = get(device, 'service.name');
-  const featureDescription = get(dictionnary, `deviceFeatureCategory.${deviceFeature.category}.${deviceFeature.type}`);
-  if (deviceFeature.name.indexOf(device.name) !== -1) {
-    return `${deviceFeature.name} (${featureDescription})`;
-  }
-  return `${device.name} - ${deviceFeature.name} (${featureDescription})`;
-  /*
+
+  // const featureDescription = get(dictionnary, `deviceFeatureCategory.${deviceFeature.category}.${deviceFeature.type}`);
+  // if (deviceFeature.name.indexOf(device.name) !== -1) {
+  //   return `${deviceFeature.name} (${featureDescription})`;
+  // }
+  // return `${device.name} - ${deviceFeature.name} (${featureDescription})`;
+
+  // Force feature name according to service
   if (deviceService && DISPLAY_FEATURE_NAME_FOR_THOSE_SERVICES[deviceService]) {
     return false;
   }
@@ -69,9 +71,6 @@ const getDeviceFeatureName = (dictionnary, device, feature) => {
     return `${device.name} (${featureDescription})`;
   }
   return `${device.name} (${featureDescription})`;
-  */
-
-  // Force feature name according to service
 };
 
 const getDeviceName = (device, feature) => {

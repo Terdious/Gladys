@@ -2356,6 +2356,11 @@
     "description": "Si vous pensez qu'il s'agit d'un bug de Gladys Assistant, veuillez le signaler à notre équipe!",
     "goBack": "Retour"
   },
+  "errorNoAuthorizePage": {
+    "title": "Cette page n'est accessible que pour les administrateurs.",
+    "description": "Veuillez contacter votre administrateur pour toute demande de modification!",
+    "goBack": "Retour"
+  },
   "chat": {
     "whatCanYouAsk": "Demandez moi...",
     "emptyStateMessage": "Envoie-moi un message !",

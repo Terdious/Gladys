@@ -5,7 +5,6 @@ module.exports = function HouseController(gladys) {
    * @api {get} /api/v1/camera get
    * @apiName get
    * @apiGroup Camera
-   *
    * @apiSuccessExample {json} Success-Response:
    * [
    *   {
@@ -53,7 +52,6 @@ module.exports = function HouseController(gladys) {
    * @api {post} /api/v1/camera/:camera_selector/image set Image
    * @apiName setImage
    * @apiGroup Camera
-   *
    * @apiParam {string} image Base64 image of the camera (max 50 ko)
    * @apiParamExample {json} Request-Example:
    * {
@@ -71,7 +69,6 @@ module.exports = function HouseController(gladys) {
    * @api {get} /api/v1/camera/:camera_selector/image get Image
    * @apiName getImage
    * @apiGroup Camera
-   *
    * @apiSuccessExample {json} Success-Response:
    * image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z/C/HgAGgwJ/lK3Q6wAAAABJRU5ErkJggg==
    */

@@ -30,8 +30,8 @@ const getByExternalId = async (externalId) => {
 };
 
 /**
- * @description Create a device, its feature and params
- * @param {Object} device - The device object to create.
+ * @description Create a device, its feature and params.
+ * @param {object} device - The device object to create.
  * @returns {Promise} Resolve with the device created.
  * @example
  * gladys.device.create({
@@ -64,6 +64,8 @@ async function create(device) {
 
   let actionEvent = EVENTS.DEVICE.CREATE;
   let oldPollFrequency = null;
+
+  const deviceFeaturesIdsToPurge = [];
 
   // we execute the whole insert in a transaction to avoir inconsistent state
   await db.sequelize.transaction(async (transaction) => {
@@ -116,6 +118,9 @@ async function create(device) {
           },
         });
         await deviceFeature.update(feature, { transaction });
+        if (deviceFeature.keep_history === false) {
+          deviceFeaturesIdsToPurge.push(deviceFeature.id);
+        }
         return deviceFeature.get({ plain: true });
       }
       // if not, we create it
@@ -145,6 +150,14 @@ async function create(device) {
     deviceToReturn.params = newParams;
 
     return deviceToReturn;
+  });
+
+  // We purge states of all device features that were marked as "keep_history = false"
+  // We do this asynchronously with an event, so it doesn't block the current request
+  // Also, the function called will delete as slowly as possible the event
+  // To make sure that Gladys is not locked during this time
+  deviceFeaturesIdsToPurge.forEach((deviceFeatureIdToPurge) => {
+    this.eventManager.emit(EVENTS.DEVICE.PURGE_STATES_SINGLE_FEATURE, deviceFeatureIdToPurge);
   });
 
   // we get the whole device from the DB to avoid

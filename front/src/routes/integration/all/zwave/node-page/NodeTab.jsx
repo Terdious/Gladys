@@ -1,9 +1,10 @@
-import { Text, Localizer } from 'preact-i18n';
+import { Text, Localizer, MarkupText } from 'preact-i18n';
 import cx from 'classnames';
 
 import { RequestStatus } from '../../../../../utils/consts';
 import Device from './Device';
 import style from './style.css';
+import CardFilter from '../../../../../components/layout/CardFilter';
 
 const NodeTab = ({ children, ...props }) => (
   <div class="card">
@@ -12,27 +13,15 @@ const NodeTab = ({ children, ...props }) => (
         <Text id="integration.zwave.device.title" />
       </h3>
       <div class="page-options d-flex">
-        <select onChange={props.changeOrderDir} class="form-control custom-select w-auto">
-          <option value="asc">
-            <Text id="global.orderDirAsc" />
-          </option>
-          <option value="desc">
-            <Text id="global.orderDirDesc" />
-          </option>
-        </select>
-        <div class="input-icon ml-2">
-          <span class="input-icon-addon">
-            <i class="fe fe-search" />
-          </span>
-          <Localizer>
-            <input
-              type="text"
-              class="form-control w-10"
-              placeholder={<Text id="integration.zwave.device.search" />}
-              onInput={props.debouncedSearch}
-            />
-          </Localizer>
-        </div>
+        <Localizer>
+          <CardFilter
+            changeOrderDir={props.changeOrderDir}
+            orderValue={props.getZwaveDeviceOrderDir}
+            search={props.debouncedSearch}
+            searchValue={props.zwaveDeviceSearch}
+            searchPlaceHolder={<Text id="device.searchPlaceHolder" />}
+          />
+        </Localizer>
       </div>
     </div>
     <div class="card-body">
@@ -43,6 +32,9 @@ const NodeTab = ({ children, ...props }) => (
       >
         <div class="loader" />
         <div class="dimmer-content">
+          <div class="alert alert-danger">
+            <MarkupText id="integration.zwave.device.oldIntegrationWarning" />
+          </div>
           {props.zwaveDevices && props.zwaveDevices.length === 0 && (
             <div class="alert alert-info">
               <Text id="integration.zwave.device.noDevices" />
@@ -57,6 +49,7 @@ const NodeTab = ({ children, ...props }) => (
                   deviceIndex={index}
                   houses={props.houses}
                   updateDeviceProperty={props.updateDeviceProperty}
+                  convertToMqtt={props.convertToMqtt}
                   saveDevice={props.saveDevice}
                   deleteDevice={props.deleteDevice}
                   user={props.user}

@@ -41,5 +41,22 @@
   {
     "key": "eWeLink",
     "img": "/assets/integrations/cover/ewelink.jpg"
+  },
+  {
+    "key": "owntracks",
+    "img": "/assets/integrations/cover/owntracks.jpg"
+  },
+  {
+    "key": "broadlink",
+    "img": "/assets/integrations/cover/broadlink.jpg"
+  },
+  {
+    "key": "enedis",
+    "img": "/assets/integrations/cover/enedis.jpg"
+  },
+  {
+    "key": "lanManager",
+    "link": "lan-manager",
+    "img": "/assets/integrations/cover/lan-manager.jpg"
   }
 ]

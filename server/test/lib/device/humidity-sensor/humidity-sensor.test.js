@@ -5,8 +5,10 @@ const sinon = require('sinon');
 const Device = require('../../../../lib/device');
 const Room = require('../../../../lib/room');
 const StateManager = require('../../../../lib/state');
+const Job = require('../../../../lib/job');
 
 const event = new EventEmitter();
+const job = new Job(event);
 const messageManager = {
   replyByIntent: fake.resolves(true),
 };
@@ -14,7 +16,7 @@ const messageManager = {
 describe('HumiditySensor.getHumidityInRoom', () => {
   it('should get average humidity in room', async () => {
     const stateManager = new StateManager(event);
-    const deviceManager = new Device(event, messageManager, stateManager, {});
+    const deviceManager = new Device(event, messageManager, stateManager, {}, {}, {}, job);
     const result = await deviceManager.humiditySensorManager.getHumidityInRoom('2398c689-8b47-43cc-ad32-e98d9be098b5');
     expect(result).to.deep.equal({
       humidity: 56.2,
@@ -23,7 +25,7 @@ describe('HumiditySensor.getHumidityInRoom', () => {
   });
   it('should return not found error', async () => {
     const stateManager = new StateManager(event);
-    const deviceManager = new Device(event, {}, stateManager, {});
+    const deviceManager = new Device(event, {}, stateManager, {}, {}, {}, job);
     const humidityResult = await deviceManager.humiditySensorManager.getHumidityInRoom(
       'f08337ff-206e-4bd7-86c4-6d63d793d58e',
     );
@@ -40,7 +42,7 @@ describe('HumiditySensor.command', () => {
   });
   it('should ask the humidity in a room', async () => {
     const stateManager = new StateManager(event);
-    const deviceManager = new Device(event, messageManager, stateManager, {});
+    const deviceManager = new Device(event, messageManager, stateManager, {}, {}, {}, job);
     const message = {};
     await deviceManager.humiditySensorManager.command(
       message,
@@ -74,7 +76,7 @@ describe('HumiditySensor.command', () => {
   });
   it('should return room not found', async () => {
     const stateManager = new StateManager(event);
-    const deviceManager = new Device(event, messageManager, stateManager, {});
+    const deviceManager = new Device(event, messageManager, stateManager, {}, {}, {}, job);
     const message = {};
     await deviceManager.humiditySensorManager.command(
       message,
@@ -88,11 +90,11 @@ describe('HumiditySensor.command', () => {
   });
   it('should ask the humidity in a room with no values', async () => {
     const brain = {
-      addRoom: fake.returns(null),
-      removeRoom: fake.returns(null),
+      addNamedEntity: fake.returns(null),
+      removeNamedEntity: fake.returns(null),
     };
     const stateManager = new StateManager(event);
-    const deviceManager = new Device(event, messageManager, stateManager, {});
+    const deviceManager = new Device(event, messageManager, stateManager, {}, {}, {}, job);
     const room = new Room(brain);
     await room.create('test-house', {
       name: 'No value Room',
@@ -164,11 +166,11 @@ describe('HumiditySensor.command', () => {
   });
   it('should return error when incorrect intent', async () => {
     const brain = {
-      addRoom: fake.returns(null),
-      removeRoom: fake.returns(null),
+      addNamedEntity: fake.returns(null),
+      removeNamedEntity: fake.returns(null),
     };
     const stateManager = new StateManager(event);
-    const deviceManager = new Device(event, messageManager, stateManager, {});
+    const deviceManager = new Device(event, messageManager, stateManager, {}, {}, {}, job);
     const room = new Room(brain);
     await room.create('test-house', {
       name: 'No value Room',

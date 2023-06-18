@@ -9,9 +9,11 @@ module.exports = function ExampleService(gladys) {
   const client = axios.create({
     timeout: 1000,
   });
+  const device = new ExampleLightHandler(gladys, client);
+
   /**
    * @public
-   * @description This function starts the ExampleService service
+   * @description This function starts the ExampleService service.
    * @example
    * gladys.services.example.start();
    */
@@ -21,7 +23,7 @@ module.exports = function ExampleService(gladys) {
 
   /**
    * @public
-   * @description This function stops the ExampleService service
+   * @description This function stops the ExampleService service.
    * @example
    * gladys.services.example.stop();
    */
@@ -32,6 +34,7 @@ module.exports = function ExampleService(gladys) {
   return Object.freeze({
     start,
     stop,
-    light: new ExampleLightHandler(gladys, client),
+    light: device,
+    device,
   });
 };

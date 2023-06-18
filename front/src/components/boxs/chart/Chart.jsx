@@ -4,7 +4,7 @@ import cx from 'classnames';
 
 import { Text } from 'preact-i18n';
 import style from './style.css';
-import { WEBSOCKET_MESSAGE_TYPES } from '../../../../../server/utils/constants';
+import { WEBSOCKET_MESSAGE_TYPES, DEVICE_FEATURE_UNITS } from '../../../../../server/utils/constants';
 import get from 'get-value';
 import withIntlAsProp from '../../../utils/withIntlAsProp';
 import ApexChartComponent from './ApexChartComponent';
@@ -24,6 +24,8 @@ const intervalByName = {
   'last-three-months': THREE_MONTHS_IN_MINUTES,
   'last-year': ONE_YEAR_IN_MINUTES
 };
+
+const UNITS_WHEN_DOWN_IS_POSITIVE = [DEVICE_FEATURE_UNITS.WATT_HOUR];
 
 const notNullNotUndefined = value => {
   return value !== undefined && value !== null;
@@ -90,21 +92,21 @@ class Chartbox extends Component {
     });
     this.getData();
   };
-  switchTo30DaysView = async e => {
+  switchTo30DaysView = async () => {
     await this.setState({
       interval: THIRTY_DAYS_IN_MINUTES,
       dropdown: false
     });
     this.getData();
   };
-  switchTo3monthsView = async e => {
+  switchTo3monthsView = async () => {
     await this.setState({
       interval: THREE_MONTHS_IN_MINUTES,
       dropdown: false
     });
     this.getData();
   };
-  switchToYearlyView = async e => {
+  switchToYearlyView = async () => {
     await this.setState({
       interval: ONE_YEAR_IN_MINUTES,
       dropdown: false
@@ -142,10 +144,12 @@ class Chartbox extends Component {
       const series = data.map((oneFeature, index) => {
         const oneUnit = this.props.box.units ? this.props.box.units[index] : this.props.box.unit;
         const oneUnitTranslated = oneUnit ? this.props.intl.dictionary.deviceFeatureUnitShort[oneUnit] : null;
-        const name = oneUnitTranslated ? `${oneFeature.device.name} (${oneUnitTranslated})` : oneFeature.device.name;
+        const { values, deviceFeature } = oneFeature;
+        const deviceName = deviceFeature.name;
+        const name = oneUnitTranslated ? `${deviceName} (${oneUnitTranslated})` : deviceName;
         return {
           name,
-          data: oneFeature.values.map(value => {
+          data: values.map(value => {
             emptySeries = false;
             return {
               x: value.created_at,
@@ -158,6 +162,7 @@ class Chartbox extends Component {
       const newState = {
         series,
         loading: false,
+        initialized: true,
         emptySeries
       };
 
@@ -186,6 +191,7 @@ class Chartbox extends Component {
             lastValuesArray.push(lastValue);
           });
           newState.variation = average(variationArray);
+          newState.variationDownIsPositive = UNITS_WHEN_DOWN_IS_POSITIVE.includes(unit);
           newState.lastValueRounded = roundWith2DecimalIfNeeded(average(lastValuesArray));
           newState.unit = unit;
         } else {
@@ -196,6 +202,7 @@ class Chartbox extends Component {
             const firstElement = values[0];
             const lastElement = values[values.length - 1];
             newState.variation = calculateVariation(firstElement.value, lastElement.value);
+            newState.variationDownIsPositive = UNITS_WHEN_DOWN_IS_POSITIVE.includes(unit);
             newState.lastValueRounded = roundWith2DecimalIfNeeded(lastElement.value);
             newState.unit = unit;
           }
@@ -216,7 +223,7 @@ class Chartbox extends Component {
       this.getData();
     }
   };
-  updateInterval = async interval => {
+  updateInterval = async () => {
     await this.setState({
       interval: intervalByName[this.props.box.interval]
     });
@@ -227,6 +234,7 @@ class Chartbox extends Component {
     this.state = {
       interval: this.props.box.interval ? intervalByName[this.props.box.interval] : ONE_HOUR_IN_MINUTES,
       loading: true,
+      initialized: false,
       height: 'small'
     };
   }
@@ -256,16 +264,30 @@ class Chartbox extends Component {
       this.updateDeviceStateWebsocket
     );
   }
-  render(props, { loading, series, labels, dropdown, variation, lastValueRounded, interval, emptySeries, unit }) {
+  render(
+    props,
+    {
+      initialized,
+      loading,
+      series,
+      dropdown,
+      variation,
+      variationDownIsPositive,
+      lastValueRounded,
+      interval,
+      emptySeries,
+      unit
+    }
+  ) {
     const displayVariation = props.box.display_variation;
     return (
-      <div class="card">
+      <div class={cx('card', { 'loading-border': initialized && loading })}>
         <div class="card-body">
           <div class="d-flex align-items-center">
             <div class={cx(style.subheader)}>{props.box.title}</div>
             <div class={cx(style.msAuto, style.lh1)}>
               <div class="dropdown">
-                <a class="dropdown-toggle text-muted" onClick={this.toggleDropdown}>
+                <a class="dropdown-toggle text-muted text-nowrap" onClick={this.toggleDropdown}>
                   {interval === ONE_HOUR_IN_MINUTES && <Text id="dashboard.boxes.chart.lastHour" />}
                   {interval === ONE_DAY_IN_MINUTES && <Text id="dashboard.boxes.chart.lastDay" />}
                   {interval === SEVEN_DAYS_IN_MINUTES && <Text id="dashboard.boxes.chart.lastSevenDays" />}
@@ -341,9 +363,11 @@ class Chartbox extends Component {
               )}
               <div
                 class={cx(style.meAuto, {
-                  [style.textGreen]: variation > 0,
+                  [style.textGreen]:
+                    (variation > 0 && !variationDownIsPositive) || (variation < 0 && variationDownIsPositive),
                   [style.textYellow]: variation === 0,
-                  [style.textRed]: variation < 0
+                  [style.textRed]:
+                    (variation > 0 && variationDownIsPositive) || (variation < 0 && !variationDownIsPositive)
                 })}
               >
                 {variation !== undefined && (
@@ -424,13 +448,13 @@ class Chartbox extends Component {
 
         <div
           class={cx('dimmer', {
-            active: loading
+            active: loading && !initialized
           })}
         >
           <div class="loader" />
           <div
             class={cx('dimmer-content', {
-              [style.minSizeChartLoading]: loading
+              [style.minSizeChartLoading]: loading && !initialized
             })}
           >
             {emptySeries === true && (

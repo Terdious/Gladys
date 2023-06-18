@@ -1,6 +1,18 @@
 const Promise = require('bluebird');
 const Handlebars = require('handlebars');
 const cloneDeep = require('lodash.clonedeep');
+const {
+  create,
+  addDependencies,
+  divideDependencies,
+  evaluateDependencies,
+  largerDependencies,
+  largerEqDependencies,
+  modDependencies,
+  roundDependencies,
+  smallerDependencies,
+  smallerEqDependencies,
+} = require('mathjs');
 const set = require('set-value');
 const get = require('get-value');
 const dayjs = require('dayjs');
@@ -16,6 +28,18 @@ const logger = require('../../utils/logger');
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+const { evaluate } = create({
+  addDependencies,
+  divideDependencies,
+  evaluateDependencies,
+  largerDependencies,
+  smallerDependencies,
+  largerEqDependencies,
+  modDependencies,
+  smallerEqDependencies,
+  roundDependencies,
+});
+
 const actionsFunc = {
   [ACTIONS.DEVICE.SET_VALUE]: async (self, action, scope, columnIndex, rowIndex) => {
     let device;
@@ -27,7 +51,17 @@ const actionsFunc = {
       device = self.stateManager.get('device', action.device);
       deviceFeature = getDeviceFeature(device, action.feature_category, action.feature_type);
     }
-    return self.device.setValue(device, deviceFeature, action.value);
+
+    let { value } = action;
+    if (action.evaluate_value !== undefined) {
+      value = evaluate(Handlebars.compile(action.evaluate_value)(scope).replace(/\s/g, ''));
+    }
+
+    if (Number.isNaN(Number(value))) {
+      throw new AbortScene('ACTION_VALUE_NOT_A_NUMBER');
+    }
+
+    return self.device.setValue(device, deviceFeature, value);
   },
   [ACTIONS.LIGHT.TURN_ON]: async (self, action, scope) => {
     let device;
@@ -82,6 +116,21 @@ const actionsFunc = {
     } catch (e) {
       logger.warn(e);
     }
+  },
+  [ACTIONS.LIGHT.TOGGLE]: async (self, action, scope) => {
+    await Promise.map(action.devices, async (deviceSelector) => {
+      try {
+        const device = self.stateManager.get('device', deviceSelector);
+        const deviceFeature = getDeviceFeature(
+          device,
+          DEVICE_FEATURE_CATEGORIES.LIGHT,
+          DEVICE_FEATURE_TYPES.LIGHT.BINARY,
+        );
+        await self.device.setValue(device, deviceFeature, deviceFeature.last_value === 0 ? 1 : 0);
+      } catch (e) {
+        logger.warn(e);
+      }
+    });
   },
   [ACTIONS.SWITCH.TURN_ON]: async (self, action, scope) => {
     let device;
@@ -145,6 +194,21 @@ const actionsFunc = {
       logger.warn(e);
     }
   },
+  [ACTIONS.SWITCH.TOGGLE]: async (self, action, scope) => {
+    await Promise.map(action.devices, async (deviceSelector) => {
+      try {
+        const device = self.stateManager.get('device', deviceSelector);
+        const deviceFeature = getDeviceFeature(
+          device,
+          DEVICE_FEATURE_CATEGORIES.SWITCH,
+          DEVICE_FEATURE_TYPES.SWITCH.BINARY,
+        );
+        await self.device.setValue(device, deviceFeature, deviceFeature.last_value === 0 ? 1 : 0);
+      } catch (e) {
+        logger.warn(e);
+      }
+    });
+  },
   [ACTIONS.TIME.DELAY]: async (self, action, scope) =>
     new Promise((resolve) => {
       let timeToWaitMilliseconds;
@@ -181,13 +245,18 @@ const actionsFunc = {
     const textWithVariables = Handlebars.compile(action.text)(scope);
     await self.message.sendToUser(action.user, textWithVariables);
   },
+  [ACTIONS.MESSAGE.SEND_CAMERA]: async (self, action, scope) => {
+    const textWithVariables = Handlebars.compile(action.text)(scope);
+    const image = await self.device.camera.getLiveImage(action.camera);
+    await self.message.sendToUser(action.user, textWithVariables, image);
+  },
   [ACTIONS.DEVICE.GET_VALUE]: async (self, action, scope, columnIndex, rowIndex) => {
     const deviceFeature = self.stateManager.get('deviceFeature', action.device_feature);
     set(
       scope,
       `${columnIndex}`,
       {
-        [rowIndex]: deviceFeature,
+        [rowIndex]: cloneDeep(deviceFeature),
       },
       { merge: true },
     );
@@ -195,14 +264,23 @@ const actionsFunc = {
   [ACTIONS.CONDITION.ONLY_CONTINUE_IF]: async (self, action, scope) => {
     let oneConditionVerified = false;
     action.conditions.forEach((condition) => {
-      const conditionVerified = compare(condition.operator, get(scope, condition.variable), condition.value);
+      let { value } = condition;
+      if (condition.evaluate_value !== undefined) {
+        value = evaluate(Handlebars.compile(condition.evaluate_value)(scope).replace(/\s/g, ''));
+      }
+
+      if (Number.isNaN(Number(value))) {
+        throw new AbortScene('CONDITION_VALUE_NOT_A_NUMBER');
+      }
+
+      // removing brackets
+      const variableWithoutBrackets = condition.variable.replace(/\[|\]/g, '');
+      const conditionVerified = compare(condition.operator, get(scope, variableWithoutBrackets), value);
       if (conditionVerified) {
         oneConditionVerified = true;
       } else {
         logger.debug(
-          `Condition not verified. Condition: "${get(scope, condition.variable)} ${condition.operator} ${
-            condition.value
-          }"`,
+          `Condition not verified. Condition: "${get(scope, variableWithoutBrackets)} ${condition.operator} ${value}"`,
         );
       }
     });
@@ -365,6 +443,7 @@ const actionsFunc = {
       const eventFormatted = {
         name: eventRaw.name,
         location: eventRaw.location,
+        description: eventRaw.description,
         start: dayjs(eventRaw.start)
           .tz(self.timezone)
           .locale(eventRaw.calendar.creator.language)
@@ -384,6 +463,34 @@ const actionsFunc = {
         },
         { merge: true },
       );
+    }
+  },
+  [ACTIONS.ECOWATT.CONDITION]: async (self, action) => {
+    try {
+      const data = await self.gateway.getEcowattSignals();
+      const todayDate = dayjs.tz(dayjs(), self.timezone).format('YYYY-MM-DD');
+      const todayHour = dayjs.tz(dayjs(), self.timezone).hour();
+      const todayLiveData = data.signals.find((day) => {
+        const signalDate = dayjs(day.jour).format('YYYY-MM-DD');
+        return todayDate === signalDate;
+      });
+      if (!todayLiveData) {
+        throw new AbortScene('Ecowatt: day not found');
+      }
+      const currentHourNetworkStatus = todayLiveData.values.find((hour) => hour.pas === todayHour);
+      if (!currentHourNetworkStatus) {
+        throw new AbortScene('Ecowatt: hour not found');
+      }
+      const ECOWATT_STATUSES = {
+        1: 'ok',
+        2: 'warning',
+        3: 'critical',
+      };
+      if (ECOWATT_STATUSES[currentHourNetworkStatus.hvalue] !== action.ecowatt_network_status) {
+        throw new AbortScene('ECOWATT_DIFFERENT_STATUS');
+      }
+    } catch (e) {
+      throw new AbortScene(e.message);
     }
   },
 };

@@ -2,9 +2,9 @@ const { Op } = require('sequelize');
 const db = require('../../models');
 
 /**
- * @description Get calendars
+ * @description Get calendars.
  * @param {string} userId - The id of the user.
- * @param {Object} options - Options of the query.
+ * @param {object} options - Options of the query.
  * @returns {Promise} - Resolves with list of calendars.
  * @example
  * gladys.calendar.get('f6cc6e0c-1b48-4b59-8ac7-9a0ad2e0ed3c');
@@ -54,6 +54,14 @@ async function get(userId, options = {}) {
 
   if (options.externalId) {
     where.external_id = options.externalId;
+  }
+
+  if (options.sync) {
+    where.sync = options.sync;
+  }
+
+  if (options.type) {
+    where.type = options.type;
   }
 
   const calendars = await db.Calendar.findAll({ where });

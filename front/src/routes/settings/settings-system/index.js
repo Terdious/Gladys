@@ -7,10 +7,6 @@ import actions from '../../../actions/system';
 import { SYSTEM_VARIABLE_NAMES } from '../../../../../server/utils/constants';
 import { RequestStatus } from '../../../utils/consts';
 
-@connect(
-  'httpClient,session,systemPing,systemInfos,systemDiskSpace,systemContainers,downloadUpgradeProgress,downloadUpgradeStatus',
-  actions
-)
 class SettingsSystem extends Component {
   updateTimezone = async option => {
     this.setState({
@@ -21,6 +17,18 @@ class SettingsSystem extends Component {
       await this.props.httpClient.post(`/api/v1/variable/${SYSTEM_VARIABLE_NAMES.TIMEZONE}`, {
         value: option.value
       });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  vacuumDatabase = async e => {
+    e.preventDefault();
+    this.setState({
+      vacuumStarted: true
+    });
+    try {
+      await this.props.httpClient.post('/api/v1/system/vacuum');
     } catch (e) {
       console.error(e);
     }
@@ -86,7 +94,14 @@ class SettingsSystem extends Component {
     clearInterval(this.refreshPingIntervalId);
   }
 
-  render(props, { selectedTimezone, deviceStateHistoryInDays }) {
+  constructor(props) {
+    super(props);
+    this.state = {
+      vacuumStarted: false
+    };
+  }
+
+  render(props, { selectedTimezone, deviceStateHistoryInDays, vacuumStarted }) {
     const isDocker = get(props, 'systemInfos.is_docker');
     const upgradeDownloadInProgress = props.downloadUpgradeStatus === RequestStatus.Getting;
     const upgradeDownloadFinished = props.downloadUpgradeStatus === RequestStatus.Success;
@@ -104,9 +119,14 @@ class SettingsSystem extends Component {
         selectedTimezone={selectedTimezone}
         deviceStateHistoryInDays={deviceStateHistoryInDays}
         updateDeviceStateHistory={this.updateDeviceStateHistory}
+        vacuumDatabase={this.vacuumDatabase}
+        vacuumStarted={vacuumStarted}
       />
     );
   }
 }
 
-export default SettingsSystem;
+export default connect(
+  'httpClient,session,systemPing,systemInfos,systemDiskSpace,systemContainers,downloadUpgradeProgress,downloadUpgradeStatus',
+  actions
+)(SettingsSystem);

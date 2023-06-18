@@ -6,7 +6,6 @@ import cx from 'classnames';
 
 const MIN_PASSWORD_LENGTH = 8;
 
-@connect('currentUrl,httpClient', {})
 class ResetPassword extends Component {
   updatePassword = e => {
     this.setState({
@@ -59,7 +58,7 @@ class ResetPassword extends Component {
       passwordRepeat: ''
     };
   }
-  render(props, { loading, password, passwordRepeat, valid, errors }) {
+  render(props, { loading, password, passwordRepeat, errors }) {
     return (
       <div class={loading ? 'dimmer active' : 'dimmer'}>
         <div class="loader" />
@@ -116,4 +115,4 @@ class ResetPassword extends Component {
   }
 }
 
-export default ResetPassword;
+export default connect('currentUrl,httpClient', {})(ResetPassword);

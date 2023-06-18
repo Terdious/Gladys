@@ -1,8 +1,8 @@
 // From : https://github.com/peterbraden/ical.js/blob/master/example_rrule.js
 /**
  * @description Format recurring events.
- * @param {Object} event - Event to format.
- * @param {Object} gladysCalendar - Gladys calendar where event is saved.
+ * @param {object} event - Event to format.
+ * @param {object} gladysCalendar - Gladys calendar where event is saved.
  * @returns {Array} Formatted event.
  * @example
  * formatRecurringEvents(event, gladysCalendar)
@@ -99,6 +99,7 @@ function formatRecurringEvents(event, gladysCalendar) {
         selector: `${event.uid}${startDate.format('YYYY-MM-DD-HH-mm')}`,
         name: recurrenceTitle,
         location: event.location,
+        description: event.description,
         url: event.href,
         calendar_id: gladysCalendar.id,
       };
@@ -129,7 +130,7 @@ function formatRecurringEvents(event, gladysCalendar) {
 /**
  * @description Format events for Gladys calendar compatibility.
  * @param {Array} caldavEvents - Events to format.
- * @param {Object} gladysCalendar - Gladys calendar where events are saved.
+ * @param {object} gladysCalendar - Gladys calendar where events are saved.
  * @returns {Array} All events formatted.
  * @example
  * formatEvents(caldavEvents, gladysCalendar)
@@ -148,6 +149,7 @@ function formatEvents(caldavEvents, gladysCalendar) {
         selector: caldavEvent.uid,
         name: caldavEvent.summary,
         location: caldavEvent.location,
+        description: caldavEvent.description,
         url: caldavEvent.href,
         calendar_id: gladysCalendar.id,
       };
@@ -162,6 +164,10 @@ function formatEvents(caldavEvents, gladysCalendar) {
         newEvent.end = this.dayjs
           .tz(this.dayjs(caldavEvent.end).format('YYYY-MM-DDTHH:mm:ss'), caldavEvent.end.tz)
           .format();
+      } else if (caldavEvent.start && caldavEvent.duration) {
+        newEvent.end = this.dayjs
+          .tz(this.dayjs(caldavEvent.start).format('YYYY-MM-DDTHH:mm:ss'), caldavEvent.start.tz)
+          .add(this.dayjs.duration(caldavEvent.duration));
       }
 
       if (
@@ -196,7 +202,7 @@ function formatEvents(caldavEvents, gladysCalendar) {
 /**
  * @description Format calendar for Gladys compatibility.
  * @param {Array} caldavCalendars - Dav calendars to format.
- * @param {Object} userId - Gladys user, calendar owner.
+ * @param {object} userId - Gladys user, calendar owner.
  * @returns {Array} Formatted calendars.
  * @example
  * formatCalendars(calendars, userId)
@@ -213,6 +219,8 @@ function formatCalendars(caldavCalendars, userId) {
       user_id: userId,
       ctag: caldavCalendar.ctag,
       sync_token: caldavCalendar.syncToken,
+      type: caldavCalendar.type,
+      sync: caldavCalendar.type === 'CALDAV',
     };
 
     calendars.push(newCalendar);

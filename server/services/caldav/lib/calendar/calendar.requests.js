@@ -3,7 +3,7 @@ const logger = require('../../../../utils/logger');
 
 /**
  * @description Search elements as getElementsByTagName with regex instead of string.
- * @param {Object} container - Element where execute research.
+ * @param {object} container - Element where execute research.
  * @param {RegExp} regex - Regex to search.
  * @returns {Array} Elements that match with regex.
  * @example
@@ -15,14 +15,14 @@ function getElementsByTagRegex(container, regex) {
 
 /**
  * @description Get calendars from caldav server.
- * @param {Object} xhr - Request with dav credentials.
+ * @param {object} xhr - Request with dav credentials.
  * @param {string} homeUrl - Request url.
  * @returns {Promise} Resolving with list of calendars.
  * @example
  * requestCalendars(xhr, homeUrl)
  */
 async function requestCalendars(xhr, homeUrl) {
-  const ICAL_OBJS = new Set(['VEVENT', 'VTODO', 'VJOURNAL', 'VFREEBUSY', 'VTIMEZONE', 'VALARM']);
+  const ICAL_OBJS = new Set(['VEVENT', 'VFREEBUSY', 'VALARM']);
 
   const req = this.dav.request.propfind({
     props: [
@@ -34,6 +34,7 @@ async function requestCalendars(xhr, homeUrl) {
       { name: 'resourcetype', namespace: this.dav.ns.DAV },
       { name: 'supported-calendar-component-set', namespace: this.dav.ns.CALDAV },
       { name: 'sync-token', namespace: this.dav.ns.DAV },
+      { name: 'source', namespace: this.dav.ns.CALENDAR_SERVER },
     ],
     depth: 1,
   });
@@ -41,7 +42,7 @@ async function requestCalendars(xhr, homeUrl) {
   const listCalendars = await xhr.send(req, homeUrl);
   // Filter to get only calendar from dav objects
   return listCalendars
-    .filter((res) => res.props.resourcetype.includes('calendar'))
+    .filter((res) => res.props.resourcetype.includes('calendar') || res.props.resourcetype.includes('subscribed'))
     .filter((res) => {
       const components = res.props.supportedCalendarComponentSet || [];
       return components.reduce((hasObjs, component) => {
@@ -50,16 +51,17 @@ async function requestCalendars(xhr, homeUrl) {
     })
     .map((res) => {
       logger.info(`CalDAV : Found calendar ${res.props.displayname}`);
+
       return {
         data: res,
         description: res.props.calendarDescription,
         timezone: res.props.calendarTimezone,
         color: res.props.calendarColor,
-        url: url.resolve(homeUrl, res.href),
+        url: res.props.resourcetype.includes('calendar') ? url.resolve(homeUrl, res.href) : res.props.source,
         ctag: res.props.getctag,
         displayName: res.props.displayname,
         components: res.props.supportedCalendarComponentSet,
-        resourcetype: res.props.resourcetype,
+        type: res.props.resourcetype.includes('calendar') ? 'CALDAV' : 'WEBCAL',
         syncToken: res.props.syncToken,
       };
     });
@@ -67,8 +69,8 @@ async function requestCalendars(xhr, homeUrl) {
 
 /**
  * @description Get events that have changed from caldav server.
- * @param {Object} xhr - Request with dav credentials.
- * @param {Object} calendarToUpdate - Calendar that needs updating.
+ * @param {object} xhr - Request with dav credentials.
+ * @param {object} calendarToUpdate - Calendar that needs updating.
  * @returns {Promise} Resolving with list of events to update.
  * @example
  * requestChanges(xhr, calendarToUpdate)
@@ -84,17 +86,17 @@ async function requestChanges(xhr, calendarToUpdate) {
     });
     // eslint-disable-next-line no-await-in-loop
     result = await xhr.send(req, calendarToUpdate.external_id);
-    eventsToUpdate.push(...result.responses.filter((event) => event.props.getetag));
-  } while (result.responses.length > 0 && !result.responses[result.responses.length - 1].props.getetag);
+    eventsToUpdate.push(...result.responses.filter((event) => event.href));
+  } while (result.responses.length > 0);
 
   return eventsToUpdate;
 }
 
 /**
  * @description Get change details from caldav server.
- * @param {Object} xhr - Request with dav credentials.
+ * @param {object} xhr - Request with dav credentials.
  * @param {string} calendarUrl - Request url.
- * @param {Object} eventsToUpdate - Event that needs updating.
+ * @param {object} eventsToUpdate - Event that needs updating.
  * @param {string} calDavHost - Server host.
  * @returns {Promise} Resolving with all detailed events.
  * @example

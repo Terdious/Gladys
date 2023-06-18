@@ -13,7 +13,7 @@ const { EVENTS } = require('../../utils/constants');
 dayjs.extend(LocalizedFormat);
 
 /**
- * @description Run every minute to check if a calendar event match
+ * @description Run every minute to check if a calendar event match.
  * @returns {Promise} Resolve.
  * @example
  * gladys.scene.checkCalendarTriggers()
@@ -110,6 +110,7 @@ async function checkCalendarTriggers() {
       const eventFormatted = {
         name: eventRaw.name,
         location: eventRaw.location,
+        description: eventRaw.description,
         start: dayjs(eventRaw.start)
           .tz(this.timezone)
           .locale(eventRaw.calendar.creator.language)

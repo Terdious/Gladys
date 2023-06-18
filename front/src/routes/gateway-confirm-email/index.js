@@ -2,7 +2,6 @@ import { Component } from 'preact';
 import { connect } from 'unistore/preact';
 import ConfirmEmail from './ConfirmEmail';
 
-@connect('session', {})
 class ConfirmEmailPage extends Component {
   state = {
     emailConfirmed: false,
@@ -18,7 +17,7 @@ class ConfirmEmailPage extends Component {
           emailConfirmed: true
         });
       })
-      .catch(err => {
+      .catch(() => {
         this.setState({
           error: true
         });
@@ -30,4 +29,4 @@ class ConfirmEmailPage extends Component {
   }
 }
 
-export default ConfirmEmailPage;
+export default connect('session', {})(ConfirmEmailPage);

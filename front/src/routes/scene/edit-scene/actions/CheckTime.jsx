@@ -13,7 +13,6 @@ import fr from 'date-fns/locale/fr';
 
 const weekDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
-@connect('user', {})
 class CheckTime extends Component {
   handleBeforeTimeChange = time => {
     const timeFormatted = time ? format(time, 'HH:mm') : undefined;
@@ -28,7 +27,7 @@ class CheckTime extends Component {
     this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'days_of_the_week', values);
   };
 
-  render(props, state) {
+  render() {
     const language = get(this.props, 'user.language');
     const localeSet = language === 'fr' ? fr : 'en';
     const before = this.props.action.before
@@ -116,4 +115,4 @@ class CheckTime extends Component {
   }
 }
 
-export default CheckTime;
+export default connect('user', {})(CheckTime);

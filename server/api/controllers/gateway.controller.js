@@ -83,7 +83,7 @@ module.exports = function GatewayController(gladys) {
    * @apiGroup Gateway
    */
   async function createBackup(req, res) {
-    gladys.event.emit(EVENTS.GATEWAY.CREATE_BACKUP, null);
+    gladys.event.emit(EVENTS.GATEWAY.CREATE_BACKUP);
     res.json({
       success: true,
     });
@@ -125,6 +125,16 @@ module.exports = function GatewayController(gladys) {
     res.json(keys);
   }
 
+  /**
+   * @api {post} /api/v1/gateway/openai/ask
+   * @apiName askOpenAI
+   * @apiGroup Gateway
+   */
+  async function openAIAsk(req, res) {
+    const response = await gladys.gateway.openAIAsk(req.body);
+    res.json(response);
+  }
+
   return Object.freeze({
     getStatus: asyncMiddleware(getStatus),
     login: asyncMiddleware(login),
@@ -137,5 +147,6 @@ module.exports = function GatewayController(gladys) {
     restoreBackup: asyncMiddleware(restoreBackup),
     getInstanceKeysFingerprint: asyncMiddleware(getInstanceKeysFingerprint),
     getRestoreStatus: asyncMiddleware(getRestoreStatus),
+    openAIAsk: asyncMiddleware(openAIAsk),
   });
 };

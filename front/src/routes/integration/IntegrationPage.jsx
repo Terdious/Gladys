@@ -1,16 +1,15 @@
 import { Component } from 'preact';
-import { connect } from 'unistore/preact';
 import { Text, Localizer } from 'preact-i18n';
 import IntegrationMenu from './IntegrationMenu';
 import IntegrationCategory from './IntegrationCategory';
-import actions from '../../actions/integration';
-import withIntlAsProp from '../../utils/withIntlAsProp';
+import CardFilter from '../../components/layout/CardFilter';
 
-@connect('integrations,currentUrl,totalSize,searchKeyword,user', actions)
 class IntegrationPage extends Component {
+  changeOrderDirWithI18n = e => this.props.changeOrderDir(e, this.props.intl);
   searchWithI18n = e => this.props.search(e, this.props.intl);
 
-  render({ category, integrations, totalSize, currentUrl, searchKeyword, user }) {
+  render(props) {
+    const { category, integrations, totalSize, currentUrl, searchKeyword, user, orderDir } = props;
     return (
       <div class="page">
         <div class="page-main">
@@ -25,40 +24,26 @@ class IntegrationPage extends Component {
                     <Text id="integration.root.subtitle" fields={{ length: integrations.length, total: totalSize }} />
                   </div>
                   <div class="page-options d-flex">
-                    <select class="form-control custom-select w-auto">
-                      <option value="asc">
-                        <Text id="global.orderDirAsc" />
-                      </option>
-                      <option value="desc">
-                        <Text id="global.orderDirDesc" />
-                      </option>
-                    </select>
-                    <div class="input-icon ml-2">
-                      <span class="input-icon-addon">
-                        <i class="fe fe-search" />
-                      </span>
-                      <Localizer>
-                        <input
-                          type="text"
-                          class="form-control w-10"
-                          placeholder={<Text id="integration.root.searchPlaceholder" />}
-                          value={searchKeyword}
-                          onInput={this.searchWithI18n}
-                        />
-                      </Localizer>
-                    </div>
+                    <Localizer>
+                      <CardFilter
+                        changeOrderDir={this.changeOrderDirWithI18n}
+                        orderValue={orderDir}
+                        search={this.searchWithI18n}
+                        searchValue={searchKeyword}
+                        searchPlaceHolder={<Text id="integration.root.searchPlaceholder" />}
+                      />
+                    </Localizer>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-lg-3">
-                    <IntegrationMenu currentUrl={currentUrl} />
+                    <IntegrationMenu {...props} />
                   </div>
                   <div class="col-lg-9">
                     <div class="row row-cards">
-                      {integrations &&
-                        integrations.map(integration => (
-                          <IntegrationCategory currentUrl={currentUrl} integration={integration} category={category} />
-                        ))}
+                      {integrations.map(integration => (
+                        <IntegrationCategory currentUrl={currentUrl} integration={integration} category={category} />
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -71,4 +56,4 @@ class IntegrationPage extends Component {
   }
 }
 
-export default withIntlAsProp(IntegrationPage);
+export default IntegrationPage;

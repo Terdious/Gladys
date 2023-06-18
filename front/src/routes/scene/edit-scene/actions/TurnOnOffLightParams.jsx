@@ -7,7 +7,6 @@ import withIntlAsProp from '../../../../utils/withIntlAsProp';
 import { ACTIONS } from '../../../../../../server/utils/constants';
 import { getDeviceFeatureName } from '../../../../utils/device';
 
-@connect('httpClient', {})
 class TurnOnOffLight extends Component {
 getOptions = async () => {
     try {
@@ -100,7 +99,13 @@ getOptions = async () => {
         <label class="form-label">
           {props.action.type === ACTIONS.LIGHT.TURN_ON && <Text id="editScene.actionsCard.turnOnLights.label" />}
           {props.action.type === ACTIONS.LIGHT.TURN_OFF && <Text id="editScene.actionsCard.turnOffLights.label" />}
+          {props.action.type === ACTIONS.LIGHT.TOGGLE && <Text id="editScene.actionsCard.toggleLights.label" />}
         </label>
+        {props.action.type === ACTIONS.LIGHT.TOGGLE && (
+          <p>
+            <Text id="editScene.actionsCard.toggleLights.description" />
+          </p>
+        )}
         <Select
           defaultValue={[]}
           isMulti
@@ -113,4 +118,4 @@ getOptions = async () => {
   }
 }
 
-export default withIntlAsProp(TurnOnOffLight);
+export default connect('httpClient', {})(TurnOnOffLight);

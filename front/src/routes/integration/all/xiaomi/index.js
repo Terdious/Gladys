@@ -6,13 +6,12 @@ import SetupPanel from './SetupPanel';
 import DevicePanel from './DevicePanel';
 import { WEBSOCKET_MESSAGE_TYPES } from '../../../../../../server/utils/constants';
 
-@connect('user,session,xiaomiSensors,xiaomiDevices,houses,getXiaomiDevicesStatus,xiaomiDeviceSearch', actions)
 class XiaomiPage extends Component {
   componentWillMount() {
     this.props.getHouses();
     this.props.getXiaomiSensors();
     this.props.getXiaomiDevices();
-    this.props.session.dispatcher.addListener(WEBSOCKET_MESSAGE_TYPES.XIAOMI.NEW_DEVICE, payload => {
+    this.props.session.dispatcher.addListener(WEBSOCKET_MESSAGE_TYPES.XIAOMI.NEW_DEVICE, () => {
       this.props.getXiaomiSensors();
     });
   }
@@ -27,4 +26,7 @@ class XiaomiPage extends Component {
   }
 }
 
-export default XiaomiPage;
+export default connect(
+  'user,session,xiaomiSensors,xiaomiDevices,houses,getXiaomiDevicesStatus,xiaomiDeviceSearch,getXiaomiDeviceOrderDir',
+  actions
+)(XiaomiPage);

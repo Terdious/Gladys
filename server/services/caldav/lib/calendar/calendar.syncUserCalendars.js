@@ -4,7 +4,7 @@ const { ServiceNotConfiguredError, NotFoundError } = require('../../../../utils/
 
 /**
  * @description Start user's calendars synchronization.
- * @param {Object} userId - Gladys user to connect & synchronize.
+ * @param {object} userId - Gladys user to connect & synchronize.
  * @returns {Promise} Resolving.
  * @example
  * syncUserCalendars(user.id)
@@ -53,6 +53,7 @@ async function syncUserCalendars(userId) {
 
       // Else update it if sync is enable on calendar & events change
       if (gladysCalendar[0].sync && formatedCalendar.ctag !== gladysCalendar[0].ctag) {
+        delete formatedCalendar.sync;
         await this.gladys.calendar.update(gladysCalendar[0].selector, formatedCalendar);
         return gladysCalendar[0];
       }
@@ -62,7 +63,7 @@ async function syncUserCalendars(userId) {
   );
 
   await Promise.map(
-    calendarsToUpdate.filter((updatedCalendar) => updatedCalendar !== null),
+    calendarsToUpdate.filter((updatedCalendar) => updatedCalendar !== null && updatedCalendar.type === 'CALDAV'),
     async (calendarToUpdate) => {
       // Get events that have changed
       let eventsToUpdate;
@@ -78,7 +79,9 @@ async function syncUserCalendars(userId) {
         async (eventToUpdate) => {
           // Delete existing event if props is empty
           if (JSON.stringify(eventToUpdate.props) === JSON.stringify({})) {
-            const eventToDelete = await this.gladys.calendar.getEvents(userId, { url: eventToUpdate.href });
+            const eventToDelete = await this.gladys.calendar.getEvents(userId, {
+              url: encodeURIComponent(eventToUpdate.href).replace(/%2F/g, '/'),
+            });
             if (eventToDelete.length === 1) {
               await this.gladys.calendar.destroyEvent(eventToDelete[0].selector);
             }

@@ -17,7 +17,32 @@ const DISPLAY_FEATURE_NAME_FOR_THOSE_SERVICES = {
   mqtt: true
 };
 
-const getDeviceFeatureName = (dictionnary, device, deviceFeature) => {
+const matchFeature = (feature, selector, category, type) => {
+  return feature.selector !== selector && feature.type === type;
+};
+
+/**
+ * @description Get Device param by name.
+ * @param {Object} device - Device Object to parse.
+ * @param {string} paramName - The name of the param to get.
+ * @returns {string} Return param.
+ * @example
+ * const value = getDeviceParam({
+ *  params: [{ name: 'test', value: 1 }]
+ * }, 'test');
+ */
+function getDeviceParam(device, paramName) {
+  if (!get(device, 'params')) {
+    return null;
+  }
+  const param = device.params.find(oneParam => oneParam.name === paramName);
+  if (param) {
+    return param.value;
+  }
+  return null;
+}
+
+const shouldDisplayDeviceName = (device, deviceFeature) => {
   const deviceService = get(device, 'service.name');
   const featureDescription = get(dictionnary, `deviceFeatureCategory.${deviceFeature.category}.${deviceFeature.type}`);
   if (deviceFeature.name.indexOf(device.name) !== -1) {
@@ -26,10 +51,36 @@ const getDeviceFeatureName = (dictionnary, device, deviceFeature) => {
   return `${device.name} - ${deviceFeature.name} (${featureDescription})`;
   /*
   if (deviceService && DISPLAY_FEATURE_NAME_FOR_THOSE_SERVICES[deviceService]) {
-    return deviceFeature.name;
+    return false;
+  }
+
+  // Look for similar features
+  const { features = [] } = device;
+  const { category, type, selector } = deviceFeature;
+  const uniqueFeature = features.findIndex(feature => matchFeature(feature, selector, category, type)) < 0;
+  return uniqueFeature;
+};
+
+const getDeviceFeatureName = (dictionnary, device, feature) => {
+  const displayDeviceName = shouldDisplayDeviceName(device, feature);
+
+  if (displayDeviceName) {
+    const featureDescription = get(dictionnary, `deviceFeatureCategory.${feature.category}.${feature.type}`);
+    return `${device.name} (${featureDescription})`;
   }
   return `${device.name} (${featureDescription})`;
   */
+
+  // Force feature name according to service
 };
 
-export { getDeviceFeatureName, DISPLAY_FEATURE_NAME_FOR_THOSE_SERVICES };
+const getDeviceName = (device, feature) => {
+  const displayDeviceName = shouldDisplayDeviceName(device, feature);
+  if (displayDeviceName) {
+    return device.name;
+  }
+
+  return feature.name;
+};
+
+export { getDeviceFeatureName, getDeviceName, getDeviceParam, DISPLAY_FEATURE_NAME_FOR_THOSE_SERVICES };

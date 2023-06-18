@@ -2,7 +2,7 @@ const { JOB_STATUS, JOB_ERROR_TYPES } = require('../../utils/constants');
 
 /**
  * @public
- * @description Start a job
+ * @description Start a job.
  * @param {string} type - Type of the job.
  * @param {Function} func - The function to wrap.
  * @returns {Function} Return function.
@@ -14,8 +14,9 @@ function wrapper(type, func) {
     let job;
     try {
       job = await this.start(type);
-      await func(...args, job.id);
+      const res = await func(...args, job.id);
       await this.finish(job.id, JOB_STATUS.SUCCESS);
+      return res;
     } catch (error) {
       if (job) {
         const data = {

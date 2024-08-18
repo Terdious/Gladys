@@ -1,6 +1,6 @@
 const Joi = require('joi');
 const { addSelector } = require('../utils/addSelector');
-const { DASHBOARD_BOX_TYPE_LIST, DASHBOARD_TYPE_LIST } = require('../utils/constants');
+const { DASHBOARD_BOX_TYPE_LIST, DASHBOARD_TYPE_LIST, DASHBOARD_VISIBILITY_LIST } = require('../utils/constants');
 
 const boxesSchema = Joi.array().items(
   Joi.array().items(
@@ -11,9 +11,11 @@ const boxesSchema = Joi.array().items(
       house: Joi.string(),
       room: Joi.string(),
       camera: Joi.string(),
-      name: Joi.string(),
+      name: Joi.string().allow(''),
       modes: Joi.object(),
+      device: Joi.string(),
       device_features: Joi.array().items(Joi.string()),
+      device_feature_names: Joi.array().items(Joi.string()),
       device_feature: Joi.string(),
       unit: Joi.string(),
       units: Joi.array().items(Joi.string().allow(null)),
@@ -27,6 +29,14 @@ const boxesSchema = Joi.array().items(
       clock_display_second: Joi.boolean(),
       camera_latency: Joi.string(),
       camera_live_auto_start: Joi.boolean(),
+      scenes: Joi.array().items(Joi.string()),
+      humidity_use_custom_value: Joi.boolean(),
+      humidity_min: Joi.number(),
+      humidity_max: Joi.number(),
+      temperature_use_custom_value: Joi.boolean(),
+      temperature_min: Joi.number(),
+      temperature_max: Joi.number(),
+      colors: Joi.array().items(Joi.string()),
     }),
   ),
 );
@@ -66,6 +76,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
         type: DataTypes.STRING,
+      },
+      visibility: {
+        allowNull: false,
+        type: DataTypes.ENUM(DASHBOARD_VISIBILITY_LIST),
       },
       boxes: {
         allowNull: false,

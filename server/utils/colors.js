@@ -24,15 +24,16 @@ function intToRgb(intColor) {
 /**
  * @description Convert hsb color to rgb.
  * @param {Array} hsb - Hue, saturation, brightness.
+ * @param {number} maxSB - Max saturation and brightness.
  * @returns {Array} [ red, green, blue ] object.
  * @example const [r, g, b] = hsbToRgb([1, 2, 3]);
  */
-function hsbToRgb(hsb) {
+function hsbToRgb(hsb, maxSB = 100) {
   const h = hsb[0];
   const s = hsb[1];
   const b = hsb[2];
-  const sDivided = s / 100;
-  const bDivided = b / 100;
+  const sDivided = s / maxSB;
+  const bDivided = b / maxSB;
   const k = (n) => (n + h / 60) % 6;
   const f = (n) => bDivided * (1 - sDivided * Math.max(0, Math.min(k(n), 4 - k(n), 1)));
   return [Math.round(255 * f(5)), Math.round(255 * f(3)), Math.round(255 * f(1))];
@@ -41,10 +42,11 @@ function hsbToRgb(hsb) {
 /**
  * @description Convert rgb to hsb.
  * @param {Array} rgb - Rgb color.
+ * @param {number} maxSB - Max saturation and brightness.
  * @returns {Array} [ h, s, b] object.
  * @example  const [h, s, b] = rgbToHsb([1, 2, 3]);
  */
-function rgbToHsb(rgb) {
+function rgbToHsb(rgb, maxSB = 100) {
   let r = rgb[0];
   let g = rgb[1];
   let b = rgb[2];
@@ -55,7 +57,7 @@ function rgbToHsb(rgb) {
   const n = v - Math.min(r, g, b);
   // eslint-disable-next-line no-nested-ternary
   const h = n === 0 ? 0 : n && v === r ? (g - b) / n : v === g ? 2 + (b - r) / n : 4 + (r - g) / n;
-  return [Math.round(60 * (h < 0 ? h + 6 : h)), Math.round(v && (n / v) * 100), Math.round(v * 100)];
+  return [Math.round(60 * (h < 0 ? h + 6 : h)), Math.round(v && (n / v) * maxSB), Math.round(v * maxSB)];
 }
 
 /**
@@ -99,6 +101,60 @@ function hexToInt(hexColor) {
   }
 
   return parseInt(hexColor, 16);
+}
+
+/**
+ * @description Convert Kelvin to RGB temp color.
+ * @param {number} kelvin - Color temperature in Kelvin.
+ * @returns {Array} - Return array of RGB.
+ * @example const [r, g, b] = kelvinToRGB(2500);
+ */
+function kelvinToRGB(kelvin) {
+  const temperature = kelvin / 100;
+  let red;
+  let green;
+  let blue;
+
+  // Calculate Red
+  if (temperature <= 66) {
+    red = 255;
+  } else {
+    red = temperature - 60;
+    red = 329.698727446 * red ** -0.1332047592;
+    if (red > 255) {
+      red = 255;
+    }
+  }
+
+  // Calculate Green
+  if (temperature <= 66) {
+    green = temperature;
+    green = 99.4708025861 * Math.log(green) - 161.1195681661;
+    if (green < 0) {
+      green = 0;
+    }
+    if (green > 255) {
+      green = 255;
+    }
+  } else {
+    green = temperature - 60;
+    green = 288.1221695283 * green ** -0.0755148492;
+  }
+
+  // Calculate Blue
+  if (temperature >= 66) {
+    blue = 255;
+  } else if (temperature <= 19) {
+    blue = 0;
+  } else {
+    blue = temperature - 10;
+    blue = 138.5177312231 * Math.log(blue) - 305.0447927307;
+    if (blue < 0) {
+      blue = 0;
+    }
+  }
+
+  return [Math.round(red), Math.round(green), Math.round(blue)];
 }
 
 /**
@@ -159,6 +215,26 @@ function xyToInt(x, y) {
   return (red << 16) | (green << 8) | blue;
 }
 
+/**
+ * @description Convert mired to kelvin.
+ * @param {number} mired - Color temperature in mired.
+ * @returns {number} Returns color in kelvin.
+ * @example miredToKelvin(300);
+ */
+function miredToKelvin(mired) {
+  return 1e6 / mired;
+}
+
+/**
+ * @description Convert kelvin to mired.
+ * @param {number} kelvin - Color temperature in kelvin.
+ * @returns {number} Returns color in mired.
+ * @example kelvinToMired(5000);
+ */
+function kelvinToMired(kelvin) {
+  return 1e6 / kelvin;
+}
+
 module.exports = {
   intToRgb,
   rgbToInt,
@@ -167,4 +243,7 @@ module.exports = {
   xyToInt,
   hsbToRgb,
   rgbToHsb,
+  miredToKelvin,
+  kelvinToMired,
+  kelvinToRGB,
 };

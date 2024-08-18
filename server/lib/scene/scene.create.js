@@ -14,8 +14,16 @@ async function create(scene) {
       console.log("coucou scene create")
       console.log(scene)
   // create scene in DB
-  const createdScene = await db.Scene.create(scene);
-      console.log("coucou2 scene create")
+  const createdScene = await db.Scene.create(scene, {
+    include: [
+      {
+        model: db.TagScene,
+        as: 'tags',
+        attributes: ['name'],
+      },
+    ],
+  });
+
   const plainScene = createdScene.get({ plain: true });
   // add scene to live store
   this.addScene(plainScene);

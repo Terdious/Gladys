@@ -48,9 +48,46 @@ describe('Build service', () => {
     });
     homekitHandler.gladys.event.emit = stub();
     const on = stub();
-    const getCharacteristic = stub().returns({
-      on,
-    });
+    const getCharacteristic = stub()
+      .onCall(0)
+      .returns({
+        on,
+        props: {
+          perms: ['PAIRED_READ', 'PAIRED_WRITE'],
+        },
+      })
+      .onCall(1)
+      .returns({
+        on,
+        props: {
+          minValue: 0,
+          maxValue: 100,
+          perms: ['PAIRED_READ', 'PAIRED_WRITE'],
+        },
+      })
+      .onCall(2)
+      .returns({
+        on,
+        props: {
+          perms: ['PAIRED_READ', 'PAIRED_WRITE'],
+        },
+      })
+      .onCall(3)
+      .returns({
+        on,
+        props: {
+          perms: ['PAIRED_READ', 'PAIRED_WRITE'],
+        },
+      })
+      .onCall(4)
+      .returns({
+        on,
+        props: {
+          minValue: 140,
+          maxValue: 500,
+          perms: ['PAIRED_READ', 'PAIRED_WRITE'],
+        },
+      });
     const Lightbulb = stub().returns({
       getCharacteristic,
     });
@@ -64,6 +101,10 @@ describe('Build service', () => {
         ColorTemperature: 'COLORTEMPERATURE',
       },
       CharacteristicEventTypes: stub(),
+      Perms: {
+        PAIRED_READ: 'PAIRED_READ',
+        PAIRED_WRITE: 'PAIRED_WRITE',
+      },
       Service: {
         Lightbulb,
       },
@@ -173,6 +214,9 @@ describe('Build service', () => {
     const on = stub();
     const getCharacteristic = stub().returns({
       on,
+      props: {
+        perms: ['PAIRED_READ', 'PAIRED_WRITE'],
+      },
     });
     const Switch = stub().returns({
       getCharacteristic,
@@ -183,6 +227,10 @@ describe('Build service', () => {
         On: 'ON',
       },
       CharacteristicEventTypes: stub(),
+      Perms: {
+        PAIRED_READ: 'PAIRED_READ',
+        PAIRED_WRITE: 'PAIRED_WRITE',
+      },
       Service: {
         Switch,
       },
@@ -304,6 +352,65 @@ describe('Build service', () => {
     expect(cb.args[0][1]).to.equal(15);
     expect(cb.args[1][1]).to.equal(20);
     expect(cb.args[2][1]).to.equal(25);
+  });
+
+  it('should build motion sensor service', async () => {
+    homekitHandler.gladys.device.getBySelector = stub().resolves({
+      features: [
+        {
+          id: '31c6a4a7-9710-4951-bf34-04eeae5b9ff7',
+          name: 'Motion Detection',
+          category: DEVICE_FEATURE_CATEGORIES.MOTION_SENSOR,
+          type: DEVICE_FEATURE_TYPES.SENSOR.BINARY,
+          last_value: 0,
+        },
+      ],
+    });
+    const on = stub();
+    const getCharacteristic = stub().returns({
+      on,
+      props: {
+        perms: ['PAIRED_READ'],
+      },
+    });
+    const MotionSensor = stub().returns({
+      getCharacteristic,
+    });
+
+    homekitHandler.hap = {
+      Characteristic: {
+        MotionDetected: 'MOTIONDETECTED',
+      },
+      CharacteristicEventTypes: stub(),
+      Perms: {
+        PAIRED_READ: 'PAIRED_READ',
+        PAIRED_WRITE: 'PAIRED_WRITE',
+      },
+      Service: {
+        MotionSensor,
+      },
+    };
+    const device = {
+      name: 'Détecteur garage',
+    };
+    const features = [
+      {
+        id: '31c6a4a7-9710-4951-bf34-04eeae5b9ff7',
+        name: 'Motion Detection',
+        category: DEVICE_FEATURE_CATEGORIES.MOTION_SENSOR,
+        type: DEVICE_FEATURE_TYPES.SENSOR.BINARY,
+      },
+    ];
+
+    const cb = stub();
+
+    await homekitHandler.buildService(device, features, mappings[DEVICE_FEATURE_CATEGORIES.MOTION_SENSOR]);
+    await on.args[0][1](cb);
+
+    expect(MotionSensor.args[0][0]).to.equal('Détecteur garage');
+    expect(on.callCount).to.equal(1);
+    expect(getCharacteristic.args[0][0]).to.equal('MOTIONDETECTED');
+    expect(cb.args[0][1]).to.equal(0);
   });
 
   it('should build contact sensor service', async () => {

@@ -7,7 +7,9 @@ import uuid from 'uuid';
 import get from 'get-value';
 import update from 'immutability-helper';
 import { RequestStatus } from '../../../../../../utils/consts';
+import { slugify } from '../../../../../../../../server/utils/slugify';
 import withIntlAsProp from '../../../../../../utils/withIntlAsProp';
+
 import { DEVICE_FEATURE_CATEGORIES, DEVICE_FEATURE_TYPES } from '../../../../../../../../server/utils/constants';
 
 class MqttDeviceSetupPage extends Component {
@@ -104,6 +106,38 @@ class MqttDeviceSetupPage extends Component {
     });
   }
 
+  updateDeviceParam = (paramName, paramValue) => {
+    let device;
+    // Find if this param already exist
+    const paramIndex = this.state.device.params.findIndex(p => p.name === paramName);
+
+    // If no, create it
+    if (paramIndex === -1) {
+      device = update(this.state.device, {
+        params: {
+          $push: [
+            {
+              name: paramName,
+              value: paramValue
+            }
+          ]
+        }
+      });
+    } else {
+      // If yes, update value in the param
+      device = update(this.state.device, {
+        params: {
+          [paramIndex]: {
+            value: {
+              $set: paramValue
+            }
+          }
+        }
+      });
+    }
+    this.setState({ device });
+  };
+
   updateFeatureProperty(e, property, featureIndex) {
     let value = e.target.value;
     let device;
@@ -147,6 +181,20 @@ class MqttDeviceSetupPage extends Component {
       loading: true
     });
     try {
+      // If we are creating a device, we check that the device doesn't already exist
+      if (!this.state.device.id) {
+        try {
+          await this.props.httpClient.get(`/api/v1/device/${slugify(this.state.device.selector)}`);
+          // if we are here, it means the device already exist
+          this.setState({
+            saveStatus: RequestStatus.ConflictError,
+            loading: false
+          });
+          return;
+        } catch (e) {
+          // If we are here, it's ok, it means the device does not exist yet
+        }
+      }
       const device = await this.props.httpClient.post('/api/v1/device', this.state.device);
       this.setState({
         saveStatus: RequestStatus.Success,
@@ -223,14 +271,13 @@ class MqttDeviceSetupPage extends Component {
     let device;
 
     if (!deviceSelector) {
-      const uniqueId = uuid.v4();
       device = {
-        id: uniqueId,
-        name: null,
+        name: '',
         should_poll: false,
         external_id: 'mqtt:',
         service_id: this.props.currentIntegration.id,
-        features: []
+        features: [],
+        params: []
       };
     } else {
       const loadedDevice = await this.props.httpClient.get(`/api/v1/device/${deviceSelector}`);
@@ -252,7 +299,7 @@ class MqttDeviceSetupPage extends Component {
 
   render(props, state) {
     return (
-      <MqttPage>
+      <MqttPage user={props.user}>
         <FeatureTab
           {...props}
           {...state}
@@ -261,6 +308,7 @@ class MqttDeviceSetupPage extends Component {
           deleteFeature={this.deleteFeature}
           updateDeviceProperty={this.updateDeviceProperty}
           updateFeatureProperty={this.updateFeatureProperty}
+          updateDeviceParam={this.updateDeviceParam}
           saveDevice={this.saveDevice}
         />
       </MqttPage>

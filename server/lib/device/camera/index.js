@@ -3,7 +3,7 @@ const { setImage } = require('./camera.setImage');
 const { getImage } = require('./camera.getImage');
 const { getCamera } = require('./camera.getCamera');
 const { get } = require('./camera.get');
-const { getImageInRoom } = require('./camera.getImageInRoom');
+const { getImagesInRoom } = require('./camera.getImagesInRoom');
 const { INTENTS } = require('../../../utils/constants');
 const { getLiveImage } = require('./camera.getLiveImage');
 
@@ -13,7 +13,7 @@ const Camera = function Camera(stateManager, messageManager, eventManager, servi
   this.eventManager = eventManager;
   this.serviceManager = serviceManager;
   this.deviceManager = deviceManager;
-  this.eventManager.on(INTENTS.CAMERA.GET_IMAGE_ROOM, this.command.bind(this));
+  this.eventManager.on(INTENTS.CAMERA.GET_IMAGE, this.command.bind(this));
 };
 
 Camera.prototype.command = command;
@@ -21,7 +21,7 @@ Camera.prototype.setImage = setImage;
 Camera.prototype.getImage = getImage;
 Camera.prototype.getCamera = getCamera;
 Camera.prototype.get = get;
-Camera.prototype.getImageInRoom = getImageInRoom;
+Camera.prototype.getImagesInRoom = getImagesInRoom;
 Camera.prototype.getLiveImage = getLiveImage;
 
 module.exports = Camera;

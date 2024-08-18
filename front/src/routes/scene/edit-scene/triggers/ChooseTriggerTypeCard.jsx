@@ -18,7 +18,15 @@ const TRIGGER_LIST = [
   EVENTS.HOUSE.NO_LONGER_EMPTY,
   EVENTS.AREA.USER_ENTERED,
   EVENTS.AREA.USER_LEFT,
-  EVENTS.CALENDAR.EVENT_IS_COMING
+  EVENTS.CALENDAR.EVENT_IS_COMING,
+  EVENTS.ALARM.ARM,
+  EVENTS.ALARM.ARMING,
+  EVENTS.ALARM.DISARM,
+  EVENTS.ALARM.PANIC,
+  EVENTS.ALARM.PARTIAL_ARM,
+  EVENTS.ALARM.TOO_MANY_CODES_TESTS,
+  EVENTS.SYSTEM.START,
+  EVENTS.MQTT.RECEIVED
 ];
 
 class ChooseTriggerType extends Component {
@@ -27,15 +35,7 @@ class ChooseTriggerType extends Component {
       this.setState({
         currentTrigger: selectedOption
       });
-    } else {
-      this.setState({
-        currentTrigger: null
-      });
-    }
-  };
-  changeBoxType = () => {
-    if (this.state.currentTrigger) {
-      this.props.updateTriggerProperty(this.props.index, 'type', this.state.currentTrigger.value);
+      this.props.updateTriggerProperty(this.props.index, 'type', selectedOption.value);
     }
   };
 
@@ -68,11 +68,6 @@ class ChooseTriggerType extends Component {
             options={options}
             onChange={this.handleChange}
           />
-        </div>
-        <div class="form-group">
-          <button onClick={this.changeBoxType} class="btn btn-success">
-            <Text id="editScene.addTriggerButton" />
-          </button>
         </div>
       </div>
     );

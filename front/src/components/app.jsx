@@ -14,6 +14,7 @@ import Header from './header';
 import Layout from './layout';
 import Redirect from './router/Redirect';
 import Login from '../routes/login';
+import Locked from '../routes/locked';
 import Error from '../routes/error';
 import ErrorNoAuthorize from '../routes/error-no-authorize';
 import ForgotPassword from '../routes/forgot-password';
@@ -103,11 +104,11 @@ import LANManagerSettingsPage from '../routes/integration/all/lan-manager/settin
 import MqttDevicePage from '../routes/integration/all/mqtt/device-page';
 import MqttDeviceSetupPage from '../routes/integration/all/mqtt/device-page/setup';
 import MqttSetupPage from '../routes/integration/all/mqtt/setup-page';
+import MqttDebugPage from '../routes/integration/all/mqtt/debug-page/Debug';
 
 // Zigbee2mqtt
 import Zigbee2mqttPage from '../routes/integration/all/zigbee2mqtt/device-page';
 import Zigbee2mqttDiscoverPage from '../routes/integration/all/zigbee2mqtt/discover-page';
-import Zigbee2mqttSettingsPage from '../routes/integration/all/zigbee2mqtt/settings-page';
 import Zigbee2mqttSetupPage from '../routes/integration/all/zigbee2mqtt/setup-page';
 import Zigbee2mqttEditPage from '../routes/integration/all/zigbee2mqtt/edit-page';
 
@@ -132,6 +133,39 @@ import EweLinkSetupPage from '../routes/integration/all/ewelink/setup-page';
 
 // OpenAI integration
 import OpenAIPage from '../routes/integration/all/openai/index';
+
+// Tuya integration
+import TuyaPage from '../routes/integration/all/tuya/device-page';
+import TuyaEditPage from '../routes/integration/all/tuya/edit-page';
+import TuyaSetupPage from '../routes/integration/all/tuya/setup-page';
+import TuyaDiscoverPage from '../routes/integration/all/tuya/discover-page';
+
+// Netatmo integration
+import NetatmoPage from '../routes/integration/all/netatmo/device-page';
+import NetatmoSetupPage from '../routes/integration/all/netatmo/setup-page';
+import NetatmoDiscoverPage from '../routes/integration/all/netatmo/discover-page';
+
+// Sonos integration
+import SonosDevicePage from '../routes/integration/all/sonos/device-page';
+import SonosDiscoveryPage from '../routes/integration/all/sonos/discover-page';
+
+// Google Cast integration
+import GoogleCastDevicePage from '../routes/integration/all/google-cast/device-page';
+import GoogleCastDiscoveryPage from '../routes/integration/all/google-cast/discover-page';
+
+// ZWaveJS-UI integration
+import ZwaveJSUIDevicePage from '../routes/integration/all/zwavejs-ui/device-page';
+import ZwaveJSUIDiscoveryPage from '../routes/integration/all/zwavejs-ui/discover-page';
+import ZwaveJSUISetupPage from '../routes/integration/all/zwavejs-ui/setup-page';
+
+// MELCloud integration
+import MELCloudPage from '../routes/integration/all/melcloud/device-page';
+import MELCloudEditPage from '../routes/integration/all/melcloud/edit-page';
+import MELCloudSetupPage from '../routes/integration/all/melcloud/setup-page';
+import MELCloudDiscoverPage from '../routes/integration/all/melcloud/discover-page';
+
+// NodeRed integration
+import NodeRedPage from '../routes/integration/all/node-red/setup-page';
 
 import { USER_ROLE } from '../../../server/utils/constants';
 
@@ -181,15 +215,26 @@ const AppRouter = connect(
         ) : (
           <ResetPassword path="/reset-password" />
         )}
-        {renderForGateway([
-          <LinkGatewayUser path="/link-gateway-user" />,
-          <SignupGateway path="/signup-gateway" />,
-          <ConfigureTwoFactorGateway path="/gateway-configure-two-factor" />,
-          <GatewayConfirmEmail path="/confirm-email" />,
-          <SettingsBilling path="/dashboard/settings/billing" />,
-          <SettingsGatewayUsers path="/dashboard/settings/gateway-users" />,
+        <Locked path="/locked" />
+        {config.gatewayMode ? <LinkGatewayUser path="/link-gateway-user" /> : <Error type="404" default />}
+        {config.gatewayMode ? <SignupGateway path="/signup-gateway" /> : <Error type="404" default />}
+        {config.gatewayMode ? (
+          <ConfigureTwoFactorGateway path="/gateway-configure-two-factor" />
+        ) : (
+          <Error type="404" default />
+        )}
+        {config.gatewayMode ? <GatewayConfirmEmail path="/confirm-email" /> : <Error type="404" default />}
+        {config.gatewayMode ? <SettingsBilling path="/dashboard/settings/billing" /> : <Error type="404" default />}
+        {config.gatewayMode ? (
+          <SettingsGatewayUsers path="/dashboard/settings/gateway-users" />
+        ) : (
+          <Error type="404" default />
+        )}
+        {config.gatewayMode ? (
           <SettingsGatewayOpenApi path="/dashboard/settings/gateway-open-api" />
-        ], props)}
+        ) : (
+          <Error type="404" default />
+        )}
 
         {!config.gatewayMode ? <SignupWelcomePage path="/signup" /> : <Error type="404" default />}
         <SignupCreateAccountLocal path="/signup/create-account-local" />
@@ -225,6 +270,89 @@ const AppRouter = connect(
         <CalDAVSyncPage path="/dashboard/integration/calendar/caldav/sync" />
         <CalDAVSharePage path="/dashboard/integration/calendar/caldav/share" />
         <OpenWeatherPage path="/dashboard/integration/weather/openweather" />
+        <Redirect
+          path="/dashboard/integration/device/philips-hue"
+          to="/dashboard/integration/device/philips-hue/device"
+        />
+        <PhilipsHueSetupPage path="/dashboard/integration/device/philips-hue/setup" />
+        <PhilipsHueDevicePage path="/dashboard/integration/device/philips-hue/device" />
+        <Redirect path="/dashboard/integration/device/tp-link" to="/dashboard/integration/device/tp-link/device" />
+        <TPLinkDevicePage path="/dashboard/integration/device/tp-link/device" />
+        <Redirect path="/dashboard/integration/device/zwave" to="/dashboard/integration/device/zwave/node" />
+        <ZwaveNodePage path="/dashboard/integration/device/zwave/node" />
+        <RtspCameraPage path="/dashboard/integration/device/rtsp-camera" />
+        <MqttDevicePage path="/dashboard/integration/device/mqtt" />
+        <MqttDeviceSetupPage path="/dashboard/integration/device/mqtt/edit" />
+        <MqttDeviceSetupPage path="/dashboard/integration/device/mqtt/edit/:deviceSelector" />
+        <MqttSetupPage path="/dashboard/integration/device/mqtt/setup" />
+        <MqttDebugPage path="/dashboard/integration/device/mqtt/debug" />
+        <Zigbee2mqttPage path="/dashboard/integration/device/zigbee2mqtt" />
+        <Zigbee2mqttDiscoverPage path="/dashboard/integration/device/zigbee2mqtt/discover" />
+        <Zigbee2mqttSetupPage path="/dashboard/integration/device/zigbee2mqtt/setup" />
+        <Zigbee2mqttEditPage path="/dashboard/integration/device/zigbee2mqtt/edit/:deviceSelector" />
+
+        <NodeRedPage path="/dashboard/integration/device/node-red" />
+
+        <XiaomiPage path="/dashboard/integration/device/xiaomi" />
+        <EditXiaomiPage path="/dashboard/integration/device/xiaomi/edit/:deviceSelector" />
+        <TasmotaPage path="/dashboard/integration/device/tasmota" />
+        <TasmotaEditPage path="/dashboard/integration/device/tasmota/edit/:deviceSelector" />
+        <TasmotaMqttDiscoverPage path="/dashboard/integration/device/tasmota/mqtt" />
+        <TasmotaHttpDiscoverPage path="/dashboard/integration/device/tasmota/http" />
+        <EweLinkPage path="/dashboard/integration/device/ewelink" />
+        <EweLinkEditPage path="/dashboard/integration/device/ewelink/edit/:deviceSelector" />
+        <EweLinkDiscoverPage path="/dashboard/integration/device/ewelink/discover" />
+        <EweLinkSetupPage path="/dashboard/integration/device/ewelink/setup" />
+        <HomeKitPage path="/dashboard/integration/communication/homekit" />
+        <OpenAIPage path="/dashboard/integration/communication/openai" />
+
+        <TuyaPage path="/dashboard/integration/device/tuya" />
+        <TuyaEditPage path="/dashboard/integration/device/tuya/edit/:deviceSelector" />
+        <TuyaDiscoverPage path="/dashboard/integration/device/tuya/discover" />
+        <TuyaSetupPage path="/dashboard/integration/device/tuya/setup" />
+
+        <NetatmoPage path="/dashboard/integration/device/netatmo" />
+        <NetatmoDiscoverPage path="/dashboard/integration/device/netatmo/discover" />
+        <NetatmoSetupPage path="/dashboard/integration/device/netatmo/setup" />
+
+        <SonosDevicePage path="/dashboard/integration/device/sonos" />
+        <SonosDiscoveryPage path="/dashboard/integration/device/sonos/discover" />
+
+        <GoogleCastDevicePage path="/dashboard/integration/device/google-cast" />
+        <GoogleCastDiscoveryPage path="/dashboard/integration/device/google-cast/discover" />
+
+        <ZwaveJSUIDevicePage path="/dashboard/integration/device/zwavejs-ui" />
+        <ZwaveJSUIDiscoveryPage path="/dashboard/integration/device/zwavejs-ui/discover" />
+        <ZwaveJSUISetupPage path="/dashboard/integration/device/zwavejs-ui/setup" />
+
+        <MELCloudPage path="/dashboard/integration/device/melcloud" />
+        <MELCloudEditPage path="/dashboard/integration/device/melcloud/edit/:deviceSelector" />
+        <MELCloudDiscoverPage path="/dashboard/integration/device/melcloud/discover" />
+        <MELCloudSetupPage path="/dashboard/integration/device/melcloud/setup" />
+
+        <BluetoothDevicePage path="/dashboard/integration/device/bluetooth" />
+        <BluetoothEditDevicePage path="/dashboard/integration/device/bluetooth/:deviceSelector" />
+        <BluetoothSetupPage path="/dashboard/integration/device/bluetooth/setup" />
+        <BluetoothSetupPeripheralPage path="/dashboard/integration/device/bluetooth/setup/:uuid" />
+        <BluetoothSettingsPage path="/dashboard/integration/device/bluetooth/config" />
+
+        <BroadlinkDevicePage path="/dashboard/integration/device/broadlink" />
+        <BroadlinkRemoteSetupPage path="/dashboard/integration/device/broadlink/edit" />
+        <BroadlinkRemoteSetupPage path="/dashboard/integration/device/broadlink/edit/:deviceSelector" />
+        <BroadlinkPeripheralPage path="/dashboard/integration/device/broadlink/peripheral" />
+
+        <LANManagerDevicePage path="/dashboard/integration/device/lan-manager" />
+        <LANManagerDiscoverPage path="/dashboard/integration/device/lan-manager/discover" />
+        <LANManagerSettingsPage path="/dashboard/integration/device/lan-manager/config" />
+
+        <GoogleHomeWelcomePage path="/dashboard/integration/communication/googlehome" />
+        <GoogleHomeGateway path="/dashboard/integration/device/google-home/authorize" />
+        <AlexaWelcomePage path="/dashboard/integration/communication/alexa" />
+        <AlexaGateway path="/dashboard/integration/device/alexa/authorize" />
+        <OwntracksWelcomePage path="/dashboard/integration/device/owntracks" />
+        <EnedisGateway path="/dashboard/integration/device/enedis" />
+        <EnedisGatewayUsagePoints path="/dashboard/integration/device/enedis/usage-points" />
+        <EnedisGateway path="/dashboard/integration/device/enedis/redirect" />
 
         <ChatPage path="/dashboard/chat" />
         <MapPage path="/dashboard/maps" />

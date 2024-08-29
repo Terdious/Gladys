@@ -172,17 +172,6 @@ import { USER_ROLE } from '../../../server/utils/constants';
 const defaultState = getDefaultState();
 const store = createStore(defaultState);
 
-const renderForAdmins = (components, props) => {
-  return components.map((Component, index) => 
-    props.user.role === USER_ROLE.ADMIN ? <Component key={index} {...props} /> : <ErrorNoAuthorize type="401" default key={index} />
-  );
-};
-
-const renderForGateway = (components, props) => {
-  return components.map((Component, index) => 
-    config.gatewayMode ? <Component key={index} {...props} /> : <Error type="404" default key={index} />
-  );
-};
 
 const AppRouter = connect(
   'currentUrl,user,profilePicture,showDropDown,showCollapsedMenu,fullScreen',
@@ -202,6 +191,9 @@ const AppRouter = connect(
         logout={props.logout}
       />
       <Router onChange={props.handleRoute}>
+        {console.log('Current URL:', props.currentUrl)}
+        {console.log('Gateway Mode:', config.gatewayMode)}
+        {/* {console.log('Router Rendering for Admins:', props.user ? props.user.role : 'undefined')} */}
         <Redirect path="/" to="/dashboard" />
         {/** ROUTE WHICH ARE DIFFERENT IN GATEWAY MODE */}
         {config.gatewayMode ? <LoginGateway path="/login" /> : <Login path="/login" />}
@@ -270,171 +262,440 @@ const AppRouter = connect(
         <CalDAVSyncPage path="/dashboard/integration/calendar/caldav/sync" />
         <CalDAVSharePage path="/dashboard/integration/calendar/caldav/share" />
         <OpenWeatherPage path="/dashboard/integration/weather/openweather" />
-        <Redirect
-          path="/dashboard/integration/device/philips-hue"
-          to="/dashboard/integration/device/philips-hue/device"
-        />
-        <PhilipsHueSetupPage path="/dashboard/integration/device/philips-hue/setup" />
-        <PhilipsHueDevicePage path="/dashboard/integration/device/philips-hue/device" />
-        <Redirect path="/dashboard/integration/device/tp-link" to="/dashboard/integration/device/tp-link/device" />
-        <TPLinkDevicePage path="/dashboard/integration/device/tp-link/device" />
-        <Redirect path="/dashboard/integration/device/zwave" to="/dashboard/integration/device/zwave/node" />
-        <ZwaveNodePage path="/dashboard/integration/device/zwave/node" />
-        <RtspCameraPage path="/dashboard/integration/device/rtsp-camera" />
-        <MqttDevicePage path="/dashboard/integration/device/mqtt" />
-        <MqttDeviceSetupPage path="/dashboard/integration/device/mqtt/edit" />
-        <MqttDeviceSetupPage path="/dashboard/integration/device/mqtt/edit/:deviceSelector" />
-        <MqttSetupPage path="/dashboard/integration/device/mqtt/setup" />
-        <MqttDebugPage path="/dashboard/integration/device/mqtt/debug" />
-        <Zigbee2mqttPage path="/dashboard/integration/device/zigbee2mqtt" />
-        <Zigbee2mqttDiscoverPage path="/dashboard/integration/device/zigbee2mqtt/discover" />
-        <Zigbee2mqttSetupPage path="/dashboard/integration/device/zigbee2mqtt/setup" />
-        <Zigbee2mqttEditPage path="/dashboard/integration/device/zigbee2mqtt/edit/:deviceSelector" />
-
-        <NodeRedPage path="/dashboard/integration/device/node-red" />
-
-        <XiaomiPage path="/dashboard/integration/device/xiaomi" />
-        <EditXiaomiPage path="/dashboard/integration/device/xiaomi/edit/:deviceSelector" />
-        <TasmotaPage path="/dashboard/integration/device/tasmota" />
-        <TasmotaEditPage path="/dashboard/integration/device/tasmota/edit/:deviceSelector" />
-        <TasmotaMqttDiscoverPage path="/dashboard/integration/device/tasmota/mqtt" />
-        <TasmotaHttpDiscoverPage path="/dashboard/integration/device/tasmota/http" />
-        <EweLinkPage path="/dashboard/integration/device/ewelink" />
-        <EweLinkEditPage path="/dashboard/integration/device/ewelink/edit/:deviceSelector" />
-        <EweLinkDiscoverPage path="/dashboard/integration/device/ewelink/discover" />
-        <EweLinkSetupPage path="/dashboard/integration/device/ewelink/setup" />
-        <HomeKitPage path="/dashboard/integration/communication/homekit" />
-        <OpenAIPage path="/dashboard/integration/communication/openai" />
-
-        <TuyaPage path="/dashboard/integration/device/tuya" />
-        <TuyaEditPage path="/dashboard/integration/device/tuya/edit/:deviceSelector" />
-        <TuyaDiscoverPage path="/dashboard/integration/device/tuya/discover" />
-        <TuyaSetupPage path="/dashboard/integration/device/tuya/setup" />
-
-        <NetatmoPage path="/dashboard/integration/device/netatmo" />
-        <NetatmoDiscoverPage path="/dashboard/integration/device/netatmo/discover" />
-        <NetatmoSetupPage path="/dashboard/integration/device/netatmo/setup" />
-
-        <SonosDevicePage path="/dashboard/integration/device/sonos" />
-        <SonosDiscoveryPage path="/dashboard/integration/device/sonos/discover" />
-
-        <GoogleCastDevicePage path="/dashboard/integration/device/google-cast" />
-        <GoogleCastDiscoveryPage path="/dashboard/integration/device/google-cast/discover" />
-
-        <ZwaveJSUIDevicePage path="/dashboard/integration/device/zwavejs-ui" />
-        <ZwaveJSUIDiscoveryPage path="/dashboard/integration/device/zwavejs-ui/discover" />
-        <ZwaveJSUISetupPage path="/dashboard/integration/device/zwavejs-ui/setup" />
-
-        <MELCloudPage path="/dashboard/integration/device/melcloud" />
-        <MELCloudEditPage path="/dashboard/integration/device/melcloud/edit/:deviceSelector" />
-        <MELCloudDiscoverPage path="/dashboard/integration/device/melcloud/discover" />
-        <MELCloudSetupPage path="/dashboard/integration/device/melcloud/setup" />
-
-        <BluetoothDevicePage path="/dashboard/integration/device/bluetooth" />
-        <BluetoothEditDevicePage path="/dashboard/integration/device/bluetooth/:deviceSelector" />
-        <BluetoothSetupPage path="/dashboard/integration/device/bluetooth/setup" />
-        <BluetoothSetupPeripheralPage path="/dashboard/integration/device/bluetooth/setup/:uuid" />
-        <BluetoothSettingsPage path="/dashboard/integration/device/bluetooth/config" />
-
-        <BroadlinkDevicePage path="/dashboard/integration/device/broadlink" />
-        <BroadlinkRemoteSetupPage path="/dashboard/integration/device/broadlink/edit" />
-        <BroadlinkRemoteSetupPage path="/dashboard/integration/device/broadlink/edit/:deviceSelector" />
-        <BroadlinkPeripheralPage path="/dashboard/integration/device/broadlink/peripheral" />
-
-        <LANManagerDevicePage path="/dashboard/integration/device/lan-manager" />
-        <LANManagerDiscoverPage path="/dashboard/integration/device/lan-manager/discover" />
-        <LANManagerSettingsPage path="/dashboard/integration/device/lan-manager/config" />
-
-        <GoogleHomeWelcomePage path="/dashboard/integration/communication/googlehome" />
-        <GoogleHomeGateway path="/dashboard/integration/device/google-home/authorize" />
-        <AlexaWelcomePage path="/dashboard/integration/communication/alexa" />
-        <AlexaGateway path="/dashboard/integration/device/alexa/authorize" />
-        <OwntracksWelcomePage path="/dashboard/integration/device/owntracks" />
-        <EnedisGateway path="/dashboard/integration/device/enedis" />
-        <EnedisGatewayUsagePoints path="/dashboard/integration/device/enedis/usage-points" />
-        <EnedisGateway path="/dashboard/integration/device/enedis/redirect" />
 
         <ChatPage path="/dashboard/chat" />
         <MapPage path="/dashboard/maps" />
         <MapNewAreaPage path="/dashboard/maps/area/new" />
         <MapNewAreaPage path="/dashboard/maps/area/edit/:areaSelector" />
         <CalendarPage path="/dashboard/calendar" />
-        
-        {renderForAdmins([
-          <IntegrationPage path="/dashboard/integration/device" category="device" />,
-
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <IntegrationPage path="/dashboard/integration/device" category="device" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
           <Redirect
             path="/dashboard/integration/device/philips-hue"
             to="/dashboard/integration/device/philips-hue/device"
-          />,
-          <PhilipsHueSetupPage path="/dashboard/integration/device/philips-hue/setup" />,
-          <PhilipsHueDevicePage path="/dashboard/integration/device/philips-hue/device" />,
-          <Redirect path="/dashboard/integration/device/tp-link" to="/dashboard/integration/device/tp-link/device" />,
-          <TPLinkDevicePage path="/dashboard/integration/device/tp-link/device" />,
-          <Redirect path="/dashboard/integration/device/zwave" to="/dashboard/integration/device/zwave/node" />,
-          <ZwaveNodePage path="/dashboard/integration/device/zwave/node" />,
-          <RtspCameraPage path="/dashboard/integration/device/rtsp-camera" />,
-          <MqttDevicePage path="/dashboard/integration/device/mqtt" />,
-          <MqttDeviceSetupPage path="/dashboard/integration/device/mqtt/edit" />,
-          <MqttDeviceSetupPage path="/dashboard/integration/device/mqtt/edit/:deviceSelector" />,
-          <MqttSetupPage path="/dashboard/integration/device/mqtt/setup" />,
-          <Zigbee2mqttPage path="/dashboard/integration/device/zigbee2mqtt" />,
-          <Zigbee2mqttDiscoverPage path="/dashboard/integration/device/zigbee2mqtt/discover" />,
-          <Zigbee2mqttSettingsPage path="/dashboard/integration/device/zigbee2mqtt/settings" />,
-          <Zigbee2mqttSetupPage path="/dashboard/integration/device/zigbee2mqtt/setup" />,
-          <Zigbee2mqttEditPage path="/dashboard/integration/device/zigbee2mqtt/edit/:deviceSelector" />,
-          <XiaomiPage path="/dashboard/integration/device/xiaomi" />,
-          <EditXiaomiPage path="/dashboard/integration/device/xiaomi/edit/:deviceSelector" />,
-          <TasmotaPage path="/dashboard/integration/device/tasmota" />,
-          <TasmotaEditPage path="/dashboard/integration/device/tasmota/edit/:deviceSelector" />,
-          <TasmotaMqttDiscoverPage path="/dashboard/integration/device/tasmota/mqtt" />,
-          <TasmotaHttpDiscoverPage path="/dashboard/integration/device/tasmota/http" />,
-          <EweLinkPage path="/dashboard/integration/device/ewelink" />,
-          <EweLinkEditPage path="/dashboard/integration/device/ewelink/edit/:deviceSelector" />,
-          <EweLinkDiscoverPage path="/dashboard/integration/device/ewelink/discover" />,
-          <EweLinkSetupPage path="/dashboard/integration/device/ewelink/setup" />,
+          />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <PhilipsHueSetupPage path="/dashboard/integration/device/philips-hue/setup" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <PhilipsHueDevicePage path="/dashboard/integration/device/philips-hue/device" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <Redirect path="/dashboard/integration/device/tp-link" to="/dashboard/integration/device/tp-link/device" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <TPLinkDevicePage path="/dashboard/integration/device/tp-link/device" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <Redirect path="/dashboard/integration/device/zwave" to="/dashboard/integration/device/zwave/node" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <ZwaveNodePage path="/dashboard/integration/device/zwave/node" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <RtspCameraPage path="/dashboard/integration/device/rtsp-camera" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <MqttDevicePage path="/dashboard/integration/device/mqtt" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <MqttDeviceSetupPage path="/dashboard/integration/device/mqtt/edit" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <MqttDeviceSetupPage path="/dashboard/integration/device/mqtt/edit/:deviceSelector" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <MqttSetupPage path="/dashboard/integration/device/mqtt/setup" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <MqttDebugPage path="/dashboard/integration/device/mqtt/debug" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <Zigbee2mqttPage path="/dashboard/integration/device/zigbee2mqtt" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <Zigbee2mqttDiscoverPage path="/dashboard/integration/device/zigbee2mqtt/discover" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <Zigbee2mqttSetupPage path="/dashboard/integration/device/zigbee2mqtt/setup" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <Zigbee2mqttEditPage path="/dashboard/integration/device/zigbee2mqtt/edit/:deviceSelector" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
 
-          <BluetoothDevicePage path="/dashboard/integration/device/bluetooth" />,
-          <BluetoothEditDevicePage path="/dashboard/integration/device/bluetooth/:deviceSelector" />,
-          <BluetoothSetupPage path="/dashboard/integration/device/bluetooth/setup" />,
-          <BluetoothSetupPeripheralPage path="/dashboard/integration/device/bluetooth/setup/:uuid" />,
-          <BluetoothSettingsPage path="/dashboard/integration/device/bluetooth/config" />,
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <NodeRedPage path="/dashboard/integration/device/node-red" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <XiaomiPage path="/dashboard/integration/device/xiaomi" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <EditXiaomiPage path="/dashboard/integration/device/xiaomi/edit/:deviceSelector" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <TasmotaPage path="/dashboard/integration/device/tasmota" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <TasmotaEditPage path="/dashboard/integration/device/tasmota/edit/:deviceSelector" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <TasmotaMqttDiscoverPage path="/dashboard/integration/device/tasmota/mqtt" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <TasmotaHttpDiscoverPage path="/dashboard/integration/device/tasmota/http" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <EweLinkPage path="/dashboard/integration/device/ewelink" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <EweLinkEditPage path="/dashboard/integration/device/ewelink/edit/:deviceSelector" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <EweLinkDiscoverPage path="/dashboard/integration/device/ewelink/discover" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <EweLinkSetupPage path="/dashboard/integration/device/ewelink/setup" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <HomeKitPage path="/dashboard/integration/communication/homekit" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <OpenAIPage path="/dashboard/integration/communication/openai" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <TuyaPage path="/dashboard/integration/device/tuya" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <TuyaEditPage path="/dashboard/integration/device/tuya/edit/:deviceSelector" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <TuyaDiscoverPage path="/dashboard/integration/device/tuya/discover" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <TuyaSetupPage path="/dashboard/integration/device/tuya/setup" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <NetatmoPage path="/dashboard/integration/device/netatmo" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <NetatmoDiscoverPage path="/dashboard/integration/device/netatmo/discover" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <NetatmoSetupPage path="/dashboard/integration/device/netatmo/setup" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
 
-          <BroadlinkDevicePage path="/dashboard/integration/device/broadlink" />,
-          <BroadlinkRemoteSetupPage path="/dashboard/integration/device/broadlink/edit" />,
-          <BroadlinkRemoteSetupPage path="/dashboard/integration/device/broadlink/edit/:deviceSelector" />,
-          <BroadlinkPeripheralPage path="/dashboard/integration/device/broadlink/peripheral" />,
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <SonosDevicePage path="/dashboard/integration/device/sonos" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <SonosDiscoveryPage path="/dashboard/integration/device/sonos/discover" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
 
-          <LANManagerDevicePage path="/dashboard/integration/device/lan-manager" />,
-          <LANManagerDiscoverPage path="/dashboard/integration/device/lan-manager/discover" />,
-          <LANManagerSettingsPage path="/dashboard/integration/device/lan-manager/config" />,
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <GoogleCastDevicePage path="/dashboard/integration/device/google-cast" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <GoogleCastDiscoveryPage path="/dashboard/integration/device/google-cast/discover" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
 
-          <GoogleHomeGateway path="/dashboard/integration/device/google-home/authorize" />,
-          <OwntracksWelcomePage path="/dashboard/integration/device/owntracks" />,
-          <AlexaGateway path="/dashboard/integration/device/alexa/authorize" />,
-          <EnedisGateway path="/dashboard/integration/device/enedis" />,
-          <EnedisGatewayUsagePoints path="/dashboard/integration/device/enedis/usage-points" />,
-          <EnedisGateway path="/dashboard/integration/device/enedis/redirect" />,
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <ZwaveJSUIDevicePage path="/dashboard/integration/device/zwavejs-ui" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <ZwaveJSUIDiscoveryPage path="/dashboard/integration/device/zwavejs-ui/discover" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <ZwaveJSUISetupPage path="/dashboard/integration/device/zwavejs-ui/setup" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
 
-          <ScenePage path="/dashboard/scene" />,
-          <NewScenePage path="/dashboard/scene/new" />,
-          <DuplicateScenePage path="/dashboard/scene/:scene_selector/duplicate" />,
-          <EditScenePage path="/dashboard/scene/:scene_selector" />,
-          <SettingsSessionPage path="/dashboard/settings/session" />,
-          <SettingsHousePage path="/dashboard/settings/house" />,
-          <SettingsUserPage path="/dashboard/settings/user" />,
-          <SettingsEditUserPage path="/dashboard/settings/user/edit/:user_selector" />,
-          <SettingsCreateUserPage path="/dashboard/settings/user/new" />,
-          <SettingsSystemPage path="/dashboard/settings/system" />,
-          <SettingsGateway path="/dashboard/settings/gateway" />,
-          <SettingsServicePage path="/dashboard/settings/service" />,
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <MELCloudPage path="/dashboard/integration/device/melcloud" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <MELCloudEditPage path="/dashboard/integration/device/melcloud/edit/:deviceSelector" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <MELCloudDiscoverPage path="/dashboard/integration/device/melcloud/discover" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <MELCloudSetupPage path="/dashboard/integration/device/melcloud/setup" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <BluetoothDevicePage path="/dashboard/integration/device/bluetooth" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <BluetoothEditDevicePage path="/dashboard/integration/device/bluetooth/:deviceSelector" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <BluetoothSetupPage path="/dashboard/integration/device/bluetooth/setup" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <BluetoothSetupPeripheralPage path="/dashboard/integration/device/bluetooth/setup/:uuid" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <BluetoothSettingsPage path="/dashboard/integration/device/bluetooth/config" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <BroadlinkDevicePage path="/dashboard/integration/device/broadlink" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <BroadlinkRemoteSetupPage path="/dashboard/integration/device/broadlink/edit" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <BroadlinkRemoteSetupPage path="/dashboard/integration/device/broadlink/edit/:deviceSelector" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <BroadlinkPeripheralPage path="/dashboard/integration/device/broadlink/peripheral" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <LANManagerDevicePage path="/dashboard/integration/device/lan-manager" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <LANManagerDiscoverPage path="/dashboard/integration/device/lan-manager/discover" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <LANManagerSettingsPage path="/dashboard/integration/device/lan-manager/config" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <GoogleHomeWelcomePage path="/dashboard/integration/communication/googlehome" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <GoogleHomeGateway path="/dashboard/integration/device/google-home/authorize" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <AlexaWelcomePage path="/dashboard/integration/communication/alexa" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <AlexaGateway path="/dashboard/integration/device/alexa/authorize" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <OwntracksWelcomePage path="/dashboard/integration/device/owntracks" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <EnedisGateway path="/dashboard/integration/device/enedis" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <EnedisGatewayUsagePoints path="/dashboard/integration/device/enedis/usage-points" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <EnedisGateway path="/dashboard/integration/device/enedis/redirect" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <ScenePage path="/dashboard/scene" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <NewScenePage path="/dashboard/scene/new" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <DuplicateScenePage path="/dashboard/scene/:scene_selector/duplicate" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <EditScenePage path="/dashboard/scene/:scene_selector" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <SettingsSessionPage path="/dashboard/settings/session" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <SettingsHousePage path="/dashboard/settings/house" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <SettingsUserPage path="/dashboard/settings/user" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <SettingsEditUserPage path="/dashboard/settings/user/edit/:user_selector" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <SettingsCreateUserPage path="/dashboard/settings/user/new" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <SettingsSystemPage path="/dashboard/settings/system" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <SettingsGateway path="/dashboard/settings/gateway" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <SettingsServicePage path="/dashboard/settings/service" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
           <SettingsBackup path="/dashboard/settings/backup" />
-        ], props)}
-        
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+
         <ProfilePage path="/dashboard/profile" />
         <SettingsBackgroundJobs path="/dashboard/settings/jobs" />
+        <ErrorNoAuthorize type="403" default />
         <Error type="404" default />
-        <ErrorNoAuthorize type="401" default />
       </Router>
     </Layout>
   </div>
@@ -445,7 +706,7 @@ class MainApp extends Component {
     this.props.checkSession();
   }
 
-  render({ user }, {}) {
+  render({ user }, { }) {
     const translationDefinition = get(translations, user.language, { default: translations.en });
     return (
       <IntlProvider definition={translationDefinition}>

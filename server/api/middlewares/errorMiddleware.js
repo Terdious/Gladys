@@ -11,6 +11,7 @@ const {
 const {
   PasswordNotMatchingError,
   NotFoundError,
+  NotAuthorizedError,
   ServiceNotConfiguredError,
   BadParameters,
   ConflictError,
@@ -51,6 +52,8 @@ module.exports = function errorMiddleware(error, req, res, next) {
     responseError = new Error403(error.message);
   } else if (error instanceof ServiceNotConfiguredError) {
     responseError = new Error400(ERROR_MESSAGES.SERVICE_NOT_CONFIGURED);
+  } else if (error instanceof NotAuthorizedError) {
+    responseError = new Error403(error.message);
   } else if (error instanceof NotFoundError && req.path === '/api/login') {
     responseError = new Error403();
   } else if (error instanceof NotFoundError) {

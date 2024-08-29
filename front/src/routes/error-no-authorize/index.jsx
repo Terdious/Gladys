@@ -1,11 +1,11 @@
 import { Text } from 'preact-i18n';
 
-const Error = ({ type }) => (
+const ErrorNoAuthorize = ({ type }) => (
   <div class="page">
     <div class="page-content">
       <div class="container text-center">
         <div class="display-1 text-muted mb-5">
-          <i class="si si-exclamation" /> 401
+          <i class="si si-exclamation" /> {type}
         </div>
         <h1 class="h2 mb-3">
           <Text id="errorNoAuthorizePage.title" />
@@ -21,4 +21,4 @@ const Error = ({ type }) => (
     </div>
   </div>
 );
-export default Error;
+export default ErrorNoAuthorize;

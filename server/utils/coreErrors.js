@@ -5,6 +5,13 @@ class PasswordNotMatchingError extends Error {
   }
 }
 
+class NotAuthorizedError extends Error {
+  constructor(message) {
+    super();
+    this.message = message;
+  }
+}
+
 class NotFoundError extends Error {
   constructor(message) {
     super();
@@ -71,6 +78,7 @@ class AbortScene extends Error {
 
 module.exports = {
   PasswordNotMatchingError,
+  NotAuthorizedError,
   NotFoundError,
   ServiceNotConfiguredError,
   BadParameters,

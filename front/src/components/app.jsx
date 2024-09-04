@@ -43,7 +43,6 @@ import SignupSuccess from '../routes/signup/5-success';
 import Dashboard from '../routes/dashboard';
 import NewDashboard from '../routes/dashboard/new-dashboard';
 import EditDashboard from '../routes/dashboard/edit-dashboard';
-import ExpandedDashboard from '../routes/dashboard/expanded-dashboard';
 
 import IntegrationPage from '../routes/integration';
 import ChatPage from '../routes/chat';
@@ -231,7 +230,6 @@ const AppRouter = connect(
         <Dashboard path="/dashboard" />
         <Dashboard path="/dashboard/:dashboardSelector" />
         <EditDashboard path="/dashboard/:dashboardSelector/edit" />
-        <ExpandedDashboard path="/dashboard/:dashboardSelector/expanded/:x/:y" />
         <NewDashboard path="/dashboard/create/new" />
         <IntegrationPage path="/dashboard/integration" />
 
@@ -369,7 +367,7 @@ class MainApp extends Component {
     this.props.checkSession();
   }
 
-  render({ user }, { }) {
+  render({ user }, {}) {
     const translationDefinition = get(translations, user.language, { default: translations.en });
     return (
       <IntlProvider definition={translationDefinition}>

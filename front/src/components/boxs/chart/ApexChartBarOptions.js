@@ -1,11 +1,11 @@
-const getApexChartBarOptions = ({ displayAxes, height, series, colors, locales, defaultLocale }) => {
+const getApexChartBarOptions = ({ displayAxes, series, colors, locales, defaultLocale }) => {
   const options = {
     chart: {
       locales,
       defaultLocale,
       type: 'bar',
       fontFamily: 'inherit',
-      height,
+      height: displayAxes ? 200 : 100,
       parentHeightOffset: 0,
       toolbar: {
         show: false

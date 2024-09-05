@@ -214,6 +214,7 @@ class ApexChartComponent extends Component {
       this.chart.updateOptions(options);
     } else {
       this.chart = new ApexCharts(this.chartRef.current, options);
+
       this.chart.render();
     }
   };

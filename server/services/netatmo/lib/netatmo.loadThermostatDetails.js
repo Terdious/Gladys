@@ -10,8 +10,9 @@ const { API, SUPPORTED_CATEGORY_TYPE } = require('./utils/netatmo.constants');
  */
 async function loadThermostatDetails() {
   logger.debug('loading Thermostats details...');
-  let plugs;
-  const thermostats = [];
+  // let plugs;
+  // const thermostats = [];
+  const modules = [];
   try {
     const responseGetThermostat = await fetch(API.GET_THERMOSTATS, {
       method: 'GET',
@@ -27,17 +28,18 @@ async function loadThermostatDetails() {
     }
     const data = JSON.parse(rawBody);
     const { body, status } = data;
-    plugs = body.devices;
+    const { devices } = body;
+    // plugs = body.devices;
     if (status === 'ok') {
-      plugs.forEach((plug) => {
+      devices.forEach((device) => {
         if (!this.configuration.energyApi) {
-          plug.apiNotConfigured = true;
+          device.apiNotConfigured = true;
         } else {
-          plug.apiNotConfigured = false;
+          device.apiNotConfigured = false;
         }
-        plug.categoryAPI = SUPPORTED_CATEGORY_TYPE.ENERGY;
-        plug.modules.forEach((module) => {
-          const { modules, ...rest } = plug;
+        device.categoryAPI = SUPPORTED_CATEGORY_TYPE.ENERGY;
+        device.modules.forEach((module) => {
+          const { modules: mods, ...rest } = device;
           module.plug = rest;
           if (!this.configuration.energyApi) {
             module.apiNotConfigured = true;
@@ -46,14 +48,14 @@ async function loadThermostatDetails() {
           }
           module.categoryAPI = SUPPORTED_CATEGORY_TYPE.ENERGY;
         });
-        thermostats.push(...plug.modules);
+        modules.push(...device.modules);
       });
     }
     logger.debug('Thermostats details loaded in home');
-    return { plugs, thermostats };
+    return { devices, modules };
   } catch (e) {
     logger.error('Error getting thermostats details - error: ', e);
-    return { plugs: undefined, thermostats: undefined };
+    return { devices: undefined, modules: undefined };
   }
 }
 

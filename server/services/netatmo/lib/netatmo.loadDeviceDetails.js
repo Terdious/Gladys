@@ -1,3 +1,4 @@
+const Promise = require('bluebird');
 const { fetch } = require('undici');
 const logger = require('../../../utils/logger');
 const { API, SUPPORTED_MODULE_TYPE, SUPPORTED_CATEGORY_TYPE } = require('./utils/netatmo.constants');
@@ -70,6 +71,17 @@ async function loadDeviceDetails(homeData) {
             }
             moduleSupported = true;
             categoryAPI = SUPPORTED_CATEGORY_TYPE.WEATHER;
+          }
+          if (
+            model === SUPPORTED_MODULE_TYPE.NACAMERA
+          ) {
+            if (!this.configuration.securityApi) {
+              apiNotConfigured = true;
+            } else {
+              apiNotConfigured = false;
+            }
+            moduleSupported = true;
+            categoryAPI = SUPPORTED_CATEGORY_TYPE.SECURITY;
           }
 
           const moduleHomeData = modulesHomeData.find((mod) => mod.id === module.id);

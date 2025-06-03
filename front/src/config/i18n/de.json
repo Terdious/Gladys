@@ -3382,7 +3382,9 @@
       "power": "Leistung",
       "energy": "Energie",
       "index": "Index",
-      "daily-consumption": "Tagesverbrauch"
+      "daily-consumption": "Tagesverbrauch",
+      "energy-consumption": "Energieverbrauch",
+      "energy-production": "Energieproduktion"
     },
     "teleinformation": {
       "shortCategoryName": "Teleinformation",

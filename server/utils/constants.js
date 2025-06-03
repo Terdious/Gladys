@@ -691,6 +691,8 @@ const DEVICE_FEATURE_TYPES = {
     CURRENT: 'current',
     INDEX: 'index',
     DAILY_CONSUMPTION: 'daily-consumption',
+    ENERGY_CONSUMPTION: 'energy-consumption',
+    ENERGY_PRODUCTION: 'energy-production',
   },
   TELEINFORMATION: {
     BINARY: 'binary',

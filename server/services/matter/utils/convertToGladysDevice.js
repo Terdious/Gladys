@@ -8,6 +8,7 @@ const {
   ColorControl,
   RelativeHumidityMeasurement,
   Thermostat,
+  ElectricalEnergyMeasurement,
   // eslint-disable-next-line import/no-unresolved
 } = require('@matter/main/clusters');
 const Promise = require('bluebird');
@@ -36,9 +37,8 @@ async function convertToGladysDevice(serviceId, nodeId, device, nodeDetailDevice
     params: [],
   };
   if (nodeDetailDeviceDataBasicInformation) {
-    gladysDevice.name = `${
-      nodeDetailDeviceDataBasicInformation.vendorName
-    } (${nodeDetailDeviceDataBasicInformation.nodeLabel ||
+    gladysDevice.name = `${nodeDetailDeviceDataBasicInformation.vendorName
+      } (${nodeDetailDeviceDataBasicInformation.nodeLabel ||
       nodeDetailDeviceDataBasicInformation.productLabel ||
       nodeDetailDeviceDataBasicInformation.productName ||
       device.name})`;
@@ -206,6 +206,93 @@ async function convertToGladysDevice(serviceId, nodeId, device, nodeDetailDevice
             external_id: `matter:${nodeId}:${devicePath}:${clusterIndex}:cooling`,
             min: -100,
             max: 200,
+          });
+        }
+      } else if (clusterIndex === ElectricalEnergyMeasurement.Complete.id) {
+        if (clusterClient.supportedFeatures.IMPE) {
+          gladysDevice.features.push({
+            name: `${clusterClient.name} - ${clusterClient.endpointId} (Energy Consumption)`,
+            selector: slugify(`matter-${device.name}-${clusterClient.name}-energy-consumption`, true),
+            category: DEVICE_FEATURE_CATEGORIES.ENERGY_SENSOR,
+            type: DEVICE_FEATURE_TYPES.ENERGY_SENSOR.ENERGY_CONSUMPTION,
+            read_only: false,
+            has_feedback: true,
+            unit: DEVICE_FEATURE_UNITS.WATT_HOUR,
+            external_id: `matter:${nodeId}:${devicePath}:${clusterIndex}:energy:consumption`,
+            min: 0,
+            max: 999999999999999999,
+          });
+        }
+        if (clusterClient.supportedFeatures.EXPE) {
+          gladysDevice.features.push({
+            name: `${clusterClient.name} - ${clusterClient.endpointId} (Energy Production)`,
+            selector: slugify(`matter-${device.name}-${clusterClient.name}-energy-production`, true),
+            category: DEVICE_FEATURE_CATEGORIES.ENERGY_SENSOR,
+            type: DEVICE_FEATURE_TYPES.ENERGY_SENSOR.ENERGY_PRODUCTION,
+            read_only: false,
+            has_feedback: true,
+            unit: DEVICE_FEATURE_UNITS.WATT_HOUR,
+            external_id: `matter:${nodeId}:${devicePath}:${clusterIndex}:energy:production`,
+            min: 0,
+            max: 999999999999999999,
+          });
+        }
+        if (clusterClient.supportedFeatures.CUME) {
+          const cumulativeImported = clusterClient.getAttribute('CumulativeEnergyImported');
+          const cumulativeExported = clusterClient.getAttribute('CumulativeEnergyExported');
+
+          gladysDevice.features.push({
+            name: `${clusterClient.name} - ${clusterClient.endpointId} (Cumulative Energy Consumption)`,
+            selector: slugify(`matter-${device.name}-${clusterClient.name}-cumulative-energy-consumption`, true),
+            category: DEVICE_FEATURE_CATEGORIES.ENERGY_SENSOR,
+            type: DEVICE_FEATURE_TYPES.ENERGY_SENSOR.ENERGY_CONSUMPTION,
+            read_only: true,
+            has_feedback: true,
+            unit: DEVICE_FEATURE_UNITS.WATT_HOUR,
+            external_id: `matter:${nodeId}:${devicePath}:${clusterIndex}:cumulative-energy-consumption`,
+            min: 0,
+            max: 999999999999999999,
+          });
+          gladysDevice.features.push({
+            name: `${clusterClient.name} - ${clusterClient.endpointId} (Cumulative Energy Production)`,
+            selector: slugify(`matter-${device.name}-${clusterClient.name}-cumulative-energy-production`, true),
+            category: DEVICE_FEATURE_CATEGORIES.ENERGY_SENSOR,
+            type: DEVICE_FEATURE_TYPES.ENERGY_SENSOR.ENERGY_PRODUCTION,
+            read_only: true,
+            has_feedback: true,
+            unit: DEVICE_FEATURE_UNITS.WATT_HOUR,
+            external_id: `matter:${nodeId}:${devicePath}:${clusterIndex}:cumulative-energy-production`,
+            min: 0,
+            max: 999999999999999999,
+          });
+        }
+        if (clusterClient.supportedFeatures.PERE) {
+          const periodicImported = clusterClient.getAttribute('PeriodicEnergyImported ');
+          const periodicExported = clusterClient.getAttribute('PeriodicEnergyExported');
+
+          gladysDevice.features.push({
+            name: `${clusterClient.name} - ${clusterClient.endpointId} (Periodic Energy Consumption)`,
+            selector: slugify(`matter-${device.name}-${clusterClient.name}-periodic-energy-consumption`, true),
+            category: DEVICE_FEATURE_CATEGORIES.ENERGY_SENSOR,
+            type: DEVICE_FEATURE_TYPES.ENERGY_SENSOR.ENERGY_CONSUMPTION,
+            read_only: true,
+            has_feedback: true,
+            unit: DEVICE_FEATURE_UNITS.WATT_HOUR,
+            external_id: `matter:${nodeId}:${devicePath}:${clusterIndex}:periodic-energy-consumption`,
+            min: 0,
+            max: 999999999999999999,
+          });
+          gladysDevice.features.push({
+            name: `${clusterClient.name} - ${clusterClient.endpointId} (Periodic Energy Production)`,
+            selector: slugify(`matter-${device.name}-${clusterClient.name}-periodic-energy-production`, true),
+            category: DEVICE_FEATURE_CATEGORIES.ENERGY_SENSOR,
+            type: DEVICE_FEATURE_TYPES.ENERGY_SENSOR.ENERGY_PRODUCTION,
+            read_only: true,
+            has_feedback: true,
+            unit: DEVICE_FEATURE_UNITS.WATT_HOUR,
+            external_id: `matter:${nodeId}:${devicePath}:${clusterIndex}:periodic-energy-production`,
+            min: 0,
+            max: 999999999999999999,
           });
         }
       }

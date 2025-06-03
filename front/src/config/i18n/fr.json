@@ -3382,7 +3382,9 @@
       "power": "Puissance",
       "energy": "Energie",
       "index": "Index",
-      "daily-consumption": "Consommation journalière"
+      "daily-consumption": "Consommation journalière",
+      "energy-consumption": "Consommation d'énergie",
+      "energy-production": "Production d'énergie"
     },
     "teleinformation": {
       "shortCategoryName": "Téléinformation",

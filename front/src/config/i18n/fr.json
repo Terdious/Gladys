@@ -3383,8 +3383,10 @@
       "energy": "Energie",
       "index": "Index",
       "daily-consumption": "Consommation journalière",
-      "energy-consumption": "Consommation d'énergie",
-      "energy-production": "Production d'énergie"
+      "frequency": "Fréquence",
+      "power-factor": "Facteur de puissance",
+      "harmonics": "Harmoniques",
+      "power-quality": "Qualité de puissance"
     },
     "teleinformation": {
       "shortCategoryName": "Téléinformation",

@@ -8,7 +8,7 @@ const {
   ColorControl,
   RelativeHumidityMeasurement,
   Thermostat,
-  ElectricalEnergyMeasurement,
+  ElectricalPowerMeasurement,
   // eslint-disable-next-line import/no-unresolved
 } = require('@matter/main/clusters');
 
@@ -198,65 +198,39 @@ async function listenToStateChange(nodeId, devicePath, device) {
     }
   }
 
-  const electricalEnergyMeasurement = device.clusterClients.get(ElectricalEnergyMeasurement.Complete.id);
-  if (electricalEnergyMeasurement && !this.stateChangeListeners.has(electricalEnergyMeasurement)) {
-    logger.debug(`Matter: Adding state change listener for ElectricalEnergyMeasurement cluster ${electricalEnergyMeasurement.name}`);
-    this.stateChangeListeners.add(electricalEnergyMeasurement);
-    // Subscribe to ElectricalEnergyMeasurement attribute changes
-    if (electricalEnergyMeasurement.supportedFeatures.IMPE) {
-      electricalEnergyMeasurement.addMeasuredValueAttributeListener((value) => {
-        logger.debug(`Matter: ElectricalEnergyMeasurement attribute changed to ${value}`);
+  const electricalPowerMeasurement = device.clusterClients.get(ElectricalPowerMeasurement.Complete.id);
+  if (electricalPowerMeasurement && !this.stateChangeListeners.has(electricalPowerMeasurement)) {
+    logger.debug(`Matter: Adding state change listener for ElectricalPowerMeasurement cluster ${electricalPowerMeasurement.name}`);
+    this.stateChangeListeners.add(electricalPowerMeasurement);
+    // Subscribe to ElectricalPowerMeasurement attribute changes
+    if (electricalPowerMeasurement.supportedFeatures.IMPE) {
+      electricalPowerMeasurement.addMeasuredValueAttributeListener((value) => {
+        logger.debug(`Matter: ElectricalPowerMeasurement attribute changed to ${value}`);
         this.gladys.event.emit(EVENTS.DEVICE.NEW_STATE, {
-          device_feature_external_id: `matter:${nodeId}:${devicePath}:${ElectricalEnergyMeasurement.Complete.id}:energy:consumption`,
-          state: value,
-        });
-      });
-    }
-    if (electricalEnergyMeasurement.supportedFeatures.EXPE) {
-      electricalEnergyMeasurement.addMeasuredValueAttributeListener((value) => {
-        logger.debug(`Matter: ElectricalEnergyMeasurement attribute changed to ${value}`);
-        this.gladys.event.emit(EVENTS.DEVICE.NEW_STATE, {
-          device_feature_external_id: `matter:${nodeId}:${devicePath}:${ElectricalEnergyMeasurement.Complete.id}:energy:production`,
+          device_feature_external_id: `matter:${nodeId}:${devicePath}:${ElectricalPowerMeasurement.Complete.id}:energy:consumption`,
           state: value,
         });
       });
     }
 
-    if (electricalEnergyMeasurement.supportedFeatures.CUME) {
-      electricalEnergyMeasurement.addAttributeListener('CumulativeEnergyImported', (value) => {
-        logger.debug(`Matter: CumulativeEnergyImported attribute changed to ${value}`);
-        this.gladys.event.emit(EVENTS.DEVICE.NEW_STATE, {
-          device_feature_external_id: `matter:${nodeId}:${devicePath}:${ElectricalEnergyMeasurement.Complete.id}:energy-imported`,
-          state: value,
-        });
-      });
+    const attributes = [
+      { attr: 'RMSPower', divisor: 1000 },
+      { attr: 'Voltage', divisor: 1000 },
+      { attr: 'ActiveCurrent', divisor: 1000 },
+      { attr: 'ReactiveCurrent', divisor: 1000 },
+      { attr: 'Frequency', divisor: 1000 },
+      { attr: 'PowerFactor', divisor: 1 },
+    ];
 
-      electricalEnergyMeasurement.addAttributeListener('CumulativeEnergyExported', (value) => {
-        logger.debug(`Matter: CumulativeEnergyExported attribute changed to ${value}`);
+    attributes.forEach(({ attr, divisor }) => {
+      electricalPowerMeasurement.addAttributeListener(attr, (value) => {
+        logger.debug(`Matter: ${attr} attribute changed to ${value}`);
         this.gladys.event.emit(EVENTS.DEVICE.NEW_STATE, {
-          device_feature_external_id: `matter:${nodeId}:${devicePath}:${ElectricalEnergyMeasurement.Complete.id}:energy-exported`,
-          state: value,
+          device_feature_external_id: `matter:${nodeId}:${devicePath}:${ElectricalPowerMeasurement.Complete.id}:${attr.toLowerCase()}`,
+          state: value / divisor,
         });
       });
-    }
-
-    if (electricalEnergyMeasurement.supportedFeatures.PERE) {
-      electricalEnergyMeasurement.addAttributeListener('PeriodicEnergyImported', (value) => {
-        logger.debug(`Matter: PeriodicEnergyImported attribute changed to ${value}`);
-        this.gladys.event.emit(EVENTS.DEVICE.NEW_STATE, {
-          device_feature_external_id: `matter:${nodeId}:${devicePath}:${ElectricalEnergyMeasurement.Complete.id}:periodic-energy-imported`,
-          state: value,
-        });
-      });
-
-      electricalEnergyMeasurement.addAttributeListener('PeriodicEnergyExported', (value) => {
-        logger.debug(`Matter: PeriodicEnergyExported attribute changed to ${value}`);
-        this.gladys.event.emit(EVENTS.DEVICE.NEW_STATE, {
-          device_feature_external_id: `matter:${nodeId}:${devicePath}:${ElectricalEnergyMeasurement.Complete.id}:periodic-energy-exported`,
-          state: value,
-        });
-      });
-    }
+    });
   }
 }
 

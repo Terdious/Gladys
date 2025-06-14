@@ -11,34 +11,34 @@ const { setTokens } = require('./tesla.setTokens');
 const { retrieveTokens } = require('./tesla.retrieveTokens');
 const { refreshingTokens } = require('./tesla.refreshingTokens');
 
-const { STATUS, API_URL, ENDPOINTS } = require('./utils/tesla.constants');
+const { STATUS, AUTHENTICATION } = require('./utils/tesla.constants');
 
 const TeslaHandler = function TeslaHandler(gladys, serviceId) {
-	this.gladys = gladys;
-	this.serviceId = serviceId;
-	this.configuration = {
-		clientId: null,
-		clientSecret: null,
-		// vehicleApi: false,
-		// energyApi: false,
-		// scopes: {
-		// 	vehicle_data: 'vehicle_device_data',
-		// 	vehicle_commands: 'vehicle_commands',
-		// 	energy_device_data: 'energy_device_data',
-		// 	energy_device_commands: 'energy_device_commands'
-		// }
-	};
-	this.configured = false;
-	this.connected = false;
-	this.redirectUri = null;
-	this.accessToken = null;
-	this.refreshToken = null;
-	this.expireInToken = null;
-	this.stateGetAccessToken = null;
-	this.status = STATUS.NOT_INITIALIZED;
-	this.pollRefreshToken = undefined;
-	this.pollRefreshValues = undefined;
-}
+  this.gladys = gladys;
+  this.serviceId = serviceId;
+  this.configuration = {
+    clientId: null,
+    clientSecret: null,
+    vehicleApi: false,
+    scopes: AUTHENTICATION.scopeOauth,
+    // scopes: {
+    // 	vehicle_data: 'vehicle_device_data',
+    // 	vehicle_commands: 'vehicle_commands',
+    // 	energy_device_data: 'energy_device_data',
+    // 	energy_device_commands: 'energy_device_commands'
+    // }
+  };
+  this.configured = false;
+  this.connected = false;
+  this.redirectUri = null;
+  this.accessToken = null;
+  this.refreshToken = null;
+  this.expireInToken = null;
+  this.stateGetAccessToken = null;
+  this.status = STATUS.NOT_INITIALIZED;
+  this.pollRefreshToken = undefined;
+  this.pollRefreshValues = undefined;
+};
 
 // Bind all methods to the TeslaHandler instance
 TeslaHandler.prototype.init = init;
@@ -54,4 +54,4 @@ TeslaHandler.prototype.setTokens = setTokens;
 TeslaHandler.prototype.retrieveTokens = retrieveTokens;
 TeslaHandler.prototype.refreshingTokens = refreshingTokens;
 
-module.exports = TeslaHandler; 
+module.exports = TeslaHandler;

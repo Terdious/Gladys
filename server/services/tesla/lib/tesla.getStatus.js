@@ -15,4 +15,4 @@ function getStatus() {
 
 module.exports = {
   getStatus,
-}; 
+};

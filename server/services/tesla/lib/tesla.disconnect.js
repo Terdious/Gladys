@@ -7,18 +7,18 @@ const { STATUS } = require('./utils/tesla.constants');
  * disconnect();
  */
 function disconnect() {
-    logger.debug('Disconnecting from Tesla...');
-    this.saveStatus({ statusType: STATUS.DISCONNECTING, message: null });
-    const tokens = {
-        accessToken: '',
-        refreshToken: '',
-        expireIn: 0,
-    };
-    this.setTokens(tokens);
-    this.saveStatus({ statusType: STATUS.DISCONNECTED, message: null });
-    logger.debug('Tesla disconnected');
+  logger.debug('Disconnecting from Tesla...');
+  this.saveStatus({ statusType: STATUS.DISCONNECTING, message: null });
+  const tokens = {
+    accessToken: '',
+    refreshToken: '',
+    expireIn: 0,
+  };
+  this.setTokens(tokens);
+  this.saveStatus({ statusType: STATUS.DISCONNECTED, message: null });
+  logger.debug('Tesla disconnected');
 }
 
 module.exports = {
-    disconnect,
-}; 
+  disconnect,
+};

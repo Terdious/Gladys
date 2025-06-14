@@ -167,4 +167,4 @@ class SetupTab extends Component {
   }
 }
 
-export default connect('user,session,httpClient', {})(SetupTab); 
+export default connect('user,session,httpClient', {})(SetupTab);

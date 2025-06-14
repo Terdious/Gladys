@@ -12,7 +12,7 @@ const { STATUS, AUTHENTICATION } = require('./utils/tesla.constants');
  * connect();
  */
 async function connect() {
-  const { clientId, clientSecret } = this.configuration;
+  const { clientId, clientSecret, scopes } = this.configuration;
   if (!clientId || !clientSecret) {
     await this.saveStatus({ statusType: STATUS.NOT_INITIALIZED, message: null });
     throw new ServiceNotConfiguredError('Tesla is not configured.');
@@ -21,7 +21,8 @@ async function connect() {
   logger.debug('Connecting to Tesla...');
 
   this.stateGetAccessToken = crypto.randomBytes(16).toString('hex');
-  
+
+  const scopeValues = Object.values(scopes).join(' ');
   const params = {
     client_id: clientId,
     locale: 'fr_FR',
@@ -29,19 +30,20 @@ async function connect() {
     // redirectUri: 'http://localhost:1444',
     state: this.stateGetAccessToken,
     prompt: 'login',
-    scope: Object.values(AUTHENTICATION.scopeOauth).join(' '),
+    scope: scopeValues,
     audience: AUTHENTICATION.audience.EU,
   };
   const paramsString = new URLSearchParams(params).toString();
   this.redirectUri = `${AUTHENTICATION.urlOauth}?${paramsString}`;
 
   // const scopeValues = Object.values(AUTHENTICATION.scopeOauth).join(' ');
-  // this.redirectUri = `${AUTHENTICATION.urlOauth}?client_id=${clientId}&scope=${encodeURIComponent(scopeValues)}&state=${this.stateGetAccessToken}`;
-  
+  // this.redirectUri = `${AUTHENTICATION.urlOauth}?
+  // client_id=${clientId}&scope=${encodeURIComponent(scopeValues)}&state=${this.stateGetAccessToken}`;
+
   this.configured = true;
   return { authUrl: this.redirectUri, state: this.stateGetAccessToken };
 }
 
 module.exports = {
   connect,
-}; 
+};

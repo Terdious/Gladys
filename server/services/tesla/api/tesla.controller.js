@@ -2,10 +2,10 @@ const asyncMiddleware = require('../../../api/middlewares/asyncMiddleware');
 
 module.exports = function TeslaController(teslaHandler) {
   /**
- * @api {get} /api/v1/service/tesla/configuration Get Tesla Configuration.
- * @apiName getConfiguration
- * @apiGroup Tesla
- */
+   * @api {get} /api/v1/service/tesla/configuration Get Tesla Configuration.
+   * @apiName getConfiguration
+   * @apiGroup Tesla
+   */
   async function getConfiguration(req, res) {
     const configuration = await teslaHandler.getConfiguration();
     res.json(configuration);
@@ -57,10 +57,10 @@ module.exports = function TeslaController(teslaHandler) {
   }
 
   /**
- * @api {post} /api/v1/service/tesla/token Retrieve access and refresh Tokens tesla with code of return
- * @apiName retrieveTokens
- * @apiGroup Tesla
- */
+   * @api {post} /api/v1/service/tesla/token Retrieve access and refresh Tokens tesla with code of return
+   * @apiName retrieveTokens
+   * @apiGroup Tesla
+   */
   async function retrieveTokens(req, res) {
     await teslaHandler.getConfiguration();
     const result = await teslaHandler.retrieveTokens(req.body);
@@ -79,43 +79,43 @@ module.exports = function TeslaController(teslaHandler) {
     });
   }
 
-//   /**
-//  * @api {get} /api/v1/service/tesla/discover Discover tesla devices from API.
-//  * @apiName discover
-//  * @apiGroup Tesla
-//  */
-//   async function discover(req, res) {
-//     let devices;
-//     if (!teslaHandler.discoveredDevices || req.query.refresh === 'true') {
-//       devices = await teslaHandler.discoverDevices();
-//     } else {
-//       devices = teslaHandler.discoveredDevices.filter((device) => {
-//         const existInGladys = teslaHandler.gladys.stateManager.get('deviceByExternalId', device.external_id);
-//         return existInGladys === null;
-//       });
-//     }
-//     res.json(devices);
-//   }
+  //   /**
+  //  * @api {get} /api/v1/service/tesla/discover Discover tesla devices from API.
+  //  * @apiName discover
+  //  * @apiGroup Tesla
+  //  */
+  //   async function discover(req, res) {
+  //     let devices;
+  //     if (!teslaHandler.discoveredDevices || req.query.refresh === 'true') {
+  //       devices = await teslaHandler.discoverDevices();
+  //     } else {
+  //       devices = teslaHandler.discoveredDevices.filter((device) => {
+  //         const existInGladys = teslaHandler.gladys.stateManager.get('deviceByExternalId', device.external_id);
+  //         return existInGladys === null;
+  //       });
+  //     }
+  //     res.json(devices);
+  //   }
 
-//   /**
-//    * @description Get all vehicles
-//    * @param {Object} req - Express request object
-//    * @param {Object} res - Express response object
-//    */
-//   async function getVehicles(req, res) {
-//       try {
-//           const vehicles = await teslaHandler.getVehicles();
-//           res.json({
-//               success: true,
-//               vehicles,
-//           });
-//       } catch (e) {
-//           res.status(400).json({
-//               success: false,
-//               message: e.message,
-//           });
-//       }
-//   }
+  //   /**
+  //    * @description Get all vehicles
+  //    * @param {Object} req - Express request object
+  //    * @param {Object} res - Express response object
+  //    */
+  //   async function getVehicles(req, res) {
+  //       try {
+  //           const vehicles = await teslaHandler.getVehicles();
+  //           res.json({
+  //               success: true,
+  //               vehicles,
+  //           });
+  //       } catch (e) {
+  //           res.status(400).json({
+  //               success: false,
+  //               message: e.message,
+  //           });
+  //       }
+  //   }
 
   return {
     'get /api/v1/service/tesla/configuration': {
@@ -155,4 +155,4 @@ module.exports = function TeslaController(teslaHandler) {
     //   controller: asyncMiddleware(getVehicles),
     // },
   };
-}; 
+};

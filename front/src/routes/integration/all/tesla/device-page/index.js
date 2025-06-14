@@ -104,10 +104,7 @@ class DevicePage extends Component {
     this.loadStatus();
     this.props.session.dispatcher.addListener(WEBSOCKET_MESSAGE_TYPES.TESLA.STATUS, this.updateStatus);
     this.props.session.dispatcher.addListener(WEBSOCKET_MESSAGE_TYPES.TESLA.ERROR.CONNECTING, this.updateStatusError);
-    this.props.session.dispatcher.addListener(
-      WEBSOCKET_MESSAGE_TYPES.TESLA.ERROR.PROCESSING_TOKEN,
-      this.updateStatus
-    );
+    this.props.session.dispatcher.addListener(WEBSOCKET_MESSAGE_TYPES.TESLA.ERROR.PROCESSING_TOKEN, this.updateStatus);
   }
 
   componentWillUnmount() {

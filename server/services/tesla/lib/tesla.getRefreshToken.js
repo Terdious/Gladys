@@ -34,4 +34,4 @@ async function getRefreshToken() {
 
 module.exports = {
   getRefreshToken,
-}; 
+};

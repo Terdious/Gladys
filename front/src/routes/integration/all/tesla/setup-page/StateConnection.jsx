@@ -32,4 +32,4 @@ const StateConnection = props => (
   </div>
 );
 
-export default StateConnection; 
+export default StateConnection;

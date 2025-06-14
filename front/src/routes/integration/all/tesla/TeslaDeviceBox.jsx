@@ -1,5 +1,5 @@
 import { Component } from 'preact';
-import { Text, Localizer, MarkupText } from 'preact-i18n';
+import { Text, Localizer } from 'preact-i18n';
 import cx from 'classnames';
 import { connect } from 'unistore/preact';
 import dayjs from 'dayjs';
@@ -311,4 +311,4 @@ class TeslaDeviceBox extends Component {
   }
 }
 
-export default connect('httpClient,user', {})(TeslaDeviceBox); 
+export default connect('httpClient,user', {})(TeslaDeviceBox);

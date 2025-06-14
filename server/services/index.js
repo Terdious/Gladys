@@ -27,6 +27,7 @@ module.exports.tuya = require('./tuya');
 module.exports.melcloud = require('./melcloud');
 module.exports['node-red'] = require('./node-red');
 module.exports.netatmo = require('./netatmo');
+module.exports.tesla = require('./tesla');
 module.exports.sonos = require('./sonos');
 module.exports['zwavejs-ui'] = require('./zwavejs-ui');
 module.exports['google-cast'] = require('./google-cast');

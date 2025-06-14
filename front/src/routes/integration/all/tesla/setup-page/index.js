@@ -13,7 +13,7 @@ class TeslaSetupPage extends Component {
         try {
             const result = await this.props.httpClient.post('/api/v1/service/tesla/connect');
             // const redirectUri = `${result.authUrl}&redirect_uri=${encodeURIComponent(this.state.redirectUriTeslaSetup)}`;
-            const redirectUri = `${result.authUrl}&redirect_uri=http://localhost:1444/dashboard/integration/device/tesla/setup`;
+            const redirectUri = `${result.authUrl}&redirect_uri=${encodeURIComponent("http://localhost:1444/dashboard/integration/device/tesla/setup")}`;
             // redirectUri: 'http://localhost:1444',
             // const redirectUri = `${result.authUrl}`;
             await this.setState({
@@ -268,8 +268,11 @@ class TeslaSetupPage extends Component {
     };
 
     componentDidMount() {
+        console.log('tesla setup page init');
         this.init();
+        console.log('tesla setup page loadProps');
         this.loadProps();
+        console.log('tesla setup page loadStatus');
         this.loadStatus();
         this.props.session.dispatcher.addListener(WEBSOCKET_MESSAGE_TYPES.TESLA.STATUS, this.updateStatus);
         this.props.session.dispatcher.addListener(WEBSOCKET_MESSAGE_TYPES.TESLA.ERROR.CONNECTING, this.updateStatusError);
@@ -307,4 +310,4 @@ class TeslaSetupPage extends Component {
     }
 }
 
-export default withIntlAsProp(connect('user,session,httpClient', {})(TeslaSetupPage)); 
+export default withIntlAsProp(connect('user,session,httpClient', {})(TeslaSetupPage));

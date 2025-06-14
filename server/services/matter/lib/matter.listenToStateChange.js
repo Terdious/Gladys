@@ -200,11 +200,13 @@ async function listenToStateChange(nodeId, devicePath, device) {
 
   const electricalEnergyMeasurement = device.clusterClients.get(ElectricalEnergyMeasurement.Complete.id);
   if (electricalEnergyMeasurement && !this.stateChangeListeners.has(electricalEnergyMeasurement)) {
+    console.log('Energy Measurement Cluster Client:');
     logger.debug(`Matter: Adding state change listener for ElectricalEnergyMeasurement cluster ${electricalEnergyMeasurement.name}`);
     this.stateChangeListeners.add(electricalEnergyMeasurement);
     // Subscribe to ElectricalEnergyMeasurement attribute changes
-    if (electricalEnergyMeasurement.supportedFeatures.IMPE) {
-      electricalEnergyMeasurement.addMeasuredValueAttributeListener((value) => {
+    if (electricalEnergyMeasurement.supportedFeatures.importedEnergy) {
+      console.log('Energy Measurement Cluster Client IMPE:');
+      electricalEnergyMeasurement.addAccuracyAttributeListener('CumulativeEnergyImported', (value) => {
         logger.debug(`Matter: ElectricalEnergyMeasurement attribute changed to ${value}`);
         this.gladys.event.emit(EVENTS.DEVICE.NEW_STATE, {
           device_feature_external_id: `matter:${nodeId}:${devicePath}:${ElectricalEnergyMeasurement.Complete.id}:energy:consumption`,
@@ -212,8 +214,10 @@ async function listenToStateChange(nodeId, devicePath, device) {
         });
       });
     }
-    if (electricalEnergyMeasurement.supportedFeatures.EXPE) {
-      electricalEnergyMeasurement.addMeasuredValueAttributeListener((value) => {
+    if (electricalEnergyMeasurement.supportedFeatures.exportedEnergy) {
+      console.log('Energy Measurement Cluster Client EXPE:');
+      electricalEnergyMeasurement.addAccuracyAttributeListener('CumulativeEnergyExported', (value) => {
+        console.log('Matter: CumulativeEnergyImported attribute changed to', JSON.stringify(value));
         logger.debug(`Matter: ElectricalEnergyMeasurement attribute changed to ${value}`);
         this.gladys.event.emit(EVENTS.DEVICE.NEW_STATE, {
           device_feature_external_id: `matter:${nodeId}:${devicePath}:${ElectricalEnergyMeasurement.Complete.id}:energy:production`,
@@ -222,26 +226,33 @@ async function listenToStateChange(nodeId, devicePath, device) {
       });
     }
 
-    if (electricalEnergyMeasurement.supportedFeatures.CUME) {
-      electricalEnergyMeasurement.addAttributeListener('CumulativeEnergyImported', (value) => {
+    if (electricalEnergyMeasurement.supportedFeatures.cumulativeEnergy) {
+      console.log('Energy Measurement Cluster Client CUME:');
+      electricalEnergyMeasurement.addCumulativeEnergyImportedAttributeListener((data) => {
+        const value = Math.round(data.energy / 1000) / 1000; // Convert from mWh to kWh
         logger.debug(`Matter: CumulativeEnergyImported attribute changed to ${value}`);
+        console.log('Matter: CumulativeEnergyImported attribute changed to', JSON.stringify(data));
+        // Emit the state change event for cumulative energy imported
         this.gladys.event.emit(EVENTS.DEVICE.NEW_STATE, {
-          device_feature_external_id: `matter:${nodeId}:${devicePath}:${ElectricalEnergyMeasurement.Complete.id}:energy-imported`,
+          device_feature_external_id: `matter:${nodeId}:${devicePath}:${ElectricalEnergyMeasurement.Complete.id}:cumulative-energy-consumption`,
           state: value,
         });
       });
 
-      electricalEnergyMeasurement.addAttributeListener('CumulativeEnergyExported', (value) => {
+      electricalEnergyMeasurement.addCumulativeEnergyExportedAttributeListener((data) => {
+        const value = Math.round(data.energy / 1000) / 1000; // Convert from mWh to kWh
         logger.debug(`Matter: CumulativeEnergyExported attribute changed to ${value}`);
+        console.log('Matter: CumulativeEnergyExported attribute changed to', JSON.stringify(data));
         this.gladys.event.emit(EVENTS.DEVICE.NEW_STATE, {
-          device_feature_external_id: `matter:${nodeId}:${devicePath}:${ElectricalEnergyMeasurement.Complete.id}:energy-exported`,
+          device_feature_external_id: `matter:${nodeId}:${devicePath}:${ElectricalEnergyMeasurement.Complete.id}:cumulative-energy-production`,
           state: value,
         });
       });
     }
 
-    if (electricalEnergyMeasurement.supportedFeatures.PERE) {
-      electricalEnergyMeasurement.addAttributeListener('PeriodicEnergyImported', (value) => {
+    if (electricalEnergyMeasurement.supportedFeatures.periodicEnergy) {
+      electricalEnergyMeasurement.addPeriodicEnergyExportedAttributeListener((data) => {
+        const value = Math.round(data.energy / 1000) / 1000; // Convert from mWh to kWh
         logger.debug(`Matter: PeriodicEnergyImported attribute changed to ${value}`);
         this.gladys.event.emit(EVENTS.DEVICE.NEW_STATE, {
           device_feature_external_id: `matter:${nodeId}:${devicePath}:${ElectricalEnergyMeasurement.Complete.id}:periodic-energy-imported`,
@@ -249,7 +260,8 @@ async function listenToStateChange(nodeId, devicePath, device) {
         });
       });
 
-      electricalEnergyMeasurement.addAttributeListener('PeriodicEnergyExported', (value) => {
+      electricalEnergyMeasurement.addPeriodicEnergyExportedAttributeListener((data) => {
+        const value = Math.round(data.energy / 1000) / 1000; // Convert from mWh to kWh
         logger.debug(`Matter: PeriodicEnergyExported attribute changed to ${value}`);
         this.gladys.event.emit(EVENTS.DEVICE.NEW_STATE, {
           device_feature_external_id: `matter:${nodeId}:${devicePath}:${ElectricalEnergyMeasurement.Complete.id}:periodic-energy-exported`,

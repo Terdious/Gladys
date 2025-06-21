@@ -50,8 +50,8 @@ const AUTHENTICATION = {
   scopeToken: {
     vehicle_data: 'vehicle_device_data',
     vehicle_commands: 'vehicle_commands',
-    energy_device_data: 'energy_device_data',
-    energy_device_commands: 'energy_device_commands',
+    // energy_device_data: 'energy_device_data',
+    // energy_device_commands: 'energy_device_commands',
   },
   HEADER: {
     // ACCEPT: 'application/json',

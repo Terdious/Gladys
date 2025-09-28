@@ -1,4 +1,5 @@
-const appliances = require('node-mideahvac');
+// const appliances = require('node-mideahvac'); // Remplacé par notre implémentation pure JS
+const { MideaProtocol } = require('./protocol/midea-protocol');
 const logger = require('../../../utils/logger');
 const { statusToFeatureValues } = require('./midea-ac-lan.mapper');
 const { DEVICE_FEATURE_TYPES } = require('../../../utils/constants');
@@ -9,7 +10,10 @@ async function _attach(device, { id, key, token, host, port = 6444 }) {
         const c = this.clients.get(external_id);
         if (c.interval) clearInterval(c.interval);
     }
-    const ac = appliances.createAppliance({ communicationMethod: 'sk103', id, key, token, host, port });
+    // Créer une connexion avec notre implémentation pure JS
+    const protocol = new MideaProtocol();
+    await protocol.connect(host, port, token, key);
+    const ac = { protocol, getStatus: () => protocol.getStatus() };
 
     const poll = async () => {
         try {

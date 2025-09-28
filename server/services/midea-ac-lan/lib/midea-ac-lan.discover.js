@@ -70,6 +70,20 @@ async function discover(params) {
     }
 
     // Fallbacks when CLI discovery yields nothing (WSL2 broadcast issues, etc.)
+    // Si pas de target, essayer un scan automatique sur les réseaux courants
+    if ((!list || list.length === 0) && !target) {
+        const commonNetworks = ['192.168.1.0/24', '192.168.0.0/24', '10.0.0.0/24', '10.5.0.0/24'];
+        for (const network of commonNetworks) {
+            try {
+                const hosts = await scanHosts({ subnet: network, port: 6444 });
+                if (hosts && hosts.length > 0) {
+                    list = hosts.map((h) => ({ id: undefined, host: h.host, port: h.port }));
+                    break;
+                }
+            } catch (eScan) { }
+        }
+    }
+
     if ((!list || list.length === 0) && target && target !== 'auto') {
         // If target looks like CIDR, try TCP scan
         if (/^\d+\.\d+\.\d+\.\d+\/\d+$/.test(target)) {
@@ -137,106 +151,15 @@ async function discover(params) {
     try { uid = await ctx.gladys.variable.getValue('MIDEA_USER', ctx.serviceId); } catch (e) { }
     try { pwd = await ctx.gladys.variable.getValue('MIDEA_PASSWORD', ctx.serviceId); } catch (e) { }
     try { token = await ctx.gladys.variable.getValue('MIDEA_ACCESS_TOKEN', ctx.serviceId); } catch (e) { }
-    if (uid && pwd) {
-        try {
-            // Ensure an authenticated/usable client without re-login if we already have a token
-            if (!ctx.cloudClient) {
-                logger.info('Midea AC LAN: preparing cloud client for token/key fetch');
-                ctx.cloudClient = new CloudConnection({ uid, password: pwd });
-                if (token) ctx.cloudClient._accessToken = token;
-                // quick validate by calling authenticate only if no token
-                if (!token) {
-                    try {
-                        logger.info('Midea AC LAN: authenticating cloud client (no cached token)');
-                        await ctx.cloudClient._authenticate();
-                        // persist token for reuse
-                        try { await ctx.gladys.variable.setValue('MIDEA_ACCESS_TOKEN', ctx.cloudClient._accessToken || '', ctx.serviceId); } catch (eTok) { }
-                    } catch (eAuth) {
-                        logger.warn(`Midea AC LAN: cloud auth error: ${eAuth && eAuth.message}`);
-                    }
-                }
-            } else {
-                // If we have cloudClient, try to reuse its current token
-                if (!ctx.cloudClient._accessToken && token) ctx.cloudClient._accessToken = token;
-            }
-            logger.info('Midea AC LAN: Cloud token/key fetch enabled (reusing connection/token)');
-            logger.debug(`Midea discover: cloud token.len=${String((ctx.cloudClient && ctx.cloudClient._accessToken) || '').length}`);
-            await Promise.all(
-                (list || []).map(async (d) => {
-                    if (!d) return;
-                    const cacheKey = d.udpId || d.id;
-                    if (cacheKey && ctx.tokenCache && ctx.tokenCache.has(cacheKey)) {
-                        const cached = ctx.tokenCache.get(cacheKey);
-                        d.key = d.key || cached.key;
-                        d.token = d.token || cached.token;
-                        logger.info(`Midea AC LAN: cache hit for ${d.host} (${cacheKey})`);
-                        return;
-                    }
-                    if (!d.udpId || d.token) return;
-                    try {
-                        const deviceIdHex = (d.id || '').toString(16);
-                        logger.info(`Midea AC LAN: getToken for host=${d.host} id=${d.id} udpId=${d.udpId}`);
-                        logger.debug(`Midea discover: attempt1 with idHex=${deviceIdHex}`);
-                        // Important: some clouds bind token retrieval to the last loginId issued for the provided deviceId
-                        try { await ctx.cloudClient._authenticate(deviceIdHex); } catch (eLogin) { }
-                        const pair = await ctx.cloudClient.getToken(deviceIdHex, d.udpId);
-                        logger.debug(`Midea discover: token attempt1 ok=${!!(pair && pair.key && pair.token)}`);
-                        if (!pair || !pair.key || !pair.token) {
-                            // retry variants: UDPID uppercase then decimal id
-                            const up = String(d.udpId || '').toUpperCase();
-                            logger.debug('Midea discover: attempt2 with UDPID upper');
-                            const p2 = await ctx.cloudClient.getToken(deviceIdHex, up);
-                            logger.debug(`Midea discover: token attempt2 (upper) ok=${!!(p2 && p2.key && p2.token)}`);
-                            if (p2 && p2.key && p2.token) {
-                                d.key = p2.key; d.token = p2.token;
-                            }
-                        } else {
-                            d.key = pair.key; d.token = pair.token;
-                        }
-                        if (!d.key || !d.token) {
-                            logger.debug('Midea discover: attempt3 with decimal id');
-                            const p3 = await ctx.cloudClient.getToken(String(d.id || ''), d.udpId);
-                            logger.debug(`Midea discover: token attempt3 (decimal) ok=${!!(p3 && p3.key && p3.token)}`);
-                            if (p3 && p3.key && p3.token) { d.key = p3.key; d.token = p3.token; }
-                        }
-                        if (!d.key || !d.token) {
-                            // last resort: raw call via axios wrapper, with on-demand authenticate if token looks invalid
-                            try {
-                                let accessToken = ctx.cloudClient && ctx.cloudClient._accessToken;
-                                const { MideaCloudClient } = require('./cloud/midea-ac-lan.cloud');
-                                const helper = new MideaCloudClient({ provider: 'MSmartHome' });
-                                try { accessToken = await helper.authenticate(uid, pwd); } catch (eAuth2) { }
-                                logger.debug(`Midea discover: raw call accessToken.len=${String(accessToken || '').length}`);
-                                const raw = await helper.rawGetToken({ accessToken, udpId: d.udpId });
-                                logger.debug(`Midea discover: raw tokenlist size=${(raw && raw.data && raw.data.tokenlist && raw.data.tokenlist.length) || 0}`);
-                                const listTok = (raw && raw.data && raw.data.tokenlist) || [];
-                                const found = listTok.find((p) => String(p.udpId || '').toLowerCase() === String(d.udpId || '').toLowerCase()) || listTok[0];
-                                if (found) { d.key = found.key; d.token = found.token; }
-                            } catch (eLow) { }
-                        }
-                        if (d.key && d.token) {
-                            if (cacheKey && ctx.tokenCache) ctx.tokenCache.set(cacheKey, { key: d.key, token: d.token });
-                            logger.info(`Midea AC LAN: token/key obtained for ${d.host}`);
-                        } else {
-                            logger.warn(`Midea AC LAN: getToken returned empty for ${d.host}`);
-                        }
-                    } catch (eTok) {
-                        logger.warn(`Midea AC LAN: getToken failed for ${d.host}: ${eTok && eTok.message}`);
-                    }
-                })
-            );
-        } catch (eCloud) {
-            logger.warn(`Midea AC LAN: cloud token/key loop error: ${eCloud && eCloud.message}`);
-        }
-    } else {
-        logger.info('Midea AC LAN: cloud not configured; skip token/key fetch');
-    }
+    // DISABLE CLOUD TOKEN FETCH - We use pure local authentication now
+    logger.info('Midea AC LAN: Cloud token/key fetch DISABLED - using pure local authentication');
+
     console.log('list', list);
     console.log('tokenCache', this.tokenCache);
     (list || []).map((d) => (console.log('d', d)));
     return (list || []).map((d) => ({
         id: d.id,
-        name: `Midea ${d.type || 'AC'} ${d.id || d.host}`,
+        // name: `Midea ${d.type || 'AC'} ${d.id || d.host}`,
         host: d.host,
         port: d.port,
         protocol: 3,
@@ -245,7 +168,10 @@ async function discover(params) {
         key: d.key,
         token: d.token,
         fw: d.fw,
-        udpId: d.udpId
+        udpId: d.udpId,
+        model: d.model,
+        name: d.name,
+        rawUdpResponse: d.rawUdpResponse
     }));
 }
 
@@ -283,12 +209,73 @@ async function udpDiscoverTarget(target) {
         };
         socket.once('message', (msg, info) => {
             try {
+                console.log(`UDP response from ${info.address}: ${msg.toString('hex')}`);
+
+                // Variable to store the REAL token from structure analysis
+                let realTokenFromStructureAnalysis = null;
+
+                // Decode UDP response to see real data structure
+                try {
+                    // Skip 0x8370 header (6 bytes: 8370 + length + flags)
+                    const payload = msg.subarray(6);
+                    console.log(`UDP payload length: ${payload.length} bytes`);
+
+                    // Look for 5a5a pattern in the payload (might not be at the start)
+                    const pattern = Buffer.from([0x5a, 0x5a]);
+                    const patternIndex = payload.indexOf(pattern);
+
+                    if (patternIndex >= 0) {
+                        console.log(`UDP: Found 5a5a pattern at offset ${patternIndex}`);
+                        const mideaData = payload.subarray(patternIndex);
+
+                        // Parse Midea UDP structure starting from 5a5a
+                        if (mideaData.length >= 20) {
+                            console.log(`UDP Structure Analysis:`);
+                            console.log(`  Magic: ${mideaData.subarray(0, 2).toString('hex')} (should be 5a5a)`);
+                            console.log(`  Version: ${mideaData.subarray(2, 4).toString('hex')}`);
+                            console.log(`  Length: ${mideaData.readUInt16LE(4)} bytes`);
+                            console.log(`  Command: ${mideaData.subarray(6, 8).toString('hex')}`);
+                            console.log(`  Device ID area: ${mideaData.subarray(20, 26).toString('hex')}`);
+
+                            // Look for text data (device model, etc.)
+                            let textData = '';
+                            for (let i = 26; i < Math.min(mideaData.length, 80); i++) {
+                                const byte = mideaData[i];
+                                if (byte >= 32 && byte <= 126) {
+                                    textData += String.fromCharCode(byte);
+                                } else if (byte === 0) {
+                                    textData += '|';
+                                } else {
+                                    textData += '.';
+                                }
+                            }
+                            console.log(`  Text data: "${textData}"`);
+
+                            // Show potential token area (last 32 bytes of the Midea data)
+                            if (mideaData.length >= 32) {
+                                const tokenArea = mideaData.subarray(-32);
+                                const potentialToken = tokenArea.toString('hex');
+                                console.log(`  Potential token (last 32 bytes): ${potentialToken}`);
+
+                                // STORE this as the REAL token to use later
+                                realTokenFromStructureAnalysis = potentialToken;
+                            }
+                        }
+                    } else {
+                        console.log(`UDP: Invalid Midea format (no 5a5a magic)`);
+                    }
+                } catch (e) {
+                    console.log(`UDP decode error: ${e.message}`);
+                }
                 let newEnc = false;
                 if (msg[0] === 0x83 && msg[1] === 0x70) {
                     msg = msg.subarray(8, msg.length - 16);
                     newEnc = true;
                 }
-                if (msg[0] !== 0x5A || msg.length < 104) return finish(undefined);
+                if (msg[0] !== 0x5A || msg.length < 104) {
+                    console.log(`Invalid UDP response: magic=${msg[0].toString(16)} length=${msg.length}`);
+                    return finish(undefined);
+                }
                 const id = parseInt(msg.subarray(20, 26).toString('hex').match(/../g).reverse().join(''), 16);
                 const data = decryptMideaPayload(msg.subarray(40, msg.length - 16).toString('hex'));
                 const port = parseInt(data.subarray(4, 8).toString('hex').match(/../g).reverse().join(''), 16);
@@ -305,21 +292,130 @@ async function udpDiscoverTarget(target) {
                 }
                 const applianceTypes = { 0xA1: 'Dehumidifier', 0xAC: 'Air Conditioner', 0xC3: 'Heat Pump Wi-Fi Controller', 0xFA: 'Fan', 0xFC: 'Air Purifier', 0xFD: 'Humidifier' };
                 const typeName = applianceTypes[typeCode] || 'Unknown';
-                finish({ id, host: info.address || target, port, fw, udpId, type: typeName, subtype });
+
+                // DECODE EVERYTHING: token, model, name from UDP response
+                let token = null;
+                let model = 'Unknown';
+                let name = 'Unknown';
+
+                try {
+                    // Use the EXACT token from structure analysis (the "Potential token")
+                    if (realTokenFromStructureAnalysis) {
+                        token = realTokenFromStructureAnalysis;
+                        console.log(`UDP: Using REAL token from structure analysis: ${token}`);
+                    } else {
+                        // Fallback: Extract token using ChatGPT method (last 32 bytes of original message)
+                        const originalMsg = msg.toString('hex');
+                        if (originalMsg.length >= 64) {
+                            token = originalMsg.slice(-64); // Last 32 bytes = 64 hex chars
+                            console.log(`UDP: Fallback token extraction: ${token}`);
+                        }
+                    }
+
+                    // Extract model and serial number from decrypted data
+                    // Based on HA logs: sn: '0000C3311171H120F3B0441000032ZRD', model: '171H120F'
+                    // The model is typically embedded in the serial number or device info area
+
+                    // Method 1: Look for model pattern in the entire decrypted data
+                    const dataHex = data.toString('hex');
+                    console.log(`UDP: Searching for model in data (${data.length} bytes): ${dataHex.slice(0, 200)}...`);
+
+                    // Method 2: Extract from specific offsets based on HA behavior
+                    // HA shows model '171H120F' - let's search for this pattern
+                    let foundModel = null;
+
+                    // Search for alphanumeric model patterns (like 171H120F)
+                    const modelRegex = /[0-9]{3}[A-Z][0-9]{3}[A-Z]/g;
+                    const dataString = data.toString('ascii').replace(/[^\x20-\x7E]/g, '.');
+                    console.log(`UDP: ASCII data for model search: ${dataString}`);
+
+                    const modelMatches = dataString.match(modelRegex);
+                    if (modelMatches && modelMatches.length > 0) {
+                        foundModel = modelMatches[0];
+                        console.log(`UDP: Found model pattern: ${foundModel}`);
+                    }
+
+                    // Method 3: Look in the serial number area (around offset 80-120)
+                    if (!foundModel && data.length > 100) {
+                        const serialArea = data.subarray(80, 120);
+                        const serialString = serialArea.toString('ascii').replace(/[^\x20-\x7E]/g, '');
+                        console.log(`UDP: Serial area: ${serialString}`);
+
+                        const serialMatches = serialString.match(modelRegex);
+                        if (serialMatches && serialMatches.length > 0) {
+                            foundModel = serialMatches[0];
+                            console.log(`UDP: Found model in serial area: ${foundModel}`);
+                        }
+                    }
+
+                    if (foundModel) {
+                        model = foundModel;
+                        console.log(`UDP: Extracted model: ${model}`);
+                    } else {
+                        console.log(`UDP: Could not extract model, using default`);
+                    }
+
+                    // Extract device name (usually same as model or in SSID area)
+                    if (data[40] > 0 && data.length > 40 + data[40]) {
+                        const ssidBytes = data.subarray(41, 41 + data[40]);
+                        let ssidText = '';
+                        for (let i = 0; i < ssidBytes.length; i++) {
+                            if (ssidBytes[i] >= 32 && ssidBytes[i] <= 126) {
+                                ssidText += String.fromCharCode(ssidBytes[i]);
+                            }
+                        }
+                        if (ssidText.length > 0) {
+                            name = ssidText.trim();
+                            console.log(`UDP: Extracted name from SSID: ${name}`);
+                        }
+                    }
+
+                    // If we found a model, use it as the device name too (more descriptive than SSID)
+                    if (foundModel && name === 'midea_c3_0003') {
+                        name = `Midea ${foundModel}`;
+                        console.log(`UDP: Using model-based name: ${name}`);
+                    }
+
+                } catch (e) {
+                    console.log(`UDP: Error extracting additional data: ${e.message}`);
+                }
+
+                // Store ALL decoded information
+                const result = {
+                    id,
+                    host: info.address || target,
+                    port,
+                    fw,
+                    udpId,
+                    type: typeName,
+                    subtype,
+                    token,      // ✅ TOKEN DECODED
+                    model,      // ✅ MODEL DECODED  
+                    name,       // ✅ NAME DECODED
+                    rawUdpResponse: msg.toString('hex')
+                };
+                console.log(`UDP: Stored complete device info - token=${!!token} model=${model} name=${name}`);
+
+                finish(result);
             } catch (e) {
                 finish(undefined);
             }
         });
         socket.bind({}, () => {
             try { socket.setBroadcast(true); } catch (e) { }
+            console.log(`Sending UDP discovery to ${target}:6445`);
             socket.send(broadcast, 0, broadcast.length, 6445, target, (err) => {
-                if (err) return finish(undefined);
+                if (err) {
+                    console.log(`UDP send error: ${err.message}`);
+                    return finish(undefined);
+                }
+                console.log(`UDP packet sent to ${target}:6445`);
             });
         });
         setTimeout(() => finish(undefined), 1500);
     });
 }
 
-module.exports = { discover, runDiscover };
+module.exports = { discover, runDiscover, udpDiscoverTarget };
 
 

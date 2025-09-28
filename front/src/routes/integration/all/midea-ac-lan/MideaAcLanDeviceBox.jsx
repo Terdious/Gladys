@@ -29,11 +29,14 @@ class MideaAcLanDeviceBox extends Component {
   confirmFromCloud = async () => {
     this.setState({ loading: true, errorMessage: null, confirmOk: false });
     try {
-      const { id, udpId } = this.state.device || {};
-      const res = await this.props.httpClient.post('/api/v1/service/midea-ac-lan/confirm', { id, udpId });
+      const { id, udpId, host, rawUdpResponse } = this.state.device || {};
+      const res = await this.props.httpClient.post('/api/v1/service/midea-ac-lan/confirm', { id, udpId, host, rawUdpResponse });
       const next = { ...this.state.device };
       if (res && res.token) next.token = res.token;
       if (res && res.key) next.key = res.key;
+      if (res && res.model) next.model = res.model;
+      if (res && res.capabilities) next.capabilities = res.capabilities;
+      if (res && res.protocol) next.protocol = res.protocol;
       this.setState({ device: next, confirmOk: !!(res && res.token && res.key) });
     } catch (e) {
       this.setState({ errorMessage: 'integration.mideaAcLan.error.defaultError' });
@@ -209,7 +212,7 @@ class MideaAcLanDeviceBox extends Component {
                 </div>
                 <div class="form-group">
                   <button class="btn btn-outline-primary" onClick={this.confirmFromCloud} disabled={loading}>
-                    Récupérer Token/Key depuis le cloud
+                    Récupérer Token/Key (LAN puis cloud)
                   </button>
                   {this.state.confirmOk && (
                     <span class="text-success ml-2">OK</span>

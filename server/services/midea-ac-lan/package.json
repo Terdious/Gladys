@@ -13,8 +13,9 @@
     "arm64"
   ],
   "dependencies": {
-    "node-mideahvac": "^0.3.3",
+    "axios": "^1.12.2",
     "execa": "^9.3.0",
+    "node-mideahvac": "^0.3.3",
     "p-retry": "^6.0.0"
   }
 }

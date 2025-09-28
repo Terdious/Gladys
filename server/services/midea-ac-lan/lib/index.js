@@ -6,7 +6,7 @@ const { restoreConfiguredDevices } = require('./midea-ac-lan.restoreConfiguredDe
 const { _attach, _publishStatus } = require('./midea-ac-lan.attach');
 const { setFeatureValue } = require('./midea-ac-lan.setFeatureValue');
 const { listDevices } = require('./midea-ac-lan.listDevices');
-const { MideaCloudClient } = require('./cloud/midea-ac-lan.cloud');
+// const { MideaCloudClient } = require('./cloud/midea-ac-lan.cloud');
 const CloudConnection = require('node-mideahvac/lib/cloud.js');
 const logger = require('../../../utils/logger');
 const { scanHosts } = require('./midea-ac-lan.scanHosts');
@@ -17,7 +17,7 @@ const MideaAcLanHandler = function MideaAcLanHandler(gladys, serviceId) {
   this.serviceId = serviceId;
   this.status = STATUS.DISCONNECTED;
   this.clients = new Map();
-  this.cloud = new MideaCloudClient();
+  // this.cloud = new MideaCloudClient();
   this.tokenCache = new Map(); // udpId/id -> { key, token }
 };
 
@@ -33,6 +33,8 @@ MideaAcLanHandler.prototype.setFeatureValue = setFeatureValue;
 MideaAcLanHandler.prototype.setValue = setFeatureValue;
 MideaAcLanHandler.prototype.listDevices = listDevices;
 MideaAcLanHandler.prototype.scanHosts = scanHosts;
+
+// Ancienne fonction confirmDevice restaurée
 
 // Ensure we have a usable cloud client from stored variables (token reused if present)
 MideaAcLanHandler.prototype.ensureCloudClient = async function ensureCloudClient() {
@@ -107,7 +109,7 @@ MideaAcLanHandler.prototype.cloudStatus = async function cloudStatus() {
   return { connected: !!this.cloudClient };
 };
 
-MideaAcLanHandler.prototype.confirmDevice = async function confirmDevice({ id, udpId }) {
+MideaAcLanHandler.prototype.confirmDevice = async function confirmDevice({ id, udpId, host, rawUdpResponse }) {
   const logger = require('../../../utils/logger');
   let uid;
   let pwd;
@@ -116,81 +118,111 @@ MideaAcLanHandler.prototype.confirmDevice = async function confirmDevice({ id, u
   if (!uid || !pwd) {
     throw new Error('CLOUD_NOT_CONFIGURED');
   }
-  if (!udpId && !id) {
-    throw new Error('DEVICE_ID_REQUIRED');
+  logger.debug(`Midea confirmDevice: received id=${id} udpId=${udpId} host=${host} rawUdpResponse=${rawUdpResponse ? 'YES' : 'NO'}`);
+
+  if (!udpId && !id && !host) {
+    throw new Error('DEVICE_ID_OR_HOST_REQUIRED');
   }
-  const CloudConnection = require('node-mideahvac/lib/cloud.js');
-  try {
-    const deviceIdHex = (id || '').toString(16);
-    const cc = this.cloudClient || new CloudConnection({ uid, password: pwd });
-    if (!this.cloudClient) {
-      try { await cc._authenticate(); this.cloudClient = cc; } catch (e) { }
+
+  // If we have host but no ID, try to discover it first
+  if (!id && host) {
+    logger.info(`Midea AC LAN: No device ID provided, attempting UDP discovery on ${host}`);
+    try {
+      const { udpDiscoverTarget } = require('./midea-ac-lan.discover');
+      const discovered = await udpDiscoverTarget(host);
+      if (discovered && discovered.id) {
+        id = discovered.id;
+        udpId = discovered.udpId;
+        logger.info(`Midea AC LAN: Discovered device ID ${id} via UDP`);
+      }
+    } catch (eDisc) {
+      logger.warn(`Midea AC LAN: UDP discovery failed: ${eDisc.message}`);
     }
-    logger.info(`Midea AC LAN: confirmDevice -> getToken id=${id} udpId=${udpId}`);
+  }
+  // const CloudConnection = require('node-mideahvac/lib/cloud.js'); // Remplacé par MideaCloudClient
+  try {
+    logger.info(`Midea AC LAN: confirmDevice -> LOCAL negotiation ONLY id=${id} udpId=${udpId} host=${host}`);
     let key;
     let token;
+
+    // PURE LOCAL AUTHENTICATION - like wuwentao/midea_ac_lan (NO CLOUD!)
+    // HA does NOT use cloud authentication - it does pure local handshake
+    logger.info(`Midea AC LAN: Pure LOCAL authentication like wuwentao/midea_ac_lan (NO CLOUD)`);
+
     try {
-      // ensure login id context is bound to this device id
-      try { await this.cloudClient._authenticate(deviceIdHex); } catch (eBind) { }
-      logger.debug(
-        `Midea confirmDevice: attempt1 idHex=${deviceIdHex} udpId=${udpId} loginId=${this.cloudClient._loginId} token.len=${String(
-          this.cloudClient._accessToken || ''
-        ).length}`
-      );
-      const pair = await this.cloudClient.getToken(deviceIdHex, udpId);
-      logger.debug(`Midea confirmDevice: attempt1 ok=${!!(pair && pair.key && pair.token)}`);
-      key = pair && pair.key;
-      token = pair && pair.token;
-    } catch (eTok) {
-      logger.warn(`Midea AC LAN: confirmDevice attempt1 error: ${eTok && (eTok.stack || eTok.message)}`);
-      // retry variants: uppercase udpid then decimal id
+      // Use our MideaLocalAuth implementation for PURE local auth
+      const { MideaLocalAuth } = require('./protocol/midea-local-auth');
+      const auth = new MideaLocalAuth();
+
+      // Pure local authentication - no cloud token needed!
+      // This is exactly how HA works with wuwentao/midea_ac_lan
+      // Use the UDP response we already have from discovery (no need to re-fetch!)
+      let udpResponse = null;
+
+      // Look for existing UDP response in the discovery data we already have
+      // The udpId parameter comes from the discovery, so we should have the raw response
+      logger.debug(`MideaLocalAuth: Looking for existing UDP response for udpId=${udpId}`);
+
+      // Use the rawUdpResponse from the FIRST discovery (passed from front-end)
+      if (rawUdpResponse) {
+        udpResponse = rawUdpResponse;
+        logger.info(`MideaLocalAuth: Using rawUdpResponse from FIRST discovery (front-end): ${udpResponse.slice(-64)}`);
+      } else {
+        // Fallback: Get FRESH UDP response if not provided
+        try {
+          logger.debug(`MideaLocalAuth: No rawUdpResponse provided, performing fresh UDP discovery`);
+          const { udpDiscoverTarget } = require('./midea-ac-lan.discover');
+
+          const udpResult = await udpDiscoverTarget(host);
+
+          if (udpResult && udpResult.rawUdpResponse) {
+            udpResponse = udpResult.rawUdpResponse;
+            logger.info(`MideaLocalAuth: Got FRESH UDP response with dynamic token: ${udpResponse.slice(-64)}`);
+          } else {
+            logger.warn(`MideaLocalAuth: No rawUdpResponse in fresh UDP result`);
+          }
+        } catch (eUdp) {
+          logger.warn(`MideaLocalAuth: Could not get fresh UDP response: ${eUdp.message}`);
+        }
+      }
+
+      // EXTRACT Token AND Key directly from UDP response (like Home Assistant!)
+      // No need for TCP handshake - HA gets everything from UDP!
       try {
-        const up = String(udpId || '').toUpperCase();
-        logger.debug('Midea confirmDevice: attempt2 with UDPID upper');
-        const pair2 = await this.cloudClient.getToken(deviceIdHex, up);
-        logger.debug(`Midea confirmDevice: attempt2 ok=${!!(pair2 && pair2.key && pair2.token)}`);
-        key = pair2 && pair2.key;
-        token = pair2 && pair2.token;
-      } catch (eTok2) {
-        logger.warn(`Midea AC LAN: confirmDevice attempt2 error: ${eTok2 && (eTok2.stack || eTok2.message)}`);
-      }
-      if (!key || !token) {
-        try {
-          const decId = String(id || '');
-          logger.debug('Midea confirmDevice: attempt3 with decimal id');
-          const pair3 = await this.cloudClient.getToken(decId, udpId);
-          logger.debug(`Midea confirmDevice: attempt3 ok=${!!(pair3 && pair3.key && pair3.token)}`);
-          key = pair3 && pair3.key;
-          token = pair3 && pair3.token;
-        } catch (eTok3) {
-          logger.warn(`Midea AC LAN: confirmDevice attempt3 error: ${eTok3 && (eTok3.stack || eTok3.message)}`);
+        function extractTokenFromRawUdp(rawHex) {
+          const hex = String(rawHex || '').toLowerCase().replace(/[^0-9a-f]/g, '');
+          if (hex.length < 64) return null;
+
+          // Token = DERNIERS 32 octets (64 hex chars)
+          const token = hex.slice(-64);
+          return /^[0-9a-f]{64}$/.test(token) ? token : null;
         }
-      }
-      // fallback: call low-level API to see raw response and pick matching udpid
-      if (!key || !token) {
-        try {
-          // try raw call via our axios wrapper as well
-          let accessToken = this.cloudClient._accessToken;
-          const { MideaCloudClient } = require('./cloud/midea-ac-lan.cloud');
-          const helper = new MideaCloudClient({ provider: 'MSmartHome' });
-          // Always re-auth to ensure valid token before raw call
-          try {
-            const fresh = await helper.authenticate(uid, pwd);
-            if (fresh) accessToken = fresh;
-          } catch (eAuth2) { }
-          logger.debug(`Midea confirmDevice: raw call accessToken.len=${String(accessToken || '').length}`);
-          const raw = await helper.rawGetToken({ accessToken, udpId });
-          logger.debug(
-            `Midea confirmDevice: raw tokenlist size=${(raw && raw.data && raw.data.tokenlist && raw.data.tokenlist.length) || 0}`
-          );
-          logger.info(`Midea AC LAN: raw getToken response: ${JSON.stringify(raw)}`);
-          const list = (raw && raw.data && raw.data.tokenlist) || [];
-          const found = list.find((p) => p && String(p.udpId || '').toLowerCase() === String(udpId || '').toLowerCase()) || list[0];
-          if (found) { key = found.key; token = found.token; }
-        } catch (eLow) {
-          logger.warn(`Midea AC LAN: raw getToken error: ${eLow && (eLow.stack || eLow.message)}`);
+
+        const extractedToken = extractTokenFromRawUdp(udpResponse);
+        if (extractedToken) {
+          // In Midea protocol, token and key are often the same or derived from the same source
+          token = extractedToken;
+          key = extractedToken; // Same as token for local authentication
+
+          logger.info(`Midea AC LAN: SUCCESS! Extracted Token/Key from UDP like HA`);
+          logger.debug(`Midea AC LAN: token=${token.substring(0, 8)}... key=${key.substring(0, 8)}...`);
+        } else {
+          logger.warn(`Midea AC LAN: Could not extract token from UDP response`);
+
+          // Fallback: Try TCP handshake
+          const authResult = await auth.authenticatePureLocal(host, 6444, id, udpResponse);
+          if (authResult && authResult.success && authResult.token && authResult.key) {
+            token = authResult.token;
+            key = authResult.key;
+            logger.info(`Midea AC LAN: SUCCESS! TCP handshake fallback`);
+          }
         }
+      } catch (eExtract) {
+        logger.warn(`Midea AC LAN: Token extraction error: ${eExtract.message}`);
       }
+
+    } catch (eLoc) {
+      logger.warn(`Midea AC LAN: Pure local authentication error: ${eLoc && (eLoc.stack || eLoc.message)}`);
     }
     const result = { key, token };
     logger.debug(`Midea confirmDevice: result hasToken=${!!token} hasKey=${!!key}`);

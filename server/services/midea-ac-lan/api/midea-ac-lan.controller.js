@@ -33,8 +33,8 @@ module.exports = function MideaAcLanController(mideaHandler) {
   }
 
   async function confirm(req, res) {
-    const { id, udpId } = req.body || {};
-    const result = await mideaHandler.confirmDevice({ id, udpId });
+    const { id, udpId, host, rawUdpResponse } = req.body || {};
+    const result = await mideaHandler.confirmDevice({ id, udpId, host, rawUdpResponse });
     res.json(result);
   }
 

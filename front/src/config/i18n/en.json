@@ -1898,6 +1898,65 @@
         "defaultDeletionError": "An error occurred while deleting the device",
         "getDevicesError": "An error occurred while getting the devices list"
       }
+    },
+    "mideaAcLan": {
+      "title": "Midea AC (LAN)",
+      "deviceTab": "Devices",
+      "discoverTab": "Discover",
+      "setupTab": "Setup",
+      "documentation": "Documentation",
+      "device": {
+        "title": "Midea AC (LAN) devices",
+        "noDevice": "No device.",
+        "discoverLink": "Start a discovery.",
+        "featuresLabel": "Features",
+        "editButton": "Edit"
+      },
+      "discover": {
+        "title": "Device discovery",
+        "scan": "Scan",
+        "empty": "No device found."
+      },
+      "status": {
+        "online": "Online",
+        "offline": "Offline",
+        "notConnected": "Service not connected."
+      },
+      "nameLabel": "Name",
+      "namePlaceholder": "Device name",
+      "modelLabel": "Model",
+      "roomLabel": "Room",
+      "alreadyCreatedButton": "Already created",
+      "updateButton": "Update",
+      "saveButton": "Save",
+      "deleteButton": "Delete",
+      "unmanagedModelButton": "Unsupported model",
+      "error": {
+        "defaultError": "Error while saving",
+        "conflictError": "Conflict: device already exists",
+        "defaultDeletionError": "Error while deleting"
+      },
+      "setup": {
+        "title": "Midea AC (LAN) setup",
+        "description": "Enter your Midea LAN credentials (the ones used by the discovery tool).",
+        "user": "User",
+        "userPlaceholder": "Username (optional)",
+        "password": "Password",
+        "passwordPlaceholder": "Password (optional)",
+        "saveLabel": "Save and start"
+      },
+      "manual": {
+        "title": "Manual declaration",
+        "idLabel": "Identifier (device ID)",
+        "nameLabel": "Name",
+        "hostLabel": "Host (optional)",
+        "portLabel": "Port (default 6444)",
+        "keyLabel": "Authentication key",
+        "tokenLabel": "Authentication token",
+        "addButton": "Add device",
+        "success": "Device added.",
+        "error": "Error while adding."
+      }
     }
   },
   "editScene": {

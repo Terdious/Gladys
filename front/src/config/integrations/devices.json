@@ -99,5 +99,10 @@
     "key": "matter",
     "link": "matter",
     "img": "/assets/integrations/cover/matter.jpg"
+  },
+  {
+    "key": "mideaAcLan",
+    "link": "midea-ac-lan",
+    "img": "/assets/integrations/cover/midea-ac-lan.jpg"
   }
 ]

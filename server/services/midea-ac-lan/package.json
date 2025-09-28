@@ -1,0 +1,20 @@
+{
+  "name": "gladys-midea-ac-lan",
+  "version": "1.0.0",
+  "main": "index.js",
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm",
+    "arm64"
+  ],
+  "dependencies": {
+    "node-mideahvac": "^0.3.3",
+    "execa": "^9.3.0",
+    "p-retry": "^6.0.0"
+  }
+}

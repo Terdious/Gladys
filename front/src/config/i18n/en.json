@@ -1915,7 +1915,9 @@
       "discover": {
         "title": "Device discovery",
         "scan": "Scan",
-        "empty": "No device found."
+        "empty": "No device found.",
+        "noNewDevices": "No new device found.",
+        "targetLabel": "Scan target"
       },
       "status": {
         "online": "Online",

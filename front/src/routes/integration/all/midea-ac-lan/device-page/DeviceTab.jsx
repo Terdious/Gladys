@@ -4,7 +4,6 @@ import { RequestStatus } from '../../../../../utils/consts';
 import CardFilter from '../../../../../components/layout/CardFilter';
 import debounce from 'debounce';
 import { Component } from 'preact';
-import { connect } from 'unistore/preact';
 import MideaAcLanDeviceBox from '../MideaAcLanDeviceBox';
 import EmptyState from './EmptyState';
 
@@ -54,7 +53,7 @@ class DeviceTab extends Component {
     this.getDevices();
   };
 
-  render({}, { orderDir, search, getDevicesStatus, devices }) {
+  render({ devices, housesWithRooms, ...props }, { orderDir, search, getDevicesStatus }) {
     return (
       <div class="card">
         <div class="card-header">
@@ -81,13 +80,14 @@ class DeviceTab extends Component {
                 {devices && devices.length > 0 &&
                   devices.map((device, index) => (
                     <MideaAcLanDeviceBox
+                      {...this.props}
                       editable
                       saveButton
                       deleteButton
                       device={device}
                       deviceIndex={index}
-                      getDevices={this.getDevices}
-                      housesWithRooms={[]}
+                      listName="devices"
+                      housesWithRooms={housesWithRooms || []}
                     />
                   ))}
                 {!devices || (devices.length === 0 && <EmptyState />)}
@@ -100,6 +100,6 @@ class DeviceTab extends Component {
   }
 }
 
-export default connect('httpClient', {})(DeviceTab);
+export default DeviceTab;
 
 

@@ -647,6 +647,7 @@ const DEVICE_FEATURE_TYPES = {
     BINARY: 'binary',
     MODE: 'mode',
     TARGET_TEMPERATURE: 'target-temperature',
+    TEMPERATURE: 'temperature',
   },
   HEATER: {
     PILOT_WIRE_MODE: 'pilot-wire-mode',

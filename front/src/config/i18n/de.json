@@ -1915,7 +1915,9 @@
       "discover": {
         "title": "Gerätesuche",
         "scan": "Scannen",
-        "empty": "Kein Gerät gefunden."
+        "empty": "Kein Gerät gefunden.",
+        "noNewDevices": "Kein neues Gerät gefunden.",
+        "targetLabel": "Scan-Ziel"
       },
       "status": {
         "online": "Online",

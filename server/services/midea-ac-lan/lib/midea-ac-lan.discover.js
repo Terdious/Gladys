@@ -6,7 +6,7 @@ const net = require('net');
 const dgram = require('dgram');
 const crypto = require('crypto');
 const { scanHosts } = require('./midea-ac-lan.scanHosts');
-const CloudConnection = require('node-mideahvac/lib/cloud.js');
+// const CloudConnection = require('node-mideahvac/lib/cloud.js');
 
 async function shouldUseCli(ctx) {
     try {
@@ -157,9 +157,27 @@ async function discover(params) {
     console.log('list', list);
     console.log('tokenCache', this.tokenCache);
     (list || []).map((d) => (console.log('d', d)));
-    return (list || []).map((d) => ({
+
+    // Filter out devices that already exist in Gladys
+    let filteredCount = 0;
+    const filteredDevices = (list || []).filter((d) => {
+        if (!d.id) return true; // Keep devices without ID (they can't be registered)
+
+        const external_id = `midea-ac-lan:${d.id}`;
+        const existing = this.gladys.stateManager.get('deviceByExternalId', external_id);
+
+        if (existing) {
+            filteredCount++;
+            console.log('Midea discover: Device already exists, filtering out', {
+                external_id,
+                device_name: existing.name
+            });
+            return false; // Filter out existing device
+        }
+
+        return true; // Keep new device
+    }).map((d) => ({
         id: d.id,
-        // name: `Midea ${d.type || 'AC'} ${d.id || d.host}`,
         host: d.host,
         port: d.port,
         protocol: 3,
@@ -171,8 +189,19 @@ async function discover(params) {
         udpId: d.udpId,
         model: d.model,
         name: d.name,
-        rawUdpResponse: d.rawUdpResponse
+        rawUdpResponse: d.rawUdpResponse,
+        external_id: d.id ? `midea-ac-lan:${d.id}` : undefined,
     }));
+
+    // Add metadata about filtering
+    return {
+        devices: filteredDevices,
+        metadata: {
+            totalFound: (list || []).length,
+            filteredOut: filteredCount,
+            newDevices: filteredDevices.length
+        }
+    };
 }
 
 // --- Helpers ---

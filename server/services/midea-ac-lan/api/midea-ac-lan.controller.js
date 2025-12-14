@@ -1,4 +1,5 @@
 const asyncMiddleware = require('../../../api/middlewares/asyncMiddleware');
+const { transformDevice } = require('../lib/midea-ac-lan.transformDevice');
 
 module.exports = function MideaAcLanController(mideaHandler) {
   async function discover(req, res) {
@@ -60,14 +61,16 @@ module.exports = function MideaAcLanController(mideaHandler) {
     res.json(result);
   }
 
+  async function transformDeviceToGladys(req, res) {
+    const device = req.body || {};
+    const gladysDevice = transformDevice(device, mideaHandler.serviceId);
+    res.json(gladysDevice);
+  }
+
   return {
     'get /api/v1/service/midea-ac-lan/discover': {
       authenticated: true,
       controller: asyncMiddleware(discover),
-    },
-    'post /api/v1/service/midea-ac-lan/device': {
-      authenticated: true,
-      controller: asyncMiddleware(saveDevice),
     },
     'get /api/v1/service/midea-ac-lan/devices': {
       authenticated: true,
@@ -100,6 +103,10 @@ module.exports = function MideaAcLanController(mideaHandler) {
     'post /api/v1/service/midea-ac-lan/confirm': {
       authenticated: true,
       controller: asyncMiddleware(confirm),
+    },
+    'post /api/v1/service/midea-ac-lan/transform-device': {
+      authenticated: true,
+      controller: asyncMiddleware(transformDeviceToGladys),
     },
   };
 };

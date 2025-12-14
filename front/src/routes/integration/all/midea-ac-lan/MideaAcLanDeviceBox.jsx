@@ -38,6 +38,11 @@ class MideaAcLanDeviceBox extends Component {
       if (res && res.capabilities) next.capabilities = res.capabilities;
       if (res && res.protocol) next.protocol = res.protocol;
       this.setState({ device: next, confirmOk: !!(res && res.token && res.key) });
+      
+      // Mettre à jour le state global si on est dans discoveredDevices
+      if (this.props.listName === 'discoveredDevices' && this.props.getDiscoveredDevices) {
+        await this.props.getDiscoveredDevices();
+      }
     } catch (e) {
       this.setState({ errorMessage: 'integration.mideaAcLan.error.defaultError' });
     }
@@ -47,16 +52,15 @@ class MideaAcLanDeviceBox extends Component {
   saveDevice = async () => {
     this.setState({ loading: true, errorMessage: null });
     try {
-      let savedDevice;
-      // When adding from discovery, send to service route which returns { device, ... }
-      if (this.state.device && (this.state.device.key || this.state.device.token || this.state.device.host)) {
-        const created = await this.props.httpClient.post('/api/v1/service/midea-ac-lan/device', this.state.device);
-        savedDevice = created.device || created;
-      } else {
-        savedDevice = await this.props.httpClient.post(`/api/v1/device`, this.state.device);
-      }
-      this.setState({ device: savedDevice });
-      if (this.props.afterSave) this.props.afterSave(savedDevice);
+      console.log('[Midea AC LAN] saveDevice called');
+      console.log('[Midea AC LAN] props:', Object.keys(this.props));
+      console.log('[Midea AC LAN] saveDevice function exists:', typeof this.props.saveDevice);
+      console.log('[Midea AC LAN] listName:', this.props.listName, 'deviceIndex:', this.props.deviceIndex);
+      console.log('[Midea AC LAN] saveDevice device:', this.state.device);
+      console.log('[Midea AC LAN] saveDevice state:', this.props.state);
+      console.log('[Midea AC LAN] saveDevice listName:', this.props.listName);
+      console.log('[Midea AC LAN] saveDevice deviceIndex:', this.props.deviceIndex);
+      await this.props.saveDevice(this.props.listName, this.props.deviceIndex);
     } catch (e) {
       let errorMessage = 'integration.mideaAcLan.error.defaultError';
       if (get(e, 'response.status') === 409) {
@@ -68,12 +72,16 @@ class MideaAcLanDeviceBox extends Component {
   };
 
   deleteDevice = async () => {
+    console.log('[Midea AC LAN] deleteDevice called');
+    console.log('[Midea AC LAN] props:', Object.keys(this.props));
+    console.log('[Midea AC LAN] deleteDevice function exists:', typeof this.props.deleteDevice);
+    console.log('[Midea AC LAN] listName:', this.props.listName, 'deviceIndex:', this.props.deviceIndex);
     this.setState({ loading: true, errorMessage: null, tooMuchStatesError: false, statesNumber: undefined });
     try {
-      if (this.state.device.created_at) {
-        await this.props.httpClient.delete(`/api/v1/device/${this.state.device.selector}`);
+      if (!this.props.deleteDevice) {
+        throw new Error('deleteDevice function not found in props');
       }
-      if (this.props.getDevices) this.props.getDevices();
+      await this.props.deleteDevice(this.props.listName, this.props.deviceIndex);
     } catch (e) {
       const status = get(e, 'response.status');
       const dataMessage = get(e, 'response.data.message');
@@ -154,7 +162,7 @@ class MideaAcLanDeviceBox extends Component {
                     {housesWithRooms &&
                       housesWithRooms.map(house => (
                         <optgroup label={house.name}>
-                          {house.rooms.map(room => (
+                          {house.rooms && house.rooms.map(room => (
                             <option selected={room.id === device.room_id} value={room.id}>
                               {room.name}
                             </option>
@@ -173,22 +181,26 @@ class MideaAcLanDeviceBox extends Component {
                   </div>
                 )}
 
-                {/* Discovery details & credentials */}
+                {/* Device parameters - different sources for discovery vs devices tab */}
+                <div class="form-group">
+                  <label class="form-label">Id de l'appareil</label>
+                  <input type="text" class="form-control" value={deleteButton ? (device.params && device.params.MIDEA_UDPID || '') : (device.udpId || '')} disabled />
+                </div>
                 <div class="form-group">
                   <label class="form-label">Code appareil</label>
-                  <input type="text" class="form-control" value={device.id || ''} onInput={this.updateField('id')} />
+                  <input type="text" class="form-control" value={deleteButton ? (device.params && device.params.MIDEA_ID || '') : (device.id || '')} disabled />
                 </div>
                 <div class="form-group">
                   <label class="form-label">Type</label>
-                  <input type="text" class="form-control" value={device.type || ''} disabled />
+                  <input type="text" class="form-control" value={deleteButton ? (device.params && device.params.MIDEA_TYPE || '') : (device.type || '')} disabled />
                 </div>
                 <div class="form-group">
                   <label class="form-label">Host</label>
-                  <input type="text" class="form-control" value={device.host || ''} onInput={this.updateField('host')} />
+                  <input type="text" class="form-control" value={deleteButton ? (device.params && device.params.MIDEA_HOST || '') : (device.host || '')} disabled />
                 </div>
                 <div class="form-group">
                   <label class="form-label">Port</label>
-                  <input type="number" class="form-control" value={device.port || 6444} onInput={this.updateField('port')} />
+                  <input type="number" class="form-control" value={deleteButton ? (device.params && device.params.MIDEA_PORT || 6444) : (device.port || 6444)} disabled />
                 </div>
                 <div class="form-group">
                   <label class="form-label">Protocole</label>
@@ -196,28 +208,35 @@ class MideaAcLanDeviceBox extends Component {
                 </div>
                 <div class="form-group">
                   <label class="form-label">Sous type</label>
-                  <input type="text" class="form-control" value={device.subtype || ''} disabled />
+                  <input type="text" class="form-control" value={deleteButton ? (device.params && device.params.MIDEA_SUBTYPE !== undefined ? String(device.params.MIDEA_SUBTYPE) : '') : (device.subtype !== undefined ? String(device.subtype) : '')} disabled />
                 </div>
                 <div class="form-group">
                   <label class="form-label">Firmware</label>
-                  <input type="text" class="form-control" value={device.fw || ''} disabled />
+                  <input type="text" class="form-control" value={deleteButton ? (device.params && device.params.MIDEA_FW || '') : (device.fw || '')} disabled />
                 </div>
                 <div class="form-group">
                   <label class="form-label">Token</label>
-                  <input type="text" class="form-control" value={device.token || ''} onInput={this.updateField('token')} />
+                  <input type="text" class="form-control" value={deleteButton ? (device.params && device.params.MIDEA_TOKEN || '') : (device.token || '')} disabled />
                 </div>
                 <div class="form-group">
                   <label class="form-label">Key</label>
-                  <input type="text" class="form-control" value={device.key || ''} onInput={this.updateField('key')} />
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    value={deleteButton ? (device.params && device.params.MIDEA_KEY || '') : (device.key || '')} 
+                    disabled
+                  />
                 </div>
-                <div class="form-group">
-                  <button class="btn btn-outline-primary" onClick={this.confirmFromCloud} disabled={loading}>
-                    Récupérer Token/Key (LAN puis cloud)
-                  </button>
-                  {this.state.confirmOk && (
-                    <span class="text-success ml-2">OK</span>
-                  )}
-                </div>
+                {!deleteButton && (
+                  <div class="form-group">
+                    <button class="btn btn-outline-primary" onClick={this.confirmFromCloud} disabled={loading}>
+                      Récupérer Token/Key
+                    </button>
+                    {this.state.confirmOk && (
+                      <span class="text-success ml-2">OK</span>
+                    )}
+                  </div>
+                )}
 
                 <div class="form-group">
                   {validModel && alreadyCreatedButton && (
@@ -235,12 +254,17 @@ class MideaAcLanDeviceBox extends Component {
                       <Text id="integration.mideaAcLan.saveButton" />
                     </button>
                   )}
+                  {validModel && alreadyCreatedButton && (
+                    <button class="btn btn-primary mr-2" disabled="true">
+                      <Text id="integration.mideaAcLan.alreadyCreatedButton" />
+                    </button>
+                  )}
                   {validModel && deleteButton && (
                     <button onClick={this.deleteDevice} class="btn btn-danger">
                       <Text id="integration.mideaAcLan.deleteButton" />
                     </button>
                   )}
-                  {!device.features || device.features.length === 0 ? (
+                  {(!device.features || device.features.length === 0) && !device.type ? (
                     <span class="text-muted"><Text id="integration.mideaAcLan.unmanagedModelButton" /></span>
                   ) : null}
                   {validModel && editButton && (

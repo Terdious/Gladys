@@ -1915,7 +1915,9 @@
       "discover": {
         "title": "Découverte d'appareils",
         "scan": "Scanner",
-        "empty": "Aucun appareil détecté."
+        "empty": "Aucun appareil détecté.",
+        "noNewDevices": "Aucun nouvel appareil détecté.",
+        "targetLabel": "Cible de scan"
       },
       "status": {
         "online": "En ligne",

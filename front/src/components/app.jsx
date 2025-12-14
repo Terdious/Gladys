@@ -170,6 +170,11 @@ import MELCloudEditPage from '../routes/integration/all/melcloud/edit-page';
 import MELCloudSetupPage from '../routes/integration/all/melcloud/setup-page';
 import MELCloudDiscoverPage from '../routes/integration/all/melcloud/discover-page';
 
+// Midea AC LAN integration
+import MideaAcLanDevicePage from '../routes/integration/all/midea-ac-lan/device-page';
+import MideaAcLanDiscoverPage from '../routes/integration/all/midea-ac-lan/discover-page';
+import MideaAcLanSetupPage from '../routes/integration/all/midea-ac-lan/setup-page';
+
 // NodeRed integration
 import NodeRedPage from '../routes/integration/all/node-red/setup-page';
 
@@ -327,6 +332,10 @@ const AppRouter = connect(
         <MELCloudEditPage path="/dashboard/integration/device/melcloud/edit/:deviceSelector" />
         <MELCloudDiscoverPage path="/dashboard/integration/device/melcloud/discover" />
         <MELCloudSetupPage path="/dashboard/integration/device/melcloud/setup" />
+
+        <MideaAcLanDevicePage path="/dashboard/integration/device/midea-ac-lan" />
+        <MideaAcLanDiscoverPage path="/dashboard/integration/device/midea-ac-lan/discover" />
+        <MideaAcLanSetupPage path="/dashboard/integration/device/midea-ac-lan/setup" />
 
         <BluetoothDevicePage path="/dashboard/integration/device/bluetooth" />
         <BluetoothEditDevicePage path="/dashboard/integration/device/bluetooth/:deviceSelector" />

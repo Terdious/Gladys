@@ -1898,6 +1898,67 @@
         "disableButton": "Désactiver Matter",
         "downloadNodesJson": "Télécharger Noeuds Matter en JSON"
       }
+    },
+    "mideaAcLan": {
+      "title": "Midea AC (LAN)",
+      "deviceTab": "Appareils",
+      "discoverTab": "Découverte",
+      "setupTab": "Configuration",
+      "documentation": "Documentation",
+      "device": {
+        "title": "Appareils Midea AC (LAN)",
+        "noDevice": "Aucun appareil. ",
+        "discoverLink": "Lancer une découverte.",
+        "featuresLabel": "Fonctionnalités",
+        "editButton": "Éditer"
+      },
+      "discover": {
+        "title": "Découverte d'appareils",
+        "scan": "Scanner",
+        "empty": "Aucun appareil détecté.",
+        "noNewDevices": "Aucun nouvel appareil détecté.",
+        "targetLabel": "Cible de scan"
+      },
+      "status": {
+        "online": "En ligne",
+        "offline": "Hors ligne",
+        "notConnected": "Le service n'est pas connecté."
+      },
+      "nameLabel": "Nom",
+      "namePlaceholder": "Nom de l'appareil",
+      "modelLabel": "Modèle",
+      "roomLabel": "Pièce",
+      "alreadyCreatedButton": "Déjà créé",
+      "updateButton": "Mettre à jour",
+      "saveButton": "Enregistrer",
+      "deleteButton": "Supprimer",
+      "unmanagedModelButton": "Modèle non pris en charge",
+      "error": {
+        "defaultError": "Erreur lors de l'enregistrement",
+        "conflictError": "Conflit: l'appareil existe déjà",
+        "defaultDeletionError": "Erreur lors de la suppression"
+      },
+      "setup": {
+        "title": "Connexion Midea AC (LAN)",
+        "description": "Renseignez vos identifiants LAN Midea (format utilisé par l'outil de découverte).",
+        "user": "Utilisateur",
+        "userPlaceholder": "Identifiant (optionnel)",
+        "password": "Mot de passe",
+        "passwordPlaceholder": "Mot de passe (optionnel)",
+        "saveLabel": "Enregistrer et démarrer"
+      },
+      "manual": {
+        "title": "Déclaration manuelle",
+        "idLabel": "Identifiant (ID de l'appareil)",
+        "nameLabel": "Nom",
+        "hostLabel": "Hôte (optionnel)",
+        "portLabel": "Port (par défaut 6444)",
+        "keyLabel": "Clé d'authentification",
+        "tokenLabel": "Jeton d'authentification",
+        "addButton": "Ajouter l'appareil",
+        "success": "Appareil ajouté.",
+        "error": "Erreur lors de l'ajout."
+      }
     }
   },
   "editScene": {

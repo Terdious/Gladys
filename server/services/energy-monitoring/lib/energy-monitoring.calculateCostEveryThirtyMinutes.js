@@ -18,29 +18,6 @@ async function calculateCostEveryThirtyMinutes(now, jobId) {
   });
 }
 
-/**
- * @description Build job data (scope/period) for the thirty-minute cost calculation.
- * @param {Date} now - Current date/time used to compute the 30-minute window.
- * @returns {object} Job data payload with scope, period and kind.
- * @example
- * buildCostThirtyMinutesJobData(new Date());
- */
-function buildCostThirtyMinutesJobData(now) {
-  const endDate = new Date(now);
-  const startDate = dayjs(endDate)
-    .subtract(30, 'minute')
-    .toDate();
-  return {
-    scope: 'all',
-    period: {
-      start_date: startDate.toISOString(),
-      end_date: endDate.toISOString(),
-    },
-    kind: 'cost',
-  };
-}
-
 module.exports = {
   calculateCostEveryThirtyMinutes,
-  buildCostThirtyMinutesJobData,
 };

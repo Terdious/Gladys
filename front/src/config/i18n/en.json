@@ -2793,11 +2793,6 @@
     "jobStatus": "Status",
     "previous": "Previous",
     "next": "Next",
-    "selectionTitle": "Selection",
-    "selectionFeatures": "Features",
-    "periodFromTo": "Period: from {{startDate}} to {{endDate}}.",
-    "periodFrom": "Period: since {{startDate}}.",
-    "periodUntil": "Period: until {{endDate}}.",
     "jobTypes": {
       "monthly-device-state-aggregate": "Monthly sensors aggregation",
       "daily-device-state-aggregate": "Daily sensors aggregation",
@@ -2819,7 +2814,6 @@
       "energy-monitoring-consumption-from-index-range": "Energy consumption calculation from index (date range)",
       "service-enedis-sync": "Enedis data synchronization"
     },
-    "currentDate": "Progress date: {{date}}.",
     "jobErrors": {
       "purged-when-restarted": "Gladys Assistant restarted while this job was still running, so it was purged. It doesn't mean the job has failed, it's a normal behavior."
     },

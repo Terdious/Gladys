@@ -14,25 +14,6 @@ async function calculateCostFromYesterday(yesterdayDate, jobId) {
   });
 }
 
-/**
- * @description Build job data (scope/period) for the “yesterday” cost calculation.
- * @param {Date} yesterdayDate - Date (midnight) used as start of the range.
- * @returns {object} Job data payload with scope, period and kind.
- * @example
- * buildCostYesterdayJobData(new Date());
- */
-function buildCostYesterdayJobData(yesterdayDate) {
-  return {
-    scope: 'all',
-    period: {
-      start_date: (yesterdayDate || new Date()).toISOString(),
-      end_date: null,
-    },
-    kind: 'cost',
-  };
-}
-
 module.exports = {
   calculateCostFromYesterday,
-  buildCostYesterdayJobData,
 };

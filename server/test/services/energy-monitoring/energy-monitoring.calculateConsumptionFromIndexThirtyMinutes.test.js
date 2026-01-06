@@ -10,9 +10,6 @@ const Device = require('../../../lib/device');
 const StateManager = require('../../../lib/state');
 const ServiceManager = require('../../../lib/service');
 const Job = require('../../../lib/job');
-const {
-  buildConsumptionThirtyMinutesJobData,
-} = require('../../../services/energy-monitoring/lib/energy-monitoring.calculateConsumptionFromIndexThirtyMinutes');
 
 const event = new EventEmitter();
 const job = new Job(event);
@@ -219,16 +216,4 @@ describe('EnergyMonitoring.calculateConsumptionFromIndexThirtyMinutes', () => {
     expect(callArgs[2]).to.equal('specific-job-id-12345');
   });
 
-  it('should build job data for thirty-minute consumption window', () => {
-    const now = new Date('2025-02-01T10:42:00.000Z');
-    const data = buildConsumptionThirtyMinutesJobData(now);
-    expect(data.scope).to.equal('all');
-    expect(data.period.start_date).to.be.a('string');
-    expect(data.period.end_date).to.be.a('string');
-    // end date is the rounded window end (00 or 30).
-    const end = new Date(data.period.end_date);
-    const start = new Date(data.period.start_date);
-    expect(end.getTime() - start.getTime()).to.equal(30 * 60 * 1000);
-    expect(end.getUTCMinutes() === 0 || end.getUTCMinutes() === 30).to.equal(true);
-  });
 });

@@ -2793,11 +2793,6 @@
     "jobStatus": "Status",
     "previous": "Vorherige",
     "next": "Nächste",
-    "selectionTitle": "Auswahl",
-    "selectionFeatures": "Funktionen",
-    "periodFromTo": "Zeitraum: von {{startDate}} bis {{endDate}}.",
-    "periodFrom": "Zeitraum: seit {{startDate}}.",
-    "periodUntil": "Zeitraum: bis {{endDate}}.",
     "jobTypes": {
       "monthly-device-state-aggregate": "Monatliche Sensorenaggregation",
       "daily-device-state-aggregate": "Tägliche Sensorenaggregation",
@@ -2819,7 +2814,6 @@
       "energy-monitoring-consumption-from-index-range": "Energieverbrauchsberechnung aus Index (Zeitraum)",
       "service-enedis-sync": "Enedis-Datensynchronisation"
     },
-    "currentDate": "Fortschritt: Datum {{date}}.",
     "jobErrors": {
       "purged-when-restarted": "Gladys Assistant wurde neu gestartet, während diese Aufgabe noch lief. Daher wurde sie gelöscht. Das bedeutet nicht, dass die Aufgabe fehlgeschlagen ist – es handelt sich um normales Verhalten."
     },

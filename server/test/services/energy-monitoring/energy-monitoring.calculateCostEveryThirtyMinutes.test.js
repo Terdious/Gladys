@@ -1,14 +1,7 @@
 const sinon = require('sinon');
 
 const { fake, assert } = sinon;
-const { expect } = require('chai');
 const EventEmitter = require('events');
-const dayjs = require('dayjs');
-const utc = require('dayjs/plugin/utc');
-const timezone = require('dayjs/plugin/timezone');
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 const EnergyMonitoring = require('../../../services/energy-monitoring/lib');
 const { SYSTEM_VARIABLE_NAMES } = require('../../../utils/constants');
@@ -17,9 +10,6 @@ const StateManager = require('../../../lib/state');
 const ServiceManager = require('../../../lib/service');
 const Job = require('../../../lib/job');
 const EnergyPrice = require('../../../lib/energy-price');
-const {
-  buildCostThirtyMinutesJobData,
-} = require('../../../services/energy-monitoring/lib/energy-monitoring.calculateCostEveryThirtyMinutes');
 
 const event = new EventEmitter();
 const job = new Job(event);
@@ -67,16 +57,4 @@ describe('EnergyMonitoring.calculateCostEveryThirtyMinutes', () => {
     assert.calledOnce(energyMonitoring.calculateCostFrom);
   });
 
-  it('should build job data for thirty-minute cost window', () => {
-    const now = new Date('2025-03-10T12:18:00.000Z');
-    const data = buildCostThirtyMinutesJobData(now);
-    expect(data).to.deep.equal({
-      scope: 'all',
-      period: {
-        start_date: new Date(now.getTime() - 30 * 60 * 1000).toISOString(),
-        end_date: now.toISOString(),
-      },
-      kind: 'cost',
-    });
-  });
 });

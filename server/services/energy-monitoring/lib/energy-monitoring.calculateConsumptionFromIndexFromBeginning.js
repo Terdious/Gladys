@@ -180,10 +180,7 @@ async function calculateConsumptionFromIndexFromBeginning(featureSelectors, jobI
         processedWindows += 1;
         if (jobId) {
           const progressPercentage = Math.round((processedWindows / windows.length) * 100);
-          const currentDate = dayjs(windowTime)
-            .tz(systemTimezone)
-            .format('YYYY-MM-DD');
-          await this.gladys.job.updateProgress(jobId, progressPercentage, { current_date: currentDate });
+          await this.gladys.job.updateProgress(jobId, progressPercentage);
         }
 
         logger.debug(`Processed window ${processedWindows}/${windows.length}: ${windowTime.toISOString()}`);
@@ -195,10 +192,7 @@ async function calculateConsumptionFromIndexFromBeginning(featureSelectors, jobI
         processedWindows += 1;
         if (jobId) {
           const progressPercentage = Math.round((processedWindows / windows.length) * 100);
-          const currentDate = dayjs(windowTime)
-            .tz(systemTimezone)
-            .format('YYYY-MM-DD');
-          await this.gladys.job.updateProgress(jobId, progressPercentage, { current_date: currentDate });
+          await this.gladys.job.updateProgress(jobId, progressPercentage);
         }
       }
     });
@@ -208,7 +202,7 @@ async function calculateConsumptionFromIndexFromBeginning(featureSelectors, jobI
     );
 
     if (jobId) {
-      await this.gladys.job.updateProgress(jobId, 100, { current_date: null });
+      await this.gladys.job.updateProgress(jobId, 100);
     }
 
     return null;

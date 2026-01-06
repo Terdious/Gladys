@@ -812,11 +812,10 @@ describe('EnergyMonitoring.calculateConsumptionFromIndex', () => {
       expect(gladys.job.updateProgress.callCount).to.equal(2);
       const firstCall = gladys.job.updateProgress.getCall(0).args;
       expect(firstCall[0]).to.equal('job-progress');
-      expect(firstCall[2]).to.deep.equal({ current_date: '2023-10-03' });
+      expect(firstCall[1]).to.equal(100);
       const finalCall = gladys.job.updateProgress.getCall(1).args;
       expect(finalCall[0]).to.equal('job-progress');
       expect(finalCall[1]).to.equal(100);
-      expect(finalCall[2]).to.deep.equal({ current_date: null });
     });
   });
 });

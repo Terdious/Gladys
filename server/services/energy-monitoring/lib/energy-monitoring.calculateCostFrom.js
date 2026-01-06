@@ -62,7 +62,6 @@ async function calculateCostFrom(startAt, featureSelectors, jobId, endAt) {
   logger.info(`Found ${energyDevices.length} energy devices`);
   let edfTempoHistoricalMap = null;
   await Promise.each(energyDevices, async (energyDevice, index) => {
-    let jobCurrentDate = null;
     try {
       const energyConsumptionFeatures = [];
 
@@ -194,7 +193,6 @@ async function calculateCostFrom(startAt, featureSelectors, jobId, endAt) {
               .tz(deviceFeatureState.created_at, systemTimezone)
               .subtract(30, 'minutes')
               .toDate();
-            jobCurrentDate = dayjs.tz(deviceFeatureState.created_at, systemTimezone).format('YYYY-MM-DD');
             // Get the prices for this date
             const energyPricesForDate = energyPrices.filter((price) => {
               // We only keep consumption prices (no subscription)
@@ -255,13 +253,11 @@ async function calculateCostFrom(startAt, featureSelectors, jobId, endAt) {
     }
     // Update the progress in percentage
     if (resolvedJobId) {
-      await this.gladys.job.updateProgress(resolvedJobId, Math.round(((index + 1) / energyDevices.length) * 100), {
-        current_date: jobCurrentDate,
-      });
+      await this.gladys.job.updateProgress(resolvedJobId, Math.round(((index + 1) / energyDevices.length) * 100));
     }
   });
   if (resolvedJobId) {
-    await this.gladys.job.updateProgress(resolvedJobId, 100, { current_date: null });
+    await this.gladys.job.updateProgress(resolvedJobId, 100);
   }
   return null;
 }

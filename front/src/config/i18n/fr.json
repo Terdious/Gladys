@@ -2793,11 +2793,6 @@
     "jobStatus": "Statut",
     "previous": "Précédent",
     "next": "Suivant",
-    "selectionTitle": "Sélection",
-    "selectionFeatures": "Fonctionnalités",
-    "periodFromTo": "Période : du {{startDate}} au {{endDate}}.",
-    "periodFrom": "Période : depuis le {{startDate}}.",
-    "periodUntil": "Période : jusqu'au {{endDate}}.",
     "jobTypes": {
       "monthly-device-state-aggregate": "Agrégation donnée capteur mensuelle",
       "daily-device-state-aggregate": "Agrégation donnée capteur journalière",
@@ -2819,7 +2814,6 @@
       "energy-monitoring-consumption-from-index-range": "Calcul de la consommation énergétique depuis l'index (période)",
       "service-enedis-sync": "Synchronisation des données Enedis"
     },
-    "currentDate": "Progression : date {{date}}.",
     "jobErrors": {
       "purged-when-restarted": "Gladys Assistant a redémarré alors que cette tâche était en cours. Cela ne veut pas dire que cette tâche a échouée, c'est un comportement normal."
     },

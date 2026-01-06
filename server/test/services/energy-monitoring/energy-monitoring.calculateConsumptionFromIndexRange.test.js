@@ -69,7 +69,7 @@ describe('EnergyMonitoring.calculateConsumptionFromIndexRange', () => {
     expect(gladys.job.updateProgress.called).to.equal(false);
   });
 
-  it('should process devices, update progress and include current_date', async () => {
+  it('should process devices and update progress', async () => {
     const energyMonitoring = new EnergyMonitoring(gladys, 'service-id');
     energyMonitoring.queue = { push: (fn) => fn() };
 
@@ -114,8 +114,8 @@ describe('EnergyMonitoring.calculateConsumptionFromIndexRange', () => {
     expect(energyMonitoring.calculateConsumptionFromIndex.callCount).to.be.greaterThan(0);
     const progressCalls = gladys.job.updateProgress.getCalls();
     expect(progressCalls.length).to.be.greaterThan(1);
-    expect(progressCalls[0].args[2].current_date).to.not.equal(undefined);
-    expect(progressCalls[progressCalls.length - 1].args[2].current_date).to.equal(null);
+    expect(progressCalls[0].args[0]).to.equal('job-xyz');
+    expect(progressCalls[progressCalls.length - 1].args[1]).to.equal(100);
   });
 
   it('should handle Date inputs and return null when start after end', async () => {
@@ -273,9 +273,8 @@ describe('EnergyMonitoring.calculateConsumptionFromIndexRange', () => {
     await energyMonitoring.calculateConsumptionFromIndexRange('2025-06-17', ['cons'], '2025-06-17', 'job-error');
 
     expect(gladys.job.updateProgress.called).to.equal(true);
-    // last progress reset to null current_date
     const lastCall = gladys.job.updateProgress.getCalls().pop();
-    expect(lastCall.args[2].current_date).to.equal(null);
+    expect(lastCall.args[1]).to.equal(100);
   });
 
   it('should adjust start date to oldest state when provided start is earlier', async () => {

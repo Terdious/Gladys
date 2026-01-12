@@ -1,0 +1,17 @@
+.italicText {
+  font-style: italic;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.device-image-container {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  margin: 1rem 0;
+  border-radius: 8px;
+} 

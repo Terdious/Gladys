@@ -1345,6 +1345,14 @@ const WEBSOCKET_MESSAGE_TYPES = {
       PROCESSING_TOKEN: 'netatmo.error-processing-token',
     },
   },
+  TESLA: {
+    STATUS: 'tesla.status',
+    ERROR: {
+      CONNECTED: 'tesla.error-connected',
+      CONNECTING: 'tesla.error-connecting',
+      PROCESSING_TOKEN: 'tesla.error-processing-token',
+    },
+  },
   MELCLOUD: {
     STATUS: 'melcloud.status',
     DISCOVER: 'melcloud.discover',

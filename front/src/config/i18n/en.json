@@ -706,6 +706,80 @@
         "conflictError": "The current device is already in Gladys."
       }
     },
+    "tesla": {
+      "title": "Tesla",
+      "description": "Control Tesla vehicles",
+      "deviceTab": "Vehicles",
+      "discoverTab": "Tesla Discovery",
+      "setupTab": "Configuration",
+      "documentation": "Tesla Documentation",
+      "discoverDeviceDescr": "Automatically scan Tesla vehicles",
+      "status": {
+        "notConfigured": "The Tesla service is not configured",
+        "disconnect": "Gladys is not connected to Tesla",
+        "notConnected": "Gladys failed to connect to the Tesla API, please check your credentials on the ",
+        "setupPageLink": "Tesla configuration page.",
+        "connect": "Gladys is connected to Tesla",
+        "connecting": "Configuration saved. Connecting to the Tesla API...",
+        "processingToken": "Connecting to the Tesla API... Retrieving access token.",
+        "getDevicesValues": "Retrieving data...",
+        "dicoveringDevices": "Retrieving vehicles...",
+        "errorConnecting": {
+          "other_error": "Error during authorization. You can inspect the error in your browser console with right-click. If the error persists, please post the logs on the forum.",
+          "access_denied": "Authorization declined. Please try again and accept the access request for your data.",
+          "invalid_client": "Invalid client ID. Please check your Tesla account information and ensure the account is not disabled.",
+          "get_access_token_fail": "Incorrect information entered or account disabled. Please check your Tesla account details."
+        }
+      },
+      "device": {
+        "title": "Tesla Vehicles in Gladys",
+        "descriptionInformation": "State retrieval is done in real time via the Tesla API.",
+        "noDeviceFound": "No Tesla vehicle has been added yet.",
+        "vehicleIdLabel": "Tesla vehicle ID",
+        "nameLabel": "Vehicle name",
+        "namePlaceholder": "Enter your vehicle's name",
+        "modelLabel": "Model",
+        "roomLabel": "Room",
+        "featuresLabel": "Features",
+        "saveButton": "Save",
+        "saveNotAllowButton": "Save not allowed",
+        "deleteButton": "Delete",
+        "noValueReceived": "No value received.",
+        "mostRecentValueAt": "Last update: {mostRecentValueAt}"
+      },
+      "discover": {
+        "title": "Your Tesla vehicles compatible with Gladys",
+        "description": "Your Tesla vehicles must be linked to your Tesla account before being added to Gladys. Initial discovery is automatic. Press 'Refresh' if you want to fetch new features for your vehicles.",
+        "descriptionCompatibility": "For feature requests, please visit the <a href=\"https://community.gladysassistant.com/c/feature-requests\" target=\"_blank\" rel=\"noopener noreferrer\">Gladys Assistant Forum - 'Feature Requests' category</a>.",
+        "descriptionInformation": "State retrieval is done in real time via the Tesla API.",
+        "noDeviceFound": "No Tesla vehicle was found. If you're sure you own a Tesla vehicle, have you completed all the steps in the documentation to register your vehicle on the Tesla API?",
+        "alreadyCreatedButton": "Already created",
+        "updateButton": "Update",
+        "unmanagedModelButton": "Unsupported model",
+        "scan": "Scan",
+        "refresh": "Refresh"
+      },
+      "setup": {
+        "title": "Tesla Configuration",
+        "description": "You can connect Gladys to the Tesla API to control your vehicles.",
+        "descriptionCreateAccount": "You need to create an account on the <a href=\"https://developer.tesla.com/\" target=\"_blank\" rel=\"noopener noreferrer\">Tesla Developer Portal</a>.",
+        "descriptionCreateProject": "You will then need to create an 'application' in your Tesla developer account.",
+        "descriptionGetKeys": "You will then have access to two keys: 'client ID' and 'client secret' to copy below.",
+        "descriptionScopeInformation": "When connecting Gladys to the Tesla API, you're granting it read and write access to your data. There's nothing to configure—these permissions are integrated and will be shown to you during the connection request. Of course, since Gladys runs locally, none of this data is exposed.",
+        "clientIdLabel": "Client ID",
+        "clientIdPlaceholder": "Client ID of your Tesla app",
+        "clientSecretLabel": "Client secret",
+        "clientSecretPlaceholder": "Client secret of your Tesla app",
+        "connectionInfoLabel": "When modifying this information, a new token is required. Disconnecting will also erase your access token. A new connection request will be made to the Tesla API when clicking these buttons.",
+        "saveLabel": "Save and connect",
+        "disconnectLabel": "Disconnect"
+      },
+      "error": {
+        "defaultError": "An error occurred while saving the vehicle.",
+        "defaultDeletionError": "An error occurred while deleting the vehicle.",
+        "conflictError": "The current vehicle is already in Gladys."
+      }
+    },
     "tasmota": {
       "title": "Tasmota",
       "description": "Control your Tasmota devices in HTTP or MQTT.",

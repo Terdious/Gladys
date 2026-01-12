@@ -143,6 +143,11 @@ import NetatmoPage from '../routes/integration/all/netatmo/device-page';
 import NetatmoSetupPage from '../routes/integration/all/netatmo/setup-page';
 import NetatmoDiscoverPage from '../routes/integration/all/netatmo/discover-page';
 
+// Tesla Fleet integration
+import TeslaPage from '../routes/integration/all/tesla/device-page';
+import TeslaSetupPage from '../routes/integration/all/tesla/setup-page';
+import TeslaDiscoverPage from '../routes/integration/all/tesla/discover-page';
+
 // Sonos integration
 import SonosDevicePage from '../routes/integration/all/sonos/device-page';
 import SonosDiscoveryPage from '../routes/integration/all/sonos/discover-page';
@@ -316,6 +321,10 @@ const AppRouter = connect(
         <NetatmoPage path="/dashboard/integration/device/netatmo" />
         <NetatmoDiscoverPage path="/dashboard/integration/device/netatmo/discover" />
         <NetatmoSetupPage path="/dashboard/integration/device/netatmo/setup" />
+
+        <TeslaPage path="/dashboard/integration/device/tesla" />
+        <TeslaSetupPage path="/dashboard/integration/device/tesla/setup" />
+        <TeslaDiscoverPage path="/dashboard/integration/device/tesla/discover" />
 
         <SonosDevicePage path="/dashboard/integration/device/sonos" />
         <SonosDiscoveryPage path="/dashboard/integration/device/sonos/discover" />

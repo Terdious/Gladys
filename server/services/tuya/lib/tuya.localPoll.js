@@ -16,7 +16,9 @@ const { normalizeExistingDevice, upsertParam } = require('./utils/tuya.devicePar
 async function localPoll(payload) {
   const { deviceId, ip, localKey, protocolVersion, timeoutMs = 3000, fastScan = false } = payload || {};
   const isProtocol35 = protocolVersion === '3.5';
-  const effectiveTimeout = isProtocol35 && !fastScan ? Math.max(timeoutMs, 5000) : timeoutMs;
+  const parsedTimeout = Number(timeoutMs);
+  const sanitizedTimeout = Number.isFinite(parsedTimeout) ? Math.min(Math.max(parsedTimeout, 500), 30000) : 3000;
+  const effectiveTimeout = isProtocol35 && !fastScan ? Math.max(sanitizedTimeout, 5000) : sanitizedTimeout;
   const TuyaLocalApi = isProtocol35 ? TuyAPINewGen : TuyAPI;
 
   if (!deviceId || !ip || !localKey || !protocolVersion) {

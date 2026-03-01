@@ -188,6 +188,7 @@ function buildLocalScanResponse(tuyaManager, localScanResult) {
     const localDiscoveredDevices = Object.entries(localDevicesById)
       .map(([deviceId, localInfo]) => buildLocalDiscoveredDevice(deviceId, localInfo))
       .map((device) => mergeWithExisting(device));
+    tuyaManager.discoveredDevices = localDiscoveredDevices;
     return {
       devices: localDiscoveredDevices,
       local_devices: localDevicesById,

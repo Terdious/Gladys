@@ -206,4 +206,26 @@ describe('TuyaHandler.loadDeviceDetails', () => {
       thing_model: { services: [] },
     });
   });
+
+  it('should handle fulfilled responses with null values', async () => {
+    tuyaHandler.connector.request = sinon
+      .stub()
+      .onCall(0)
+      .resolves(null)
+      .onCall(1)
+      .resolves(null)
+      .onCall(2)
+      .resolves(null)
+      .onCall(3)
+      .resolves(null);
+
+    const device = await tuyaHandler.loadDeviceDetails({ id: 1 });
+
+    expect(device).to.deep.eq({
+      id: 1,
+      specifications: {},
+      properties: {},
+      thing_model: null,
+    });
+  });
 });

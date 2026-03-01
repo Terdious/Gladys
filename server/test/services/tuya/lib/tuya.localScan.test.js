@@ -145,6 +145,75 @@ describe('TuyaHandler.localScan', () => {
     });
   });
 
+  it('should preserve richer fields when duplicate device packets are sparse', async () => {
+    const sockets = [];
+    const dgramStub = {
+      createSocket: () => {
+        const handlers = {};
+        const socket = {
+          on: (event, cb) => {
+            handlers[event] = cb;
+          },
+          bind: (options, cb) => {
+            if (typeof options === 'function') {
+              options();
+              return;
+            }
+            if (cb) {
+              cb();
+            }
+          },
+          close: () => {},
+          handlers,
+        };
+        sockets.push(socket);
+        return socket;
+      },
+    };
+
+    let callIndex = 0;
+    class MessageParserStub {
+      parse() {
+        callIndex += 1;
+        if (callIndex === 1) {
+          return [{ payload: { gwId: 'device-id', ip: '1.1.1.1', version: '3.3', productKey: 'product-key' } }];
+        }
+        return [{ payload: { gwId: 'device-id' } }];
+      }
+    }
+
+    const { localScan } = proxyquire('../../../../services/tuya/lib/tuya.localScan', {
+      dgram: dgramStub,
+      '@demirdeniz/tuyapi-newgen/lib/message-parser': { MessageParser: MessageParserStub },
+      '@demirdeniz/tuyapi-newgen/lib/config': { UDP_KEY: 'key' },
+    });
+
+    const clock = sinon.useFakeTimers();
+    const promise = localScan(1);
+
+    sockets.forEach((socket) => {
+      if (socket.handlers.message) {
+        socket.handlers.message(Buffer.from('first'));
+        socket.handlers.message(Buffer.from('second'));
+      }
+    });
+
+    await clock.tickAsync(1100);
+    const result = await promise;
+    clock.restore();
+
+    expect(result).to.deep.equal({
+      devices: {
+        'device-id': {
+          ip: '1.1.1.1',
+          version: '3.3',
+          productKey: 'product-key',
+        },
+      },
+      portErrors: {},
+    });
+  });
+
   it('should skip message when all parsers fail', async () => {
     const sockets = [];
     const dgramStub = {

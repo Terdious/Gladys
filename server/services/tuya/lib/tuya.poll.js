@@ -303,7 +303,12 @@ async function poll(device) {
     }
   }
 
-  cloudSummary = await pollCloudFeatures.call(this, deviceFeatures, topic);
+  try {
+    cloudSummary = await pollCloudFeatures.call(this, deviceFeatures, topic);
+  } catch (e) {
+    logger.warn(`[Tuya][poll] cloud poll failed for ${topic}`, e);
+    fallbackReason = fallbackReason === 'none' ? 'cloud_poll_failed' : `${fallbackReason}+cloud_poll_failed`;
+  }
   logger.debug(
     `[Tuya][poll] device=${topic} mode=${modeUsed} local_handled=${localHandled} local_changed=${localChanged} cloud_handled=${cloudSummary.handled} cloud_changed=${cloudSummary.changed} cloud_missing=${cloudSummary.missing} fallback=${fallbackReason}`,
   );

@@ -86,6 +86,32 @@ describe('TuyaHandler.poll', () => {
     }
   });
 
+  it('should return without throwing when final cloud poll fails', async () => {
+    tuyaHandler.connector.request = sinon.stub().rejects(new Error('cloud failed'));
+    const logger = {
+      debug: sinon.stub(),
+      warn: sinon.stub(),
+    };
+    const { poll } = proxyquire('../../../../services/tuya/lib/tuya.poll', {
+      '../../../utils/logger': logger,
+    });
+
+    await poll.call(tuyaHandler, {
+      external_id: 'tuya:device',
+      features: [
+        {
+          external_id: 'tuya:device:switch_1',
+          category: 'light',
+          type: 'binary',
+        },
+      ],
+    });
+
+    assert.callCount(logger.warn, 1);
+    expect(logger.warn.firstCall.args[0]).to.include('cloud poll failed');
+    assert.callCount(gladys.event.emit, 0);
+  });
+
   it('change state of device feature', async () => {
     await tuyaHandler.poll({
       external_id: 'tuya:device',

@@ -57,11 +57,13 @@ module.exports = {
     unit: DEVICE_FEATURE_UNITS.MILLI_AMPERE,
   },
   energy_forword_a: {
+    // Intentional: matches Tuya device API code.
     category: DEVICE_FEATURE_CATEGORIES.ENERGY_SENSOR,
     type: DEVICE_FEATURE_TYPES.ENERGY_SENSOR.ENERGY,
     unit: DEVICE_FEATURE_UNITS.KILOWATT_HOUR,
   },
   energy_forword_b: {
+    // Intentional: matches Tuya device API code.
     category: DEVICE_FEATURE_CATEGORIES.ENERGY_SENSOR,
     type: DEVICE_FEATURE_TYPES.ENERGY_SENSOR.ENERGY,
     unit: DEVICE_FEATURE_UNITS.KILOWATT_HOUR,
@@ -72,11 +74,13 @@ module.exports = {
     unit: DEVICE_FEATURE_UNITS.KILOWATT_HOUR,
   },
   energy_reverse_a: {
+    // Intentional: matches Tuya device API code.
     category: DEVICE_FEATURE_CATEGORIES.ENERGY_PRODUCTION_SENSOR,
     type: DEVICE_FEATURE_TYPES.ENERGY_PRODUCTION_SENSOR.INDEX,
     unit: DEVICE_FEATURE_UNITS.KILOWATT_HOUR,
   },
   energy_reserse_b: {
+    // Intentional: matches Tuya device API code.
     category: DEVICE_FEATURE_CATEGORIES.ENERGY_PRODUCTION_SENSOR,
     type: DEVICE_FEATURE_TYPES.ENERGY_PRODUCTION_SENSOR.INDEX,
     unit: DEVICE_FEATURE_UNITS.KILOWATT_HOUR,

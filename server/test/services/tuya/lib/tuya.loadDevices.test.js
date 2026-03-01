@@ -131,4 +131,14 @@ describe('TuyaHandler.loadDevices', () => {
       expect(e.message).to.equal('Tuya API pagination did not advance (has_more=true with empty page)');
     }
   });
+
+  it('should handle malformed result.list payloads as empty pages', async () => {
+    tuyaHandler.connector.request = sinon.stub().resolves({
+      result: { list: { id: 1 }, has_more: false },
+    });
+
+    const devices = await tuyaHandler.loadDevices(1, 1);
+
+    expect(devices).to.deep.eq([]);
+  });
 });

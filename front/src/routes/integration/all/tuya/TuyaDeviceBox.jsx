@@ -6,9 +6,8 @@ import get from 'get-value';
 import DeviceFeatures from '../../../../components/device/view/DeviceFeatures';
 import { connect } from 'unistore/preact';
 import { RequestStatus } from '../../../../utils/consts';
+import { normalizeBoolean } from '../../../../../../server/services/tuya/lib/utils/tuya.normalize';
 
-const normalizeBoolean = value =>
-  value === true || value === 1 || value === '1' || value === 'true' || value === 'TRUE';
 const ONLINE_RECENT_MINUTES = 5;
 const LOCAL_POLL_FREQUENCY = 10 * 1000;
 const CLOUD_POLL_FREQUENCY = 30 * 1000;
@@ -638,19 +637,35 @@ class TuyaDeviceBox extends Component {
           newParams.push({ name: 'PROTOCOL_VERSION', value: usedProtocol });
         }
       }
-      this.setState({
-        device: {
-          ...baseDevice,
-          params: newParams
-        },
-        localPollStatus: RequestStatus.Success,
-        localPollProtocol: null,
-        localPollValidation: {
-          ip: getParam('IP_ADDRESS') || currentDevice.ip || '',
-          protocol: usedProtocol || '',
-          localOverride: true
-        },
-        localPollDps: result ? result.dps : null
+      this.setState(prevState => {
+        const latestStateDevice = prevState.device || {};
+        const latestStateParams = Array.isArray(latestStateDevice.params) ? latestStateDevice.params : [];
+        const mergedParams = [...newParams];
+
+        latestStateParams.forEach(param => {
+          const index = mergedParams.findIndex(baseParam => baseParam.name === param.name);
+          if (index >= 0) {
+            mergedParams[index] = { ...mergedParams[index], ...param };
+          } else {
+            mergedParams.push(param);
+          }
+        });
+
+        return {
+          device: {
+            ...baseDevice,
+            ...latestStateDevice,
+            params: mergedParams
+          },
+          localPollStatus: RequestStatus.Success,
+          localPollProtocol: null,
+          localPollValidation: {
+            ip: getParam('IP_ADDRESS') || currentDevice.ip || '',
+            protocol: usedProtocol || '',
+            localOverride: true
+          },
+          localPollDps: result ? result.dps : null
+        };
       });
     } catch (e) {
       const message =

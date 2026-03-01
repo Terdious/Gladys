@@ -9,6 +9,10 @@ const { loadFixtureCases } = require('../fixtures/fixtureHelper');
 describe('TuyaHandler.setValue fixtures', () => {
   const fixtureCases = loadFixtureCases('setValueLocal');
 
+  it('should load at least one setValue fixture case', () => {
+    expect(fixtureCases.length).to.be.greaterThan(0);
+  });
+
   fixtureCases.forEach((fixtureCase) => {
     it(`should set local value for ${fixtureCase.manifest.name} from fixture`, async () => {
       const connect = sinon.stub().resolves();

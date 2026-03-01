@@ -29,6 +29,10 @@ describe('TuyaHandler.discoverDevices', () => {
 
   beforeEach(() => {
     sinon.reset();
+    gladys.event.emit = fake.resolves(null);
+    gladys.stateManager.get = fake.returns(null);
+    gladys.variable.getValue = fake.resolves('APP_ACCOUNT_UID');
+    gladys.device.get = fake.resolves([]);
     tuyaHandler.status = STATUS.CONNECTED;
     tuyaHandler.connector = {
       request: sinon

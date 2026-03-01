@@ -17,6 +17,7 @@ describe('TuyaHandler.disconnect', () => {
 
   beforeEach(() => {
     tuyaHandler.status = 'UNKNOWN';
+    tuyaHandler.lastError = 'previous-error';
     gladys.event.emit.resetHistory();
   });
 

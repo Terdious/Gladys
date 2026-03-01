@@ -18,6 +18,7 @@ describe('TuyaHandler.loadDevices', () => {
 
   beforeEach(() => {
     sinon.reset();
+    gladys.variable.getValue = fake.resolves('APP_ACCOUNT_UID');
     tuyaHandler.connector = {
       request: sinon
         .stub()
@@ -104,6 +105,30 @@ describe('TuyaHandler.loadDevices', () => {
       assert.fail();
     } catch (e) {
       expect(e.message).to.equal('Tuya API returned no response');
+    }
+  });
+
+  it('should throw when app account uid is missing', async () => {
+    gladys.variable.getValue = sinon.fake.resolves(null);
+
+    try {
+      await tuyaHandler.loadDevices(1, 1);
+      assert.fail();
+    } catch (e) {
+      expect(e.message).to.equal('Tuya APP_ACCOUNT_UID is missing');
+    }
+  });
+
+  it('should throw when pagination does not advance', async () => {
+    tuyaHandler.connector.request = sinon.stub().resolves({
+      result: { list: [], has_more: true },
+    });
+
+    try {
+      await tuyaHandler.loadDevices(1, 1);
+      assert.fail();
+    } catch (e) {
+      expect(e.message).to.equal('Tuya API pagination did not advance (has_more=true with empty page)');
     }
   });
 });

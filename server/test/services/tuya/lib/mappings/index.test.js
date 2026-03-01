@@ -21,6 +21,7 @@ describe('Tuya mappings index', () => {
   it('should normalize codes', () => {
     expect(normalizeCode()).to.equal(null);
     expect(normalizeCode('TeSt')).to.equal('test');
+    expect(normalizeCode(' switch_1 ')).to.equal('switch_1');
   });
 
   it('should extract codes from specifications and skip invalid entries', () => {
@@ -147,6 +148,14 @@ describe('Tuya mappings index', () => {
       model: 'Wifi Plug Mini',
     });
     expect(socketByMergedSources).to.equal(DEVICE_TYPES.SMART_SOCKET);
+
+    const socketByDirectPropertiesArray = getDeviceType({
+      specifications: {},
+      properties: [{}, { code: ' switch_1 ' }],
+      model: 'Wifi Plug Mini',
+      product_name: 'Plug',
+    });
+    expect(socketByDirectPropertiesArray).to.equal(DEVICE_TYPES.SMART_SOCKET);
   });
 
   it('should get feature mapping and ignore invalid candidates', () => {

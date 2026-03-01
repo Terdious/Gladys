@@ -41,7 +41,9 @@ const normalizeCode = (code) => {
   if (!code) {
     return null;
   }
-  return String(code).toLowerCase();
+  return String(code)
+    .trim()
+    .toLowerCase();
 };
 
 const normalizeStringSet = (setLike) =>
@@ -132,7 +134,7 @@ const extractCodesFromSpecifications = (specifications) => {
     if (!item || !item.code) {
       return;
     }
-    codes.add(String(item.code).toLowerCase());
+    codes.add(normalizeCode(item.code));
   });
 
   return codes;
@@ -150,9 +152,9 @@ const extractCodesFromFeatures = (features) => {
     }
     const parts = String(feature.external_id).split(':');
     if (parts.length >= 2) {
-      const code = parts[parts.length - 1];
+      const code = normalizeCode(parts[parts.length - 1]);
       if (code) {
-        codes.add(String(code).toLowerCase());
+        codes.add(code);
       }
     }
   });
@@ -170,7 +172,7 @@ const extractCodesFromThingModel = (thingModel) => {
       if (!property || !property.code) {
         return;
       }
-      codes.add(String(property.code).toLowerCase());
+      codes.add(normalizeCode(property.code));
     });
   });
 
@@ -179,15 +181,18 @@ const extractCodesFromThingModel = (thingModel) => {
 
 const extractCodesFromProperties = (propertiesPayload) => {
   const codes = new Set();
-  const properties = Array.isArray(propertiesPayload && propertiesPayload.properties)
-    ? propertiesPayload.properties
-    : [];
+  let properties = [];
+  if (Array.isArray(propertiesPayload)) {
+    properties = propertiesPayload;
+  } else if (Array.isArray(propertiesPayload && propertiesPayload.properties)) {
+    properties = propertiesPayload.properties;
+  }
 
   properties.forEach((property) => {
     if (!property || !property.code) {
       return;
     }
-    codes.add(String(property.code).toLowerCase());
+    codes.add(normalizeCode(property.code));
   });
 
   return codes;

@@ -17,6 +17,9 @@ async function loadDevices(pageNo = 1, pageSize = 100) {
     throw new Error('pageSize must be a positive integer');
   }
   const sourceId = await this.gladys.variable.getValue(GLADYS_VARIABLES.APP_ACCOUNT_UID, this.serviceId);
+  if (!sourceId) {
+    throw new Error('Tuya APP_ACCOUNT_UID is missing');
+  }
 
   const responsePage = await this.connector.request({
     method: 'GET',
@@ -42,6 +45,9 @@ async function loadDevices(pageNo = 1, pageSize = 100) {
   }
 
   if (hasMore) {
+    if (list.length === 0) {
+      throw new Error('Tuya API pagination did not advance (has_more=true with empty page)');
+    }
     const nextResult = await this.loadDevices(pageNo + 1, pageSize);
     list.push(...nextResult);
   }

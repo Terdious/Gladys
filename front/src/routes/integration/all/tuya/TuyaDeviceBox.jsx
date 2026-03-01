@@ -604,7 +604,9 @@ class TuyaDeviceBox extends Component {
           }
         }
       }
-      const newParams = [...params];
+      const baseDevice = latestDevice || currentDevice;
+      const baseParams = Array.isArray(baseDevice.params) ? [...baseDevice.params] : [];
+      const newParams = baseParams;
       if (usedProtocol) {
         const protocolIndex = newParams.findIndex(param => param.name === 'PROTOCOL_VERSION');
         if (protocolIndex >= 0) {
@@ -613,7 +615,6 @@ class TuyaDeviceBox extends Component {
           newParams.push({ name: 'PROTOCOL_VERSION', value: usedProtocol });
         }
       }
-      const baseDevice = latestDevice || currentDevice;
       this.setState({
         device: {
           ...baseDevice,

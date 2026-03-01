@@ -94,6 +94,7 @@ const loadFixtureCases = (sectionName) =>
   fs
     .readdirSync(FIXTURES_ROOT)
     .sort()
+    .filter((directoryName) => fs.statSync(path.join(FIXTURES_ROOT, directoryName)).isDirectory())
     .map((directoryName) => {
       const fixtureDirectory = path.join(FIXTURES_ROOT, directoryName);
       const manifest = fixtureRequire(path.join(fixtureDirectory, 'manifest.js'));

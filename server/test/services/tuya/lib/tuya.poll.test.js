@@ -12,6 +12,7 @@ const TuyaHandler = proxyquire('../../../../services/tuya/lib/index', {
   './tuya.connect.js': connect,
 });
 const { EVENTS } = require('../../../../utils/constants');
+const { API } = require('../../../../services/tuya/lib/utils/tuya.constants');
 
 const { BadParameters } = require('../../../../utils/coreErrors');
 

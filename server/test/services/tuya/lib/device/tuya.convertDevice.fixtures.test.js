@@ -6,6 +6,10 @@ const { loadFixtureCases, normalizeConvertedDevice, sortByKey } = require('../..
 describe('tuya.convertDevice fixtures', () => {
   const fixtureCases = loadFixtureCases('convertDevice');
 
+  it('should load at least one convertDevice fixture case', () => {
+    expect(fixtureCases.length).to.be.greaterThan(0);
+  });
+
   fixtureCases.forEach((fixtureCase) => {
     it(`should convert ${fixtureCase.manifest.name} from fixture`, () => {
       const { input, expected } = fixtureCase.manifest.convertDevice;

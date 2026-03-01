@@ -136,8 +136,10 @@ describe('Tuya device mapping', () => {
       });
     });
     describe('energy sensor', () => {
-      it('switch power invalid value returns NaN', () => {
-        const result = readValues[DEVICE_FEATURE_CATEGORIES.SWITCH][DEVICE_FEATURE_TYPES.SWITCH.POWER]('not-a-number');
+      it('energy sensor power invalid value returns NaN', () => {
+        const result = readValues[DEVICE_FEATURE_CATEGORIES.ENERGY_SENSOR][DEVICE_FEATURE_TYPES.ENERGY_SENSOR.POWER](
+          'not-a-number',
+        );
         expect(Number.isNaN(result)).to.equal(true);
       });
       it('power with scale', () => {

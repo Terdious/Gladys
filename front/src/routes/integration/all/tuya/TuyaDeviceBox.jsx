@@ -133,7 +133,11 @@ const getUnknownSpecificationCodes = (specifications, features, device) => {
   const knownCodes = new Set();
   const addKnownCode = code => {
     if (code !== null && code !== undefined) {
-      knownCodes.add(String(code).trim().toLowerCase());
+      knownCodes.add(
+        String(code)
+          .trim()
+          .toLowerCase()
+      );
     }
   };
   if (Array.isArray(features)) {
@@ -143,7 +147,9 @@ const getUnknownSpecificationCodes = (specifications, features, device) => {
       addKnownCode(code);
     });
   }
-  const services = Array.isArray(device && device.thing_model && device.thing_model.services) ? device.thing_model.services : [];
+  const services = Array.isArray(device && device.thing_model && device.thing_model.services)
+    ? device.thing_model.services
+    : [];
   services.forEach(service => {
     const properties = Array.isArray(service && service.properties) ? service.properties : [];
     properties.forEach(property => addKnownCode(property && property.code));
@@ -169,7 +175,9 @@ const getUnknownSpecificationCodes = (specifications, features, device) => {
   });
   const ignoredCodes = getIgnoredCloudCodes(device);
   return Array.from(specCodes).filter(code => {
-    const normalized = String(code).trim().toLowerCase();
+    const normalized = String(code)
+      .trim()
+      .toLowerCase();
     return !knownCodes.has(normalized) && !ignoredCodes.has(normalized);
   });
 };

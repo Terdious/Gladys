@@ -329,10 +329,12 @@ class SetupTab extends Component {
         tuyaConnectionStatus: null
       });
     } catch (e) {
+      const responseMessage =
+        (e && e.response && e.response.data && e.response.data.message) || (e && e.message) || 'unknown';
       this.setState({
         tuyaDisconnecting: false,
         tuyaConnectionStatus: RequestStatus.Error,
-        tuyaConnectionError: (e && e.message) || 'unknown'
+        tuyaConnectionError: responseMessage
       });
     }
   };

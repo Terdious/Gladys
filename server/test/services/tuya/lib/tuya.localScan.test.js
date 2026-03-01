@@ -288,8 +288,13 @@ describe('TuyaHandler.localScan', () => {
     const clock = sinon.useFakeTimers();
     const promise = localScan(1);
     await clock.tickAsync(1100);
-    await promise;
+    const result = await promise;
     clock.restore();
+
+    expect(result).to.deep.equal({
+      devices: {},
+      portErrors: {},
+    });
   });
 });
 

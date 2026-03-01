@@ -60,6 +60,7 @@ describe('TuyaHandler.poll', () => {
           },
         ],
       });
+      expect.fail('Expected BadParameters to be thrown');
     } catch (error) {
       expect(error).to.be.an.instanceof(BadParameters);
       expect(error.message).to.equal('Tuya device external_id is invalid: "test:device" should starts with "tuya:"');
@@ -78,6 +79,7 @@ describe('TuyaHandler.poll', () => {
           },
         ],
       });
+      expect.fail('Expected BadParameters to be thrown');
     } catch (error) {
       expect(error).to.be.an.instanceof(BadParameters);
       expect(error.message).to.equal('Tuya device external_id is invalid: "tuya" have no network indicator');
@@ -121,7 +123,52 @@ describe('TuyaHandler.poll', () => {
       ],
     });
 
+    assert.callCount(tuyaHandler.connector.request, 1);
+    assert.calledWith(tuyaHandler.connector.request, {
+      method: 'GET',
+      path: `${API.VERSION_1_0}/devices/device/status`,
+    });
     assert.callCount(gladys.event.emit, 0);
+  });
+
+  it('should continue cloud poll when one reader throws', async () => {
+    tuyaHandler.connector.request = sinon.stub().resolves({
+      result: [
+        { code: 'colour_data', value: '{' },
+        { code: 'switch_1', value: true },
+      ],
+    });
+    const logger = {
+      debug: sinon.stub(),
+      warn: sinon.stub(),
+    };
+    const { poll } = proxyquire('../../../../services/tuya/lib/tuya.poll', {
+      '../../../utils/logger': logger,
+    });
+
+    await poll.call(tuyaHandler, {
+      external_id: 'tuya:device',
+      features: [
+        {
+          external_id: 'tuya:device:colour_data',
+          category: 'light',
+          type: 'color',
+        },
+        {
+          external_id: 'tuya:device:switch_1',
+          category: 'light',
+          type: 'binary',
+        },
+      ],
+    });
+
+    assert.callCount(logger.warn, 1);
+    expect(logger.warn.firstCall.args[0]).to.include('reader failed');
+    assert.callCount(gladys.event.emit, 1);
+    assert.calledWith(gladys.event.emit, EVENTS.DEVICE.NEW_STATE, {
+      device_feature_external_id: 'tuya:device:switch_1',
+      state: 1,
+    });
   });
 
   it('should return without cloud request when feature list is empty', async () => {
@@ -539,6 +586,53 @@ describe('TuyaHandler.poll additional branch coverage', () => {
 
     expect(localPoll.calledOnce).to.equal(true);
     expect(request.calledOnce).to.equal(true);
+  });
+
+  it('should warn and fallback to cloud when local reader throws', async () => {
+    const localPoll = sinon.stub().resolves({ dps: { 1: true } });
+    const request = sinon.stub().resolves({ result: [{ code: 'switch_1', value: false }] });
+    const emit = sinon.stub();
+    const logger = { debug: sinon.stub(), warn: sinon.stub() };
+    const { poll } = proxyquire('../../../../services/tuya/lib/tuya.poll', {
+      './tuya.localPoll': { localPoll },
+      '../../../utils/logger': logger,
+      './device/tuya.deviceMapping': {
+        readValues: {
+          switch: {
+            binary: (value) => {
+              if (value === true) {
+                throw new Error('bad local value');
+              }
+              return 0;
+            },
+          },
+        },
+      },
+    });
+
+    await poll.call(
+      {
+        connector: { request },
+        gladys: { event: { emit } },
+      },
+      {
+        external_id: 'tuya:device',
+        params: [
+          { name: 'IP_ADDRESS', value: '1.1.1.1' },
+          { name: 'LOCAL_KEY', value: 'key' },
+          { name: 'PROTOCOL_VERSION', value: '3.3' },
+          { name: 'LOCAL_OVERRIDE', value: true },
+        ],
+        features: [{ external_id: 'tuya:device:switch_1', category: 'switch', type: 'binary' }],
+      },
+    );
+
+    expect(localPoll.calledOnce).to.equal(true);
+    expect(request.calledOnce).to.equal(true);
+    expect(logger.warn.calledOnce).to.equal(true);
+    expect(logger.warn.firstCall.args[0]).to.include('local reader failed');
+    expect(emit.calledOnce).to.equal(true);
+    expect(emit.firstCall.args[1].state).to.equal(0);
   });
 
   it('should warn when cloud fallback fails after local success', async () => {

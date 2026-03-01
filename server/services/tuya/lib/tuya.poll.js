@@ -145,7 +145,14 @@ const pollCloudFeatures = async function pollCloudFeatures(deviceFeatures, topic
       summary.missing += 1;
       return;
     }
-    const transformedValue = reader(value, deviceFeature);
+    let transformedValue;
+    try {
+      transformedValue = reader(value, deviceFeature);
+    } catch (e) {
+      summary.skipped += 1;
+      logger.warn(`[Tuya][poll][cloud] reader failed for device=${topic} code=${code}`, e);
+      return;
+    }
     const { lastValue, lastValueChanged } = getCurrentFeatureState(this.gladys, deviceFeature);
     const { changed } = emitFeatureState(this.gladys, deviceFeature, transformedValue, lastValue, lastValueChanged);
     if (changed) {
@@ -244,7 +251,14 @@ async function poll(device) {
             pendingCloudFeatures.push(deviceFeature);
             return;
           }
-          const transformedValue = reader(rawValue, deviceFeature);
+          let transformedValue;
+          try {
+            transformedValue = reader(rawValue, deviceFeature);
+          } catch (e) {
+            pendingCloudFeatures.push(deviceFeature);
+            logger.warn(`[Tuya][poll] local reader failed for device=${topic} code=${code}; falling back to cloud`, e);
+            return;
+          }
           const { lastValue, lastValueChanged } = getCurrentFeatureState(this.gladys, deviceFeature);
           const { changed } = emitFeatureState(
             this.gladys,

@@ -17,6 +17,7 @@ describe('TuyaHandler.disconnect', () => {
 
   beforeEach(() => {
     tuyaHandler.status = 'UNKNOWN';
+    gladys.event.emit.resetHistory();
   });
 
   it('should reset attributes', () => {

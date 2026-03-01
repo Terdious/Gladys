@@ -797,12 +797,19 @@ class TuyaDeviceBox extends Component {
       return;
     }
     const issueTitle = buildIssueTitle(device);
+    const popup = window.open('about:blank', '_blank');
+    if (popup) {
+      popup.opener = null;
+    }
     this.setState({ githubIssueChecking: true });
     let shouldOpenIssue = true;
     try {
       const exists = await checkGithubIssueExists(issueTitle);
       if (exists) {
         shouldOpenIssue = false;
+        if (popup && !popup.closed) {
+          popup.close();
+        }
         this.setState({ githubIssueExists: true });
       }
     } catch (error) {
@@ -814,7 +821,11 @@ class TuyaDeviceBox extends Component {
       return;
     }
     const title = encodeURIComponent(issueTitle);
-    window.open(`${GITHUB_BASE_URL}?title=${title}`, '_blank');
+    if (popup && !popup.closed) {
+      popup.location.href = `${GITHUB_BASE_URL}?title=${title}`;
+    } else {
+      window.open(`${GITHUB_BASE_URL}?title=${title}`, '_blank');
+    }
     this.setState({ githubIssueOpened: true });
   };
 

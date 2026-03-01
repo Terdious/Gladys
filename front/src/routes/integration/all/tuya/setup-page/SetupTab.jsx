@@ -293,12 +293,11 @@ class SetupTab extends Component {
     const { name, value } = e.target;
     this.setState(prevState => {
       const nextState = { ...prevState, [name]: value };
-      const configured = !!(
-        nextState.tuyaEndpoint &&
-        nextState.tuyaAccessKey &&
-        nextState.tuyaSecretKey &&
-        nextState.tuyaAppAccountId
-      );
+      const tuyaEndpoint = (nextState.tuyaEndpoint || '').trim();
+      const tuyaAccessKey = (nextState.tuyaAccessKey || '').trim();
+      const tuyaSecretKey = (nextState.tuyaSecretKey || '').trim();
+      const tuyaAppAccountId = (nextState.tuyaAppAccountId || '').trim();
+      const configured = !!(tuyaEndpoint && tuyaAccessKey && tuyaSecretKey && tuyaAppAccountId);
       return {
         [name]: value,
         tuyaConfigured: configured
@@ -340,6 +339,10 @@ class SetupTab extends Component {
   };
 
   render(props, state) {
+    const showUnexpectedDisconnect = state.tuyaDisconnected && state.tuyaConfigured;
+    const showConnectionError = state.tuyaConnectionStatus === RequestStatus.Error;
+    const showCombinedDisconnectError = showUnexpectedDisconnect && showConnectionError;
+
     return (
       <div class="card">
         <div class="card-header">
@@ -400,12 +403,23 @@ class SetupTab extends Component {
                   />
                 </p>
               )}
-              {state.tuyaDisconnected && state.tuyaConfigured && (
+              {showCombinedDisconnectError && (
+                <div class="alert alert-danger">
+                  <MarkupText id="integration.tuya.setup.disconnectedUnexpected" />
+                  <div class="mt-2">
+                    <Text id="integration.tuya.setup.connectionError" />
+                  </div>
+                  {state.tuyaConnectionError && (
+                    <div class="mt-2">{this.renderTuyaError(state.tuyaConnectionError)}</div>
+                  )}
+                </div>
+              )}
+              {showUnexpectedDisconnect && !showConnectionError && (
                 <p class="alert alert-danger">
                   <MarkupText id="integration.tuya.setup.disconnectedUnexpected" />
                 </p>
               )}
-              {state.tuyaConnectionStatus === RequestStatus.Error && (
+              {showConnectionError && !showUnexpectedDisconnect && (
                 <div class="alert alert-danger">
                   <Text id="integration.tuya.setup.connectionError" />
                   {state.tuyaConnectionError && (

@@ -186,6 +186,48 @@ describe('TuyaHandler.localPoll', () => {
     }
   });
 
+  it('should sanitize too-low timeoutMs before timing out', async () => {
+    const clock = sinon.useFakeTimers();
+    try {
+      const connect = sinon.stub().resolves();
+      const get = sinon.stub().returns(new Promise(() => {}));
+      const disconnect = sinon.stub().resolves();
+      const TuyAPIStub = function TuyAPIStub() {
+        this.connect = connect;
+        this.get = get;
+        this.disconnect = disconnect;
+        attachEventHandlers(this);
+      };
+      const { localPoll } = proxyquire('../../../../services/tuya/lib/tuya.localPoll', {
+        tuyapi: TuyAPIStub,
+        '@demirdeniz/tuyapi-newgen': function TuyAPINewGenStub() {},
+      });
+      const promise = localPoll({
+        deviceId: 'device',
+        ip: '1.1.1.1',
+        localKey: 'key',
+        protocolVersion: '3.3',
+        timeoutMs: 10,
+      });
+      const errorPromise = (async () => {
+        try {
+          await promise;
+          return null;
+        } catch (error) {
+          return error;
+        }
+      })();
+      await clock.tickAsync(400);
+      expect(await Promise.race([errorPromise, Promise.resolve('pending')])).to.equal('pending');
+      await clock.tickAsync(100);
+      const error = await errorPromise;
+      expect(error).to.be.instanceOf(BadParameters);
+      expect(error.message).to.equal('Local poll timeout');
+    } finally {
+      clock.restore();
+    }
+  });
+
   it('should reject on socket error listener', async () => {
     const connect = sinon.stub().resolves();
     const get = sinon.stub().returns(new Promise(() => {}));

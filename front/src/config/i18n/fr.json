@@ -1386,6 +1386,66 @@
         "conflictError": "L'appareil actuel est déjà dans Gladys."
       }
     },
+    "zendure": {
+      "title": "Zendure",
+      "description": "Contrôler vos appareils Zendure (mode cloud dans cette première version).",
+      "deviceTab": "Appareils",
+      "discoverTab": "Découverte Zendure",
+      "setupTab": "Configuration",
+      "documentation": "Documentation Zendure",
+      "discoverDeviceDescr": "Scanner automatiquement les appareils Zendure",
+      "nameLabel": "Nom de l'appareil",
+      "namePlaceholder": "Entrez le nom de votre appareil",
+      "modelLabel": "Modèle",
+      "roomLabel": "Pièce",
+      "saveButton": "Sauvegarder",
+      "alreadyCreatedButton": "Déjà créé",
+      "updateButton": "Mettre à jour",
+      "deleteButton": "Supprimer",
+      "partiallyManagedModelButton": "Modèle partiellement géré",
+      "unmanagedModelButton": "Modèle non géré dans cette version",
+      "status": {
+        "notConnected": "Gladys n'a pas réussi à se connecter au compte cloud Zendure, plus d'informations sur la ",
+        "setupPageLink": "page de configuration Zendure."
+      },
+      "device": {
+        "title": "Appareils Zendure dans Gladys",
+        "noDeviceFound": "Aucun appareil Zendure trouvé.",
+        "featuresLabel": "Fonctionnalités"
+      },
+      "discover": {
+        "title": "Appareils détectés sur votre compte Zendure",
+        "description": "Les appareils Zendure sont découverts depuis le compte cloud configuré dans l'onglet Configuration.",
+        "noDeviceFound": "Aucun appareil Zendure n'a été découvert.",
+        "scan": "Scanner"
+      },
+      "setup": {
+        "title": "Configuration Zendure",
+        "description": "<strong>Récupération du jeton d'application Zendure</strong><br /><br />1. Connectez-vous à l'application Zendure.<br />2. Ouvrez <strong>Profil</strong>.<br />3. Sélectionnez <strong>Clé cloud d'autorisation</strong>.<br />4. Cliquez sur <strong>Obtenir</strong>.<br />5. Copiez la clé puis collez-la ci-dessous.",
+        "tokenLabel": "Jeton d'application",
+        "tokenPlaceholder": "Entrez le jeton Zendure",
+        "saveLabel": "Enregistrer la configuration",
+        "connectedLabel": "Connecté",
+        "notConfigured": "Zendure n'est pas configuré. Renseignez le jeton d'application.",
+        "connectedStatus": "Connexion au cloud Zendure active.",
+        "saveError": "Impossible de se connecter au cloud Zendure avec cette configuration."
+      },
+      "error": {
+        "defaultError": "Une erreur s'est produite lors de l'enregistrement de l'appareil.",
+        "defaultDeletionError": "Une erreur s'est produite lors de la suppression de l'appareil.",
+        "conflictError": "L'appareil actuel est déjà dans Gladys."
+      },
+      "cloudDevice": {
+        "title": "Informations cloud / local",
+        "deviceKey": "Clé appareil",
+        "productKey": "Clé produit",
+        "online": "Statut cloud",
+        "onlineYes": "En ligne",
+        "onlineNo": "Hors ligne",
+        "localIp": "IP locale",
+        "localMqtt": "MQTT local"
+      }
+    },
     "sonos": {
       "title": "Sonos",
       "description": "Contrôler les appareils Sonos sur votre réseau local",
@@ -3840,6 +3900,12 @@
       "daily-production-revenue": "Revenu journalier",
       "thirty-minutes-production": "Production 30 minutes",
       "thirty-minutes-production-revenue": "Revenu 30 minutes"
+    },
+    "solar-battery": {
+      "shortCategoryName": "Batterie solaire",
+      "battery-level": "Niveau batterie",
+      "battery-input-power": "Puissance d'entrée batterie",
+      "battery-output-power": "Puissance de sortie batterie"
     },
     "teleinformation": {
       "shortCategoryName": "Téléinformation",

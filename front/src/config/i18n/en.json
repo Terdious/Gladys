@@ -1151,6 +1151,66 @@
         "conflictError": "Current device is already in Gladys."
       }
     },
+    "zendure": {
+      "title": "Zendure",
+      "description": "Control your Zendure devices (cloud mode in this first version)",
+      "deviceTab": "Devices",
+      "discoverTab": "Zendure discover",
+      "setupTab": "Setup",
+      "documentation": "Zendure documentation",
+      "discoverDeviceDescr": "Automatically scan Zendure devices",
+      "nameLabel": "Device Name",
+      "namePlaceholder": "Enter the name of your device",
+      "modelLabel": "Model",
+      "roomLabel": "Room",
+      "saveButton": "Save",
+      "alreadyCreatedButton": "Already created",
+      "updateButton": "Update",
+      "deleteButton": "Delete",
+      "partiallyManagedModelButton": "Model partially managed",
+      "unmanagedModelButton": "Model not managed in this version",
+      "status": {
+        "notConnected": "Gladys failed to connect to Zendure cloud account, please go to ",
+        "setupPageLink": "Zendure configuration page."
+      },
+      "device": {
+        "title": "Devices in Gladys",
+        "noDeviceFound": "No Zendure device found.",
+        "featuresLabel": "Features"
+      },
+      "discover": {
+        "title": "Devices detected on your Zendure account",
+        "description": "Zendure devices are discovered from the cloud account configured in Setup.",
+        "noDeviceFound": "No Zendure device discovered.",
+        "scan": "Scan"
+      },
+      "setup": {
+        "title": "Zendure configuration",
+        "description": "<strong>How to get your Zendure app token</strong><br /><br />1. Sign in to the Zendure app.<br />2. Open <strong>Profile</strong>.<br />3. Select <strong>Authorization Cloud Key</strong>.<br />4. Click <strong>Get</strong>.<br />5. Copy the key and paste it below.",
+        "tokenLabel": "App token",
+        "tokenPlaceholder": "Enter Zendure app token",
+        "saveLabel": "Save configuration",
+        "connectedLabel": "Connected",
+        "notConfigured": "Zendure is not configured. Please provide an app token.",
+        "connectedStatus": "Connection to Zendure cloud is active.",
+        "saveError": "Unable to connect to Zendure cloud with this configuration."
+      },
+      "error": {
+        "defaultError": "There was an error saving the device.",
+        "defaultDeletionError": "There was an error deleting the device.",
+        "conflictError": "Current device is already in Gladys."
+      },
+      "cloudDevice": {
+        "title": "Cloud / local details",
+        "deviceKey": "Device key",
+        "productKey": "Product key",
+        "online": "Cloud status",
+        "onlineYes": "Online",
+        "onlineNo": "Offline",
+        "localIp": "Local IP",
+        "localMqtt": "Local MQTT"
+      }
+    },
     "sonos": {
       "title": "Sonos",
       "description": "Control Sonos devices on your local network",
@@ -3840,6 +3900,12 @@
       "daily-production-revenue": "Daily Revenue",
       "thirty-minutes-production": "30 Minutes Production",
       "thirty-minutes-production-revenue": "30 Minutes Revenue"
+    },
+    "solar-battery": {
+      "shortCategoryName": "Solar battery",
+      "battery-level": "Battery level",
+      "battery-input-power": "Battery input power",
+      "battery-output-power": "Battery output power"
     },
     "teleinformation": {
       "shortCategoryName": "Teleinformation",

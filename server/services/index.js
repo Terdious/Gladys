@@ -25,6 +25,7 @@ module.exports['lan-manager'] = require('./lan-manager');
 module.exports.matter = require('./matter');
 module.exports['nextcloud-talk'] = require('./nextcloud-talk');
 module.exports.tuya = require('./tuya');
+module.exports.zendure = require('./zendure');
 module.exports.melcloud = require('./melcloud');
 module.exports['node-red'] = require('./node-red');
 module.exports.matterbridge = require('./matterbridge');

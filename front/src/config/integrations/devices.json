@@ -77,6 +77,12 @@
     "invertInDarkMode": true
   },
   {
+    "key": "zendure",
+    "link": "zendure",
+    "img": "/assets/integrations/cover/zendure.jpg",
+    "invertInDarkMode": true
+  },
+  {
     "key": "melcloud",
     "link": "melcloud",
     "img": "/assets/integrations/cover/melcloud.jpg",

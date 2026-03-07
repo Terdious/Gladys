@@ -1256,6 +1256,66 @@
         "conflictError": "Das aktuelle Gerät ist bereits in Gladys vorhanden."
       }
     },
+    "zendure": {
+      "title": "Zendure",
+      "description": "Steuere deine Zendure-Geräte (Cloud-Modus in dieser ersten Version).",
+      "deviceTab": "Geräte",
+      "discoverTab": "Zendure-Erkennung",
+      "setupTab": "Einrichtung",
+      "documentation": "Zendure-Dokumentation",
+      "discoverDeviceDescr": "Zendure-Geräte automatisch erkennen",
+      "nameLabel": "Gerätename",
+      "namePlaceholder": "Gib den Namen deines Geräts ein",
+      "modelLabel": "Modell",
+      "roomLabel": "Raum",
+      "saveButton": "Sichern",
+      "alreadyCreatedButton": "Bereits erstellt",
+      "updateButton": "Aktualisieren",
+      "deleteButton": "Löschen",
+      "partiallyManagedModelButton": "Modell teilweise unterstützt",
+      "unmanagedModelButton": "Modell in dieser Version nicht unterstützt",
+      "status": {
+        "notConnected": "Gladys konnte keine Verbindung zum Zendure-Cloud-Konto herstellen. Bitte gehe zur ",
+        "setupPageLink": "Zendure-Einrichtungsseite."
+      },
+      "device": {
+        "title": "Geräte in Gladys",
+        "noDeviceFound": "Kein Zendure-Gerät gefunden.",
+        "featuresLabel": "Funktionen"
+      },
+      "discover": {
+        "title": "Auf deinem Zendure-Konto erkannte Geräte",
+        "description": "Zendure-Geräte werden über das in der Einrichtung konfigurierte Cloud-Konto erkannt.",
+        "noDeviceFound": "Kein Zendure-Gerät entdeckt.",
+        "scan": "Scannen"
+      },
+      "setup": {
+        "title": "Zendure-Konfiguration",
+        "description": "<strong>So erhältst du deinen Zendure-App-Token</strong><br /><br />1. Melde dich in der Zendure-App an.<br />2. Öffne <strong>Profil</strong>.<br />3. Wähle <strong>Autorisierungs-Cloud-Schlüssel</strong>.<br />4. Klicke auf <strong>Abrufen</strong>.<br />5. Kopiere den Schlüssel und füge ihn unten ein.",
+        "tokenLabel": "App-Token",
+        "tokenPlaceholder": "Zendure-App-Token eingeben",
+        "saveLabel": "Konfiguration sichern",
+        "connectedLabel": "Verbunden",
+        "notConfigured": "Zendure ist nicht konfiguriert. Bitte gib einen App-Token ein.",
+        "connectedStatus": "Verbindung zur Zendure-Cloud ist aktiv.",
+        "saveError": "Verbindung zur Zendure-Cloud mit dieser Konfiguration fehlgeschlagen."
+      },
+      "error": {
+        "defaultError": "Beim Sichern des Geräts ist ein Fehler aufgetreten.",
+        "defaultDeletionError": "Beim Löschen des Geräts ist ein Fehler aufgetreten.",
+        "conflictError": "Das aktuelle Gerät ist bereits in Gladys vorhanden."
+      },
+      "cloudDevice": {
+        "title": "Cloud-/Lokaldetails",
+        "deviceKey": "Geräteschlüssel",
+        "productKey": "Produktschlüssel",
+        "online": "Cloud-Status",
+        "onlineYes": "Online",
+        "onlineNo": "Offline",
+        "localIp": "Lokale IP",
+        "localMqtt": "Lokales MQTT"
+      }
+    },
     "sonos": {
       "title": "Sonos",
       "description": "Steuere Sonos-Geräte in deinem lokalen Netzwerk.",
@@ -3840,6 +3900,12 @@
       "daily-production-revenue": "Tagesertrag",
       "thirty-minutes-production": "Produktion 30 Minuten",
       "thirty-minutes-production-revenue": "Ertrag 30 Minuten"
+    },
+    "solar-battery": {
+      "shortCategoryName": "Solarbatterie",
+      "battery-level": "Batteriestand",
+      "battery-input-power": "Batterie-Eingangsleistung",
+      "battery-output-power": "Batterie-Ausgangsleistung"
     },
     "teleinformation": {
       "shortCategoryName": "Teleinformation",

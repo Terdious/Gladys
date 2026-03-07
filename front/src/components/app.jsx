@@ -144,6 +144,11 @@ import TuyaEditPage from '../routes/integration/all/tuya/edit-page';
 import TuyaSetupPage from '../routes/integration/all/tuya/setup-page';
 import TuyaDiscoverPage from '../routes/integration/all/tuya/discover-page';
 
+// Zendure integration
+import ZendurePage from '../routes/integration/all/zendure/device-page';
+import ZendureSetupPage from '../routes/integration/all/zendure/setup-page';
+import ZendureDiscoverPage from '../routes/integration/all/zendure/discover-page';
+
 // Netatmo integration
 import NetatmoPage from '../routes/integration/all/netatmo/device-page';
 import NetatmoSetupPage from '../routes/integration/all/netatmo/setup-page';
@@ -324,6 +329,10 @@ const AppRouter = connect(
         <TuyaEditPage path="/dashboard/integration/device/tuya/edit/:deviceSelector" />
         <TuyaDiscoverPage path="/dashboard/integration/device/tuya/discover" />
         <TuyaSetupPage path="/dashboard/integration/device/tuya/setup" />
+
+        <ZendurePage path="/dashboard/integration/device/zendure" />
+        <ZendureDiscoverPage path="/dashboard/integration/device/zendure/discover" />
+        <ZendureSetupPage path="/dashboard/integration/device/zendure/setup" />
 
         <NetatmoPage path="/dashboard/integration/device/netatmo" />
         <NetatmoDiscoverPage path="/dashboard/integration/device/netatmo/discover" />

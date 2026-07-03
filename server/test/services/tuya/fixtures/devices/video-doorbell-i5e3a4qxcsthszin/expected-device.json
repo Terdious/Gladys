@@ -20,7 +20,6 @@
     "ignored_cloud_codes": [
       "basic_device_volume",
       "basic_nightvision",
-      "doorbell_active",
       "doorbell_pic",
       "motion_sensitivity",
       "movement_detect_pic",
@@ -30,9 +29,20 @@
       "sd_status",
       "sd_storge"
     ],
-    "ignored_local_dps": ["106", "108", "109", "110", "111", "115", "117", "136", "151", "154", "160"]
+    "ignored_local_dps": ["106", "108", "109", "110", "111", "115", "117", "151", "154", "160"]
   },
   "features": [
+    {
+      "category": "button",
+      "external_id": "tuya:bf0e59548489fcb4ea62of:doorbell_active",
+      "has_feedback": false,
+      "max": 1,
+      "min": 0,
+      "name": "Doorbell",
+      "read_only": true,
+      "selector": "tuya-bf0e59548489fcb4ea62of-doorbell-active",
+      "type": "click"
+    },
     {
       "category": "switch",
       "external_id": "tuya:bf0e59548489fcb4ea62of:basic_flip",

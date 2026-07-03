@@ -143,6 +143,7 @@ import TuyaPage from '../routes/integration/all/tuya/device-page';
 import TuyaEditPage from '../routes/integration/all/tuya/edit-page';
 import TuyaSetupPage from '../routes/integration/all/tuya/setup-page';
 import TuyaDiscoverPage from '../routes/integration/all/tuya/discover-page';
+import TuyaDiagnosticPage from '../routes/integration/all/tuya/diagnostic-page';
 
 // Netatmo integration
 import NetatmoPage from '../routes/integration/all/netatmo/device-page';
@@ -324,6 +325,8 @@ const AppRouter = connect(
         <TuyaEditPage path="/dashboard/integration/device/tuya/edit/:deviceSelector" />
         <TuyaDiscoverPage path="/dashboard/integration/device/tuya/discover" />
         <TuyaSetupPage path="/dashboard/integration/device/tuya/setup" />
+        <TuyaDiagnosticPage path="/dashboard/integration/device/tuya/diagnostic" />
+        <TuyaDiagnosticPage path="/dashboard/integration/device/tuya/diagnostic/:deviceSelector" />
 
         <NetatmoPage path="/dashboard/integration/device/netatmo" />
         <NetatmoDiscoverPage path="/dashboard/integration/device/netatmo/discover" />

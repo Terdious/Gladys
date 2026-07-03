@@ -8,6 +8,7 @@ const {
   AC_SWING_HORIZONTAL,
   AC_SWING_VERTICAL,
   PILOT_WIRE_MODE,
+  BUTTON_STATUS,
 } = require('../../../../utils/constants');
 
 const { intToRgb, rgbToHsb, rgbToInt, hsbToRgb } = require('../../../../utils/colors');
@@ -333,6 +334,16 @@ const readValues = {
   [DEVICE_FEATURE_CATEGORIES.OPENING_SENSOR]: {
     [DEVICE_FEATURE_TYPES.SENSOR.BINARY]: (valueFromDevice) => {
       return normalizeBoolean(valueFromDevice) ? OPENING_SENSOR_STATE.OPEN : OPENING_SENSOR_STATE.CLOSE;
+    },
+  },
+  [DEVICE_FEATURE_CATEGORIES.BUTTON]: {
+    // Event DP (e.g. a doorbell ring): any non-empty payload is a click; the idle empty value maps
+    // to null so nothing is emitted at rest. Repeat-detection is handled by the event gate in the
+    // poll/push pipeline (mapping entries flagged `event: true`), not here.
+    [DEVICE_FEATURE_TYPES.BUTTON.CLICK]: (valueFromDevice) => {
+      return valueFromDevice !== undefined && valueFromDevice !== null && String(valueFromDevice) !== ''
+        ? BUTTON_STATUS.CLICK
+        : null;
     },
   },
   [DEVICE_FEATURE_CATEGORIES.HEATER]: {

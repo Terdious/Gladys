@@ -9,6 +9,7 @@ const {
   AC_SWING_HORIZONTAL,
   AC_SWING_VERTICAL,
   PILOT_WIRE_MODE,
+  BUTTON_STATUS,
 } = require('../../../../../../utils/constants');
 const { writeValues, readValues } = require('../../../../../../services/tuya/lib/device/tuya.deviceMapping');
 
@@ -365,6 +366,19 @@ describe('Tuya device mapping', () => {
       it('maps false to close', () => {
         const result = readValues[DEVICE_FEATURE_CATEGORIES.OPENING_SENSOR][DEVICE_FEATURE_TYPES.SENSOR.BINARY](false);
         expect(result).to.eq(OPENING_SENSOR_STATE.CLOSE);
+      });
+    });
+    describe('button click (event DP, e.g. doorbell ring)', () => {
+      const readClick = readValues[DEVICE_FEATURE_CATEGORIES.BUTTON][DEVICE_FEATURE_TYPES.BUTTON.CLICK];
+
+      it('maps any non-empty payload to CLICK', () => {
+        expect(readClick('ring-payload')).to.eq(BUTTON_STATUS.CLICK);
+        expect(readClick(1)).to.eq(BUTTON_STATUS.CLICK);
+      });
+      it('maps the idle empty value to null (nothing emitted at rest)', () => {
+        expect(readClick('')).to.eq(null);
+        expect(readClick(null)).to.eq(null);
+        expect(readClick(undefined)).to.eq(null);
       });
     });
     describe('heater pilot wire mode', () => {

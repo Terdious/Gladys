@@ -29,9 +29,9 @@ function convertFeature(tuyaFunctions, externalId, options = {}) {
     logger.warn(`Tuya function with "${code}" code is not managed`);
     return undefined;
   }
-  // tuyaEnum is mapping-only metadata (per-variant mode vocabulary consumed by the read/write
-  // pipeline); it must not leak onto the persisted Gladys feature.
-  const { tuyaEnum, ...featuresCategoryAndType } = mappingEntry;
+  // tuyaEnum (per-variant mode vocabulary) and event (raw-payload event gate flag) are mapping-only
+  // metadata consumed by the read/write pipeline; they must not leak onto the persisted feature.
+  const { tuyaEnum, event, ...featuresCategoryAndType } = mappingEntry;
 
   let valuesObject = {};
   if (values && typeof values === 'object') {

@@ -18,6 +18,7 @@ const tuyaManager = {
     },
   ],
   degradedDevices: {},
+  getDiagnostics: fake.returns({ entries: [{ id: 1, level: 'info' }], lastId: 1 }),
 };
 const defaultLocalScan = tuyaManager.localScan;
 
@@ -301,5 +302,59 @@ describe('TuyaController POST /api/v1/service/tuya/local-poll resets degraded ba
     await controller['post /api/v1/service/tuya/local-poll'].controller(req, res);
 
     expect(tuyaManager.degradedDevices.device1).to.equal(undefined);
+  });
+});
+
+describe('TuyaController GET /api/v1/service/tuya/diagnostics', () => {
+  let controller;
+
+  beforeEach(() => {
+    controller = TuyaController(tuyaManager);
+    sinon.resetHistory();
+  });
+
+  it('should forward the query filters to getDiagnostics and return its result', async () => {
+    const res = { json: fake.returns(null) };
+    await controller['get /api/v1/service/tuya/diagnostics'].controller(
+      { query: { deviceId: 'device1', level: 'warn', sinceId: '42' } },
+      res,
+    );
+
+    assert.calledWith(tuyaManager.getDiagnostics, { deviceId: 'device1', level: 'warn', sinceId: '42' });
+    expect(res.json.firstCall.args[0]).to.deep.equal({ entries: [{ id: 1, level: 'info' }], lastId: 1 });
+  });
+
+  it('should fall back to an empty query object when req.query is missing', async () => {
+    const res = { json: fake.returns(null) };
+    await controller['get /api/v1/service/tuya/diagnostics'].controller({}, res);
+
+    assert.calledWith(tuyaManager.getDiagnostics, { deviceId: undefined, level: undefined, sinceId: undefined });
+  });
+});
+
+describe('TuyaController GET /api/v1/service/tuya/device-snapshot', () => {
+  let controller;
+
+  beforeEach(() => {
+    tuyaManager.getDeviceSnapshot = fake.resolves({ device: { selector: 'tuya-device' }, supported: [] });
+    controller = TuyaController(tuyaManager);
+    sinon.resetHistory();
+  });
+
+  it('should forward the selector and return the snapshot', async () => {
+    const res = { json: fake.returns(null) };
+    await controller['get /api/v1/service/tuya/device-snapshot'].controller(
+      { query: { selector: 'tuya-device' } },
+      res,
+    );
+
+    assert.calledWith(tuyaManager.getDeviceSnapshot, 'tuya-device');
+    expect(res.json.firstCall.args[0]).to.deep.equal({ device: { selector: 'tuya-device' }, supported: [] });
+  });
+
+  it('should fall back to an empty query object when req.query is missing', async () => {
+    const res = { json: fake.returns(null) };
+    await controller['get /api/v1/service/tuya/device-snapshot'].controller({}, res);
+    assert.calledWith(tuyaManager.getDeviceSnapshot, undefined);
   });
 });

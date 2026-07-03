@@ -6,13 +6,14 @@
 // is correct per the device model and used as soon as a unit responds locally.
 module.exports = {
   strict: true,
-  ignoredDps: ['106', '108', '109', '110', '111', '115', '117', '136', '151', '154', '160'],
+  ignoredDps: ['106', '108', '109', '110', '111', '115', '117', '151', '154', '160'],
   codeAliases: {},
   dps: {
     basic_indicator: 101,
     basic_flip: 103,
     basic_osd: 104,
     motion_switch: 134,
+    doorbell_active: 136,
     record_switch: 150,
   },
 };

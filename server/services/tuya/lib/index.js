@@ -36,6 +36,8 @@ const {
   postUpdate,
   postDelete,
 } = require('./tuya.persistentConnection');
+const { recordDiagnostic, getDiagnostics, recordRawValues, getRawValues } = require('./tuya.diagnostics');
+const { getDeviceSnapshot } = require('./tuya.deviceSnapshot');
 
 const { STATUS } = require('./utils/tuya.constants');
 
@@ -90,5 +92,11 @@ TuyaHandler.prototype.stopPersistentConnections = stopPersistentConnections;
 TuyaHandler.prototype.postCreate = postCreate;
 TuyaHandler.prototype.postUpdate = postUpdate;
 TuyaHandler.prototype.postDelete = postDelete;
+// In-memory diagnostics buffer + raw-value memory + device snapshot feeding the front diagnostic page.
+TuyaHandler.prototype.recordDiagnostic = recordDiagnostic;
+TuyaHandler.prototype.getDiagnostics = getDiagnostics;
+TuyaHandler.prototype.recordRawValues = recordRawValues;
+TuyaHandler.prototype.getRawValues = getRawValues;
+TuyaHandler.prototype.getDeviceSnapshot = getDeviceSnapshot;
 
 module.exports = TuyaHandler;

@@ -101,6 +101,30 @@ module.exports = function TuyaController(tuyaManager) {
     res.json({ devices: getAllDegraded(tuyaManager.degradedDevices) });
   }
 
+  /**
+   * @api {get} /api/v1/service/tuya/diagnostics Get structured Tuya diagnostic entries (in-memory buffer).
+   * @apiName diagnostics
+   * @apiGroup Tuya
+   * @apiParam {string} [deviceId] Only entries for this Tuya device id.
+   * @apiParam {string} [level] Minimum level (debug|info|warn|error).
+   * @apiParam {number} [sinceId] Only entries with an id strictly greater (incremental polling).
+   */
+  async function diagnostics(req, res) {
+    const { deviceId, level, sinceId } = req.query || {};
+    res.json(tuyaManager.getDiagnostics({ deviceId, level, sinceId }));
+  }
+
+  /**
+   * @api {get} /api/v1/service/tuya/device-snapshot Get a full debug snapshot of one Tuya device.
+   * @apiName deviceSnapshot
+   * @apiGroup Tuya
+   * @apiParam {string} selector The Gladys device selector.
+   */
+  async function deviceSnapshot(req, res) {
+    const { selector } = req.query || {};
+    res.json(await tuyaManager.getDeviceSnapshot(selector));
+  }
+
   return {
     'get /api/v1/service/tuya/discover': {
       authenticated: true,
@@ -129,6 +153,14 @@ module.exports = function TuyaController(tuyaManager) {
     'get /api/v1/service/tuya/local-status': {
       authenticated: true,
       controller: asyncMiddleware(localStatus),
+    },
+    'get /api/v1/service/tuya/diagnostics': {
+      authenticated: true,
+      controller: asyncMiddleware(diagnostics),
+    },
+    'get /api/v1/service/tuya/device-snapshot': {
+      authenticated: true,
+      controller: asyncMiddleware(deviceSnapshot),
     },
   };
 };

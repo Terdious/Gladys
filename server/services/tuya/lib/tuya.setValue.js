@@ -37,6 +37,14 @@ const resolveFeatureMappingEntry = (device, code) => {
   return getFeatureMapping(code, deviceType, getProductIdFromDevice(device));
 };
 
+// The diagnostics collector is an optional collaborator (many setValue tests run with a bare
+// context): record only when the handler carries it.
+const diag = (self, level, deviceId, event, message, data) => {
+  if (typeof self.recordDiagnostic === 'function') {
+    self.recordDiagnostic(level, deviceId, event, message, data);
+  }
+};
+
 const getFeatureWithFallbackScale = (device, deviceFeature, command) => {
   if (!deviceFeature || deviceFeature.scale !== undefined) {
     return deviceFeature;
@@ -130,9 +138,15 @@ async function setValue(device, deviceFeature, value) {
   if (writeFn && transformedValue === undefined) {
     // e.g. a pilot-wire mode the device vocabulary does not support (OFF on a device whose on/off
     // is a separate switch DPS): reject instead of sending garbage to the device.
+    diag(this, 'warn', topic, 'set_unsupported_value', `Value "${value}" is not supported for command "${command}"`);
     throw new BadParameters(`Tuya: value "${value}" is not supported for command "${command}" on device "${topic}"`);
   }
   logger.debug(`Change value for devices ${topic}/${command} to value ${transformedValue}...`);
+  diag(this, 'debug', topic, 'set_command', `Command ${command} -> ${transformedValue}`, {
+    command,
+    value,
+    transformed: transformedValue,
+  });
 
   const params = effectiveDevice.params || [];
   const ipAddress = getParamValue(params, DEVICE_PARAM_NAME.IP_ADDRESS);
@@ -159,6 +173,7 @@ async function setValue(device, deviceFeature, value) {
         const sentViaPersistent = await this.sendCommandViaPersistentConnection(topic, localDps, transformedValue);
         if (sentViaPersistent) {
           logger.debug(`[Tuya][setValue][persistent] device=${topic} dps=${localDps} value=${transformedValue}`);
+          diag(this, 'debug', topic, 'set_sent', `Command sent via persistent connection (dps ${localDps})`);
           recordLocalSuccess(this.degradedDevices, topic);
           return;
         }
@@ -166,6 +181,13 @@ async function setValue(device, deviceFeature, value) {
         logger.warn(
           `[Tuya][setValue][persistent] set via persistent connection failed for device=${topic}, using a dedicated local connection`,
           e,
+        );
+        diag(
+          this,
+          'warn',
+          topic,
+          'set_persistent_failed',
+          `Persistent set failed, using a dedicated local connection: ${e.message}`,
         );
       }
     }
@@ -203,10 +225,12 @@ async function setValue(device, deviceFeature, value) {
         await tuyaLocal.connect();
         await tuyaLocal.set({ dps: localDps, set: transformedValue });
         logger.debug(`[Tuya][setValue][local] device=${topic} dps=${localDps} value=${transformedValue}`);
+        diag(this, 'debug', topic, 'set_sent', `Command sent via a dedicated local connection (dps ${localDps})`);
         recordLocalSuccess(degradedDevices, topic);
         return true;
       } catch (e) {
         logger.warn(`[Tuya][setValue][local] failed, fallback to cloud`, e);
+        diag(this, 'warn', topic, 'set_local_failed', `Local set failed, falling back to cloud: ${e.message}`);
         recordLocalFailure(degradedDevices, topic, e);
         return false;
       } finally {
@@ -261,6 +285,7 @@ async function setValue(device, deviceFeature, value) {
         });
   logger.debug(`[Tuya][setValue][cloud] ${JSON.stringify(response)}`);
   if (!response || response.success === false) {
+    diag(this, 'error', topic, 'set_cloud_rejected', `Cloud command rejected for ${command}`, response);
     await pollFeedbackIfAvailable(this, effectiveDevice, topic, command, 'rejected cloud command');
     throw new BadParameters(
       `[Tuya][setValue][cloud] command rejected for ${topic}/${command}: ${
@@ -268,6 +293,7 @@ async function setValue(device, deviceFeature, value) {
       }`,
     );
   }
+  diag(this, 'debug', topic, 'set_sent', `Command sent via cloud (${command})`);
   await pollFeedbackIfAvailable(this, effectiveDevice, topic, command, 'cloud command');
 }
 

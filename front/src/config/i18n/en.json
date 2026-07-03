@@ -1175,6 +1175,7 @@
       "deviceTab": "Devices",
       "discoverTab": "Tuya discover",
       "setupTab": "Setup",
+      "diagnosticTab": "Diagnostic",
       "documentation": "Tuya documentation",
       "discoverDeviceDescr": "Automatically scan Tuya devices",
       "nameLabel": "Device Name",
@@ -1228,7 +1229,8 @@
         "githubIssueCreateAnywayInfo": "If needed, you can still create a follow-up issue based on the latest one (#{{issueNumber}}). Before creating a new one, check whether another similar open issue already exists. If so, and you own it, close it or update it if needed before creating a new one.",
         "githubIssueCreateAnywayButton": "Create follow-up issue",
         "partialFeaturesCount": "({{count}} not implemented)",
-        "partialFeaturesCountDiscover": "({{count}} not yet supported)"
+        "partialFeaturesCountDiscover": "({{count}} not yet supported)",
+        "diagnosticButton": "Diagnostic"
       },
       "discover": {
         "title": "Devices detected on your Tuya cloud account",
@@ -1299,6 +1301,37 @@
         "defaultError": "There was an error saving the device.",
         "defaultDeletionError": "There was an error deleting the device.",
         "conflictError": "Current device is already in Gladys."
+      },
+      "diagnostic": {
+        "title": "Live diagnostic",
+        "description": "Live view of the Tuya service activity: structured events (connections, pushed DPS, polls, commands, errors), current feature values and camera image of the selected device. Use it to verify a device behavior in real time and to copy raw payloads when reporting an issue.",
+        "deviceLabel": "Device",
+        "allDevices": "All devices (service-wide events)",
+        "featuresTitle": "Feature values (live)",
+        "featureName": "Feature",
+        "featureLastChanged": "Last change",
+        "logsTitle": "Live events",
+        "levelAll": "All levels",
+        "textFilterPlaceholder": "Filter text...",
+        "pause": "Pause",
+        "resume": "Resume",
+        "clear": "Clear",
+        "noLogs": "No event received yet. Events appear here in real time (polls run every 10 seconds).",
+        "supportedTitle": "Supported features",
+        "unsupportedTitle": "Unsupported (raw input only)",
+        "ignoredTitle": "Ignored",
+        "colCode": "Code",
+        "colRaw": "Raw input",
+        "colGladysValue": "Gladys value",
+        "copyContent": "Copy content",
+        "copied": "Copied!",
+        "emptySection": "Nothing here.",
+        "noImage": "No image yet",
+        "infoProtocol": "Protocol",
+        "infoPersistent": "Persistent",
+        "infoDegraded": "Degraded",
+        "colLocal": "Local DP",
+        "colCloud": "Cloud path"
       }
     },
     "sonos": {

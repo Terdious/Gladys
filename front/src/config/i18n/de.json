@@ -1280,6 +1280,7 @@
       "deviceTab": "Meine Geräte",
       "discoverTab": "Geräte in der Nähe",
       "setupTab": "Einrichtung",
+      "diagnosticTab": "Diagnose",
       "documentation": "Tuya-Dokumentation",
       "discoverDeviceDescr": "Tuya-Geräte in der Nähe automatisch erkennen",
       "nameLabel": "Gerätename",
@@ -1333,7 +1334,8 @@
         "githubIssueCreateAnywayInfo": "Bei Bedarf kannst du trotzdem ein Folge-Issue auf Basis des neuesten (#{{issueNumber}}) erstellen. Prüfe vorher, ob bereits ein anderes ähnliches, noch offenes Issue existiert. Falls ja und es dir gehört, schließe es oder aktualisiere es bei Bedarf, bevor du ein neues erstellst.",
         "githubIssueCreateAnywayButton": "Folge-Issue erstellen",
         "partialFeaturesCount": "({{count}} nicht unterstützt)",
-        "partialFeaturesCountDiscover": "({{count}} noch nicht unterstützt)"
+        "partialFeaturesCountDiscover": "({{count}} noch nicht unterstützt)",
+        "diagnosticButton": "Diagnose"
       },
       "discover": {
         "title": "In deinem Tuya-Cloud-Account erkannte Geräte",
@@ -1404,6 +1406,37 @@
         "defaultError": "Beim Sichern des Geräts ist ein Fehler aufgetreten.",
         "defaultDeletionError": "Beim Löschen des Geräts ist ein Fehler aufgetreten.",
         "conflictError": "Das aktuelle Gerät ist bereits in Gladys vorhanden."
+      },
+      "diagnostic": {
+        "title": "Live-Diagnose",
+        "description": "Live-Ansicht der Tuya-Dienstaktivität: strukturierte Ereignisse (Verbindungen, gepushte DPS, Abfragen, Befehle, Fehler), aktuelle Funktionswerte und Kamerabild des ausgewählten Geräts. Nutze sie, um das Geräteverhalten in Echtzeit zu prüfen und Rohdaten für Fehlerberichte zu kopieren.",
+        "deviceLabel": "Gerät",
+        "allDevices": "Alle Geräte (dienstweite Ereignisse)",
+        "featuresTitle": "Funktionswerte (live)",
+        "featureName": "Funktion",
+        "featureLastChanged": "Letzte Änderung",
+        "logsTitle": "Live-Ereignisse",
+        "levelAll": "Alle Stufen",
+        "textFilterPlaceholder": "Text filtern...",
+        "pause": "Pause",
+        "resume": "Fortsetzen",
+        "clear": "Leeren",
+        "noLogs": "Noch kein Ereignis empfangen. Ereignisse erscheinen hier in Echtzeit (Abfragen laufen alle 10 Sekunden).",
+        "supportedTitle": "Unterstützte Funktionen",
+        "unsupportedTitle": "Nicht unterstützt (nur Roheingabe)",
+        "ignoredTitle": "Ignoriert",
+        "colCode": "Code",
+        "colRaw": "Roheingabe",
+        "colGladysValue": "Gladys-Wert",
+        "copyContent": "Inhalt kopieren",
+        "copied": "Kopiert!",
+        "emptySection": "Nichts vorhanden.",
+        "noImage": "Noch kein Bild",
+        "infoProtocol": "Protokoll",
+        "infoPersistent": "Persistent",
+        "infoDegraded": "Beeinträchtigt",
+        "colLocal": "Lokaler DP",
+        "colCloud": "Cloud-Pfad"
       }
     },
     "sonos": {

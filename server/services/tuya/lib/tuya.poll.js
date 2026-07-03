@@ -66,6 +66,14 @@ const resolveFeatureMappingEntry = (device, code) => {
   return getFeatureMapping(code, deviceType, getProductIdFromDevice(device));
 };
 
+// The diagnostics collector is an optional collaborator (many poll tests run with a bare context):
+// record only when the handler carries it.
+const diag = (self, level, deviceId, event, message, data) => {
+  if (typeof self.recordDiagnostic === 'function') {
+    self.recordDiagnostic(level, deviceId, event, message, data);
+  }
+};
+
 const getFeatureWithFallbackScale = (device, deviceFeature, code) => {
   if (!deviceFeature || deviceFeature.scale !== undefined) {
     return deviceFeature;
@@ -118,13 +126,22 @@ const toTimestamp = (value) => {
   return timestamp;
 };
 
-const emitFeatureState = (gladys, deviceFeature, transformedValue, previousValue, previousValueChangedAt) => {
+const emitFeatureState = (
+  gladys,
+  deviceFeature,
+  transformedValue,
+  previousValue,
+  previousValueChangedAt,
+  options = {},
+) => {
   if (transformedValue === null || transformedValue === undefined) {
     return { emitted: false, changed: false };
   }
 
   const changed = previousValue !== transformedValue;
-  let emitted = changed;
+  // `force` is used by event features (e.g. a doorbell ring): two rings map to the same CLICK value
+  // but must both fire — the raw-payload event gate upstream decides, not the value comparison.
+  let emitted = changed || options.force === true;
 
   if (!emitted) {
     const lastValueChangedTs = toTimestamp(previousValueChangedAt);
@@ -142,6 +159,28 @@ const emitFeatureState = (gladys, deviceFeature, transformedValue, previousValue
   }
 
   return { emitted, changed };
+};
+
+// Event DPs (mapping entries flagged `event: true`, e.g. a doorbell ring) hold their last payload:
+// the device re-reports it on every refresh/poll, and emitFeatureState would either swallow a second
+// identical ring or ghost-re-emit the same one every 3 minutes. Gate on the RAW payload instead:
+// the first observation only seeds the memory (no ghost ring at startup), an unchanged payload stays
+// silent, and a NEW non-empty payload fires (each ring carries a fresh signed reference).
+const getEventGateAction = (eventMemory, device, code, rawValue) => {
+  const memoryKey = `${device.external_id}:${code}`;
+  const hadPrevious = Object.prototype.hasOwnProperty.call(eventMemory, memoryKey);
+  const previousRaw = eventMemory[memoryKey];
+  eventMemory[memoryKey] = rawValue;
+  if (!hadPrevious) {
+    return 'seed';
+  }
+  if (previousRaw === rawValue) {
+    return 'unchanged';
+  }
+  if (rawValue === null || rawValue === undefined || String(rawValue) === '') {
+    return 'cleared';
+  }
+  return 'fire';
 };
 
 const isTemperatureFeature = (deviceFeature, code) => {
@@ -254,11 +293,12 @@ const transformFeatureValue = (device, deviceFeature, code, rawValue, deviceTemp
  * @param {object} device - The Gladys device (with features).
  * @param {object} dps - The DPS map (full or partial).
  * @param {string} [deviceTemperatureUnit] - Device temperature unit; derived from dps/device when omitted.
- * @returns {object} { handledCodes: Set<string>, changed: number } of features that were emitted.
+ * @param {object} [eventMemory] - Raw-payload memory for `event: true` mapping entries (handler-scoped).
+ * @returns {object} The { handledCodes: Set<string>, changed: number } summary of emitted features.
  * @example
  * const { handledCodes } = emitLocalDpsStates(gladys, device, { '1': true });
  */
-const emitLocalDpsStates = (gladys, device, dps, deviceTemperatureUnit) => {
+const emitLocalDpsStates = (gladys, device, dps, deviceTemperatureUnit, eventMemory = {}) => {
   const handledCodes = new Set();
   let changed = 0;
   const deviceFeatures = Array.isArray(device.features) ? device.features : [];
@@ -276,6 +316,15 @@ const emitLocalDpsStates = (gladys, device, dps, deviceTemperatureUnit) => {
     if (rawValue === undefined) {
       return;
     }
+    const mappingEntry = resolveFeatureMappingEntry(device, code);
+    let eventGateAction = null;
+    if (mappingEntry && mappingEntry.event === true) {
+      eventGateAction = getEventGateAction(eventMemory, device, code, rawValue);
+      if (eventGateAction !== 'fire') {
+        handledCodes.add(code);
+        return;
+      }
+    }
     let transformedValue;
     try {
       ({ transformedValue } = transformFeatureValue(device, deviceFeature, code, rawValue, temperatureUnit));
@@ -284,7 +333,9 @@ const emitLocalDpsStates = (gladys, device, dps, deviceTemperatureUnit) => {
       return;
     }
     const { lastValue, lastValueChanged } = getCurrentFeatureState(gladys, deviceFeature);
-    const result = emitFeatureState(gladys, deviceFeature, transformedValue, lastValue, lastValueChanged);
+    const result = emitFeatureState(gladys, deviceFeature, transformedValue, lastValue, lastValueChanged, {
+      force: eventGateAction === 'fire',
+    });
     if (result.changed) {
       changed += 1;
     }
@@ -328,6 +379,10 @@ const pollCloudFeatures = async function pollCloudFeatures(device, deviceFeature
       ? extractShadowValues(device, response)
       : extractValuesFromResultArray(device, response && response.result);
 
+  if (typeof this.recordRawValues === 'function') {
+    this.recordRawValues(topic, 'cloud', values, 'codes');
+  }
+
   const deviceTemperatureUnit = getTemperatureUnitFromValues(values) || currentTemperatureUnit;
 
   deviceFeatures.forEach((deviceFeature) => {
@@ -348,10 +403,22 @@ const pollCloudFeatures = async function pollCloudFeatures(device, deviceFeature
       summary.missing += 1;
       return;
     }
+    const mappingEntry = resolveFeatureMappingEntry(device, code);
+    let eventGateAction = null;
+    if (mappingEntry && mappingEntry.event === true) {
+      this.eventDpMemory = this.eventDpMemory || {};
+      eventGateAction = getEventGateAction(this.eventDpMemory, device, code, value);
+      if (eventGateAction !== 'fire') {
+        summary.handled += 1;
+        return;
+      }
+    }
     try {
       const { transformedValue } = transformFeatureValue(device, deviceFeature, code, value, deviceTemperatureUnit);
       const { lastValue, lastValueChanged } = getCurrentFeatureState(this.gladys, deviceFeature);
-      const { changed } = emitFeatureState(this.gladys, deviceFeature, transformedValue, lastValue, lastValueChanged);
+      const { changed } = emitFeatureState(this.gladys, deviceFeature, transformedValue, lastValue, lastValueChanged, {
+        force: eventGateAction === 'fire',
+      });
       if (changed) {
         summary.changed += 1;
       }
@@ -424,6 +491,7 @@ async function poll(device) {
   if (localSkipped) {
     fallbackReason = 'device_degraded';
     logger.debug(`[Tuya][poll] device=${topic} skipping local (degraded backoff active), falling back to cloud`);
+    diag(this, 'warn', topic, 'degraded_skip', 'Local mode skipped: degraded backoff active, falling back to cloud');
   }
 
   // Coexistence gate: a Tuya device accepts only one local session at a time, so when a healthy
@@ -438,6 +506,7 @@ async function poll(device) {
   if (persistentHealthy) {
     fallbackReason = 'persistent_push_active';
     logger.debug(`[Tuya][poll] device=${topic} skipping poll (persistent local push active)`);
+    diag(this, 'debug', topic, 'poll_skipped', 'Poll skipped: persistent local push active');
     return;
   }
 
@@ -453,6 +522,13 @@ async function poll(device) {
     this.recyclePersistentConnection(topic);
     fallbackReason = 'persistent_stale_cloud_refresh';
     logger.debug(`[Tuya][poll] device=${topic} persistent connected but silent: recycling + cloud refresh this cycle`);
+    diag(
+      this,
+      'info',
+      topic,
+      'persistent_recycled',
+      'Persistent socket connected but silent: recycling it, cloud refresh this cycle',
+    );
   }
 
   if (hasLocalConfig && !localSkipped && !persistentConnected) {
@@ -469,12 +545,17 @@ async function poll(device) {
 
       const dps = localResult && localResult.dps ? localResult.dps : null;
       if (dps && typeof dps === 'object') {
+        if (typeof this.recordRawValues === 'function') {
+          this.recordRawValues(topic, 'local_poll', dps, 'dps');
+        }
         deviceTemperatureUnit = getTemperatureUnitFromLocalDps(device, dps) || deviceTemperatureUnit;
+        this.eventDpMemory = this.eventDpMemory || {};
         const { handledCodes, changed: localChangedCount } = emitLocalDpsStates(
           this.gladys,
           device,
           dps,
           deviceTemperatureUnit,
+          this.eventDpMemory,
         );
         localHandled = handledCodes.size;
         localChanged = localChangedCount;
@@ -488,6 +569,12 @@ async function poll(device) {
           logger.debug(
             `[Tuya][poll] device=${topic} mode=${modeUsed} local_handled=${localHandled} local_changed=${localChanged} cloud_handled=0 cloud_changed=0 cloud_missing=0 fallback=${fallbackReason}`,
           );
+          diag(this, 'debug', topic, 'poll_summary', 'Poll completed', {
+            mode: modeUsed,
+            local_handled: localHandled,
+            local_changed: localChanged,
+            fallback: fallbackReason,
+          });
           return;
         }
 
@@ -504,16 +591,33 @@ async function poll(device) {
         logger.debug(
           `[Tuya][poll] device=${topic} mode=${modeUsed} local_handled=${localHandled} local_changed=${localChanged} cloud_handled=${cloudSummary.handled} cloud_changed=${cloudSummary.changed} cloud_missing=${cloudSummary.missing} fallback=${fallbackReason}`,
         );
+        diag(this, 'debug', topic, 'poll_summary', 'Poll completed', {
+          mode: modeUsed,
+          local_handled: localHandled,
+          local_changed: localChanged,
+          cloud_handled: cloudSummary.handled,
+          cloud_changed: cloudSummary.changed,
+          cloud_missing: cloudSummary.missing,
+          fallback: fallbackReason,
+        });
         return;
       }
 
       fallbackReason = 'invalid_local_payload';
       logger.warn(`[Tuya][poll] local poll returned invalid DPS payload for ${topic}, falling back to cloud`);
+      diag(
+        this,
+        'warn',
+        topic,
+        'local_invalid_payload',
+        'Local poll returned an invalid DPS payload, falling back to cloud',
+      );
       // A non-throwing but malformed payload is still a local failure: record it (forced, since it is
       // not a network error) so a device stuck returning garbage trips the degraded backoff too.
       recordLocalFailure(this.degradedDevices, topic, new Error('invalid_local_payload'), undefined, true);
     } catch (e) {
       logger.warn(`[Tuya][poll] local poll failed for ${topic}, falling back to cloud`, e);
+      diag(this, 'warn', topic, 'local_poll_failed', `Local poll failed, falling back to cloud: ${e.message}`);
       fallbackReason = 'local_poll_failed';
       recordLocalFailure(this.degradedDevices, topic, e);
     }
@@ -536,11 +640,21 @@ async function poll(device) {
     cloudSummary = await pollCloudFeatures.call(this, device, deviceFeatures, topic, deviceTemperatureUnit);
   } catch (e) {
     logger.warn(`[Tuya][poll] cloud poll failed for ${topic}`, e);
+    diag(this, 'error', topic, 'cloud_poll_failed', `Cloud poll failed: ${e.message}`);
     fallbackReason = fallbackReason === 'none' ? 'cloud_poll_failed' : `${fallbackReason}+cloud_poll_failed`;
   }
   logger.debug(
     `[Tuya][poll] device=${topic} mode=${modeUsed} local_handled=${localHandled} local_changed=${localChanged} cloud_handled=${cloudSummary.handled} cloud_changed=${cloudSummary.changed} cloud_missing=${cloudSummary.missing} fallback=${fallbackReason}`,
   );
+  diag(this, 'debug', topic, 'poll_summary', 'Poll completed', {
+    mode: modeUsed,
+    local_handled: localHandled,
+    local_changed: localChanged,
+    cloud_handled: cloudSummary.handled,
+    cloud_changed: cloudSummary.changed,
+    cloud_missing: cloudSummary.missing,
+    fallback: fallbackReason,
+  });
 }
 
 module.exports = {

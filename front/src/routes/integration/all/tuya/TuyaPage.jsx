@@ -2,11 +2,11 @@ import { Text } from 'preact-i18n';
 import { Link } from 'preact-router/match';
 import DeviceConfigurationLink from '../../../../components/documentation/DeviceConfigurationLink';
 
-const TuyaPage = ({ children, user }) => (
+const TuyaPage = ({ children, user, fullWidth }) => (
   <div class="page">
     <div class="page-main">
       <div class="my-3 my-md-5">
-        <div class="container">
+        <div class={fullWidth ? 'container-fluid px-4' : 'container'}>
           <div class="row">
             <div class="col-lg-3">
               <h3 class="page-title mb-5">
@@ -45,6 +45,17 @@ const TuyaPage = ({ children, user }) => (
                       <i class="fe fe-sliders" />
                     </span>
                     <Text id="integration.tuya.setupTab" />
+                  </Link>
+
+                  <Link
+                    href="/dashboard/integration/device/tuya/diagnostic"
+                    activeClassName="active"
+                    class="list-group-item list-group-item-action d-flex align-items-center"
+                  >
+                    <span class="icon mr-3">
+                      <i class="fe fe-activity" />
+                    </span>
+                    <Text id="integration.tuya.diagnosticTab" />
                   </Link>
 
                   <DeviceConfigurationLink

@@ -1,0 +1,87 @@
+.logContainer {
+  max-height: 32rem;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.logRow {
+  padding: 0.1rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  word-break: break-word;
+}
+
+.logData {
+  margin: 0.1rem 0 0.2rem 1.5rem;
+  padding: 0.2rem 0.4rem;
+  background: rgba(0, 0, 0, 0.05);
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.featureValue {
+  font-family: monospace;
+  word-break: break-all;
+}
+
+.snapshotTable {
+  table-layout: fixed;
+}
+
+.snapshotTable td {
+  word-break: break-word;
+}
+
+.colName {
+  width: 14%;
+}
+
+.colCode {
+  width: 11%;
+}
+
+.colDp {
+  width: 6%;
+}
+
+.colCloud {
+  width: 22%;
+}
+
+.colRaw {
+  width: 22%;
+}
+
+.colValue {
+  width: 14%;
+}
+
+.colChanged {
+  width: 11%;
+}
+
+.cameraImage {
+  max-width: 100%;
+  max-height: 24rem;
+}
+
+.cameraThumbnail {
+  max-height: 6rem;
+  max-width: 12rem;
+}
+
+.logToolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.logToolbar select {
+  max-width: 10rem;
+}
+
+.logToolbar input {
+  max-width: 16rem;
+}

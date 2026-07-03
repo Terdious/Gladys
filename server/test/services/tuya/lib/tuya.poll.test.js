@@ -1098,6 +1098,108 @@ describe('TuyaHandler.poll product-variant local mapping (Konyks eCosy)', () => 
   });
 });
 
+describe('emitLocalDpsStates event gate (doorbell ring)', () => {
+  const buildDoorbell = () => ({
+    external_id: 'tuya:doorbell-device',
+    device_type: 'video-doorbell',
+    features: [
+      {
+        external_id: 'tuya:doorbell-device:doorbell_active',
+        selector: 'tuya-doorbell-device-doorbell-active',
+        category: 'button',
+        type: 'click',
+        last_value: 1,
+      },
+    ],
+  });
+
+  const clickStates = (emit) =>
+    emit
+      .getCalls()
+      .filter((call) => call.args[0] === EVENTS.DEVICE.NEW_STATE)
+      .map((call) => call.args[1].state);
+
+  it('seeds silently, fires once per NEW payload, stays silent on re-reported or cleared payloads', () => {
+    const emit = sinon.stub();
+    const gladysStub = { event: { emit } };
+    const device = buildDoorbell();
+    const eventMemory = {};
+
+    // First observation (idle "" at startup): seed only, no ghost ring.
+    const result = emitLocalDpsStates(gladysStub, device, { 136: '' }, undefined, eventMemory);
+    expect(result.handledCodes.has('doorbell_active')).to.equal(true);
+    expect(clickStates(emit)).to.deep.equal([]);
+
+    // A ring: new non-empty payload -> CLICK fires even though last_value is already 1 (force).
+    emitLocalDpsStates(gladysStub, device, { 136: 'ring-payload-A' }, undefined, eventMemory);
+    expect(clickStates(emit)).to.deep.equal([1]);
+
+    // The device re-reports the same payload on every refresh/poll: silent.
+    emitLocalDpsStates(gladysStub, device, { 136: 'ring-payload-A' }, undefined, eventMemory);
+    expect(clickStates(emit)).to.deep.equal([1]);
+
+    // A second ring with a fresh payload: fires again (same transformed CLICK value).
+    emitLocalDpsStates(gladysStub, device, { 136: 'ring-payload-B' }, undefined, eventMemory);
+    expect(clickStates(emit)).to.deep.equal([1, 1]);
+
+    // Payload cleared back to idle: silent.
+    emitLocalDpsStates(gladysStub, device, { 136: '' }, undefined, eventMemory);
+    expect(clickStates(emit)).to.deep.equal([1, 1]);
+
+    // Ring after an idle period: fires.
+    emitLocalDpsStates(gladysStub, device, { 136: 'ring-payload-C' }, undefined, eventMemory);
+    expect(clickStates(emit)).to.deep.equal([1, 1, 1]);
+  });
+
+  it('never fires without a shared memory (defensive default: every call is a seed)', () => {
+    const emit = sinon.stub();
+    const gladysStub = { event: { emit } };
+    const device = buildDoorbell();
+
+    emitLocalDpsStates(gladysStub, device, { 136: 'ring-payload-A' });
+    emitLocalDpsStates(gladysStub, device, { 136: 'ring-payload-B' });
+
+    expect(clickStates(emit)).to.deep.equal([]);
+  });
+});
+
+describe('TuyaHandler.poll cloud event gate (doorbell ring)', () => {
+  it('seeds on the first cloud poll then fires on a new payload, sharing the handler memory', async () => {
+    const { poll } = proxyquire('../../../../services/tuya/lib/tuya.poll', {});
+    const emit = sinon.stub();
+    const request = sinon.stub();
+    request.onFirstCall().resolves({ result: [{ code: 'doorbell_active', value: '' }] });
+    request.onSecondCall().resolves({ result: [{ code: 'doorbell_active', value: 'ring-payload-A' }] });
+    request.onThirdCall().resolves({ result: [{ code: 'doorbell_active', value: 'ring-payload-A' }] });
+    const ctx = { connector: { request }, gladys: { event: { emit } } };
+
+    const device = {
+      external_id: 'tuya:doorbell-device',
+      device_type: 'video-doorbell',
+      params: [{ name: 'LOCAL_OVERRIDE', value: false }],
+      features: [
+        {
+          external_id: 'tuya:doorbell-device:doorbell_active',
+          selector: 'tuya-doorbell-device-doorbell-active',
+          category: 'button',
+          type: 'click',
+          last_value: 1,
+        },
+      ],
+    };
+
+    await poll.call(ctx, device); // seed
+    await poll.call(ctx, device); // new payload -> CLICK
+    await poll.call(ctx, device); // same payload -> silent
+
+    const states = emit
+      .getCalls()
+      .filter((call) => call.args[0] === EVENTS.DEVICE.NEW_STATE)
+      .map((call) => call.args[1]);
+    expect(states).to.deep.equal([{ device_feature_external_id: 'tuya:doorbell-device:doorbell_active', state: 1 }]);
+  });
+});
+
 describe('emitLocalDpsStates temperature transform (local + push regression)', () => {
   // Regression: the persistent-push handler and the local poll both go through emitLocalDpsStates.
   // It must apply the SAME temperature transform as the cloud path (scale + unit conversion), not the

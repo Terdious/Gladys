@@ -540,6 +540,14 @@ class TuyaDeviceBox extends Component {
                       </button>
                     </Link>
                   )}
+
+                  {!isDiscoverPage && (
+                    <Link href={`/dashboard/integration/device/tuya/diagnostic/${device.selector}`}>
+                      <button class="btn btn-outline-info float-right mr-2">
+                        <Text id="integration.tuya.device.diagnosticButton" />
+                      </button>
+                    </Link>
+                  )}
                 </div>
                 {hasPartialSupport && isDiscoverPage && (
                   <TuyaGithubIssueSection

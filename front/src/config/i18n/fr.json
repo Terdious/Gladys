@@ -1413,6 +1413,7 @@
       "deviceTab": "Appareils",
       "discoverTab": "Découverte Tuya",
       "setupTab": "Configuration",
+      "diagnosticTab": "Diagnostic",
       "documentation": "Documentation Tuya",
       "discoverDeviceDescr": "Scanner automatiquement les appareils Tuya",
       "nameLabel": "Nom de l'appareil",
@@ -1466,7 +1467,8 @@
         "githubIssueCreateAnywayInfo": "Si besoin, vous pouvez tout de même créer une issue de suivi basée sur la plus récente (#{{issueNumber}}). Avant d'en recréer une nouvelle, vérifiez qu'une autre issue similaire encore ouverte n'existe pas déjà. Si c'est le cas et que vous en êtes propriétaire, fermez-la ou mettez-la à jour si nécessaire avant de créer la nouvelle.",
         "githubIssueCreateAnywayButton": "Créer une issue de suivi",
         "partialFeaturesCount": "({{count}} non implémentée(s))",
-        "partialFeaturesCountDiscover": "({{count}} non implémentable(s))"
+        "partialFeaturesCountDiscover": "({{count}} non implémentable(s))",
+        "diagnosticButton": "Diagnostic"
       },
       "discover": {
         "title": "Appareils détectés sur votre compte cloud Tuya",
@@ -1537,6 +1539,37 @@
         "defaultError": "Une erreur s'est produite lors de l'enregistrement de l'appareil.",
         "defaultDeletionError": "Une erreur s'est produite lors de la suppression de l'appareil.",
         "conflictError": "L'appareil actuel est déjà dans Gladys."
+      },
+      "diagnostic": {
+        "title": "Diagnostic en direct",
+        "description": "Vue en direct de l'activité du service Tuya : événements structurés (connexions, DPS poussés, lectures, commandes, erreurs), valeurs actuelles des fonctionnalités et image caméra de l'appareil sélectionné. Utilisez-la pour vérifier le comportement d'un appareil en temps réel et copier les données brutes lors d'un signalement.",
+        "deviceLabel": "Appareil",
+        "allDevices": "Tous les appareils (événements du service)",
+        "featuresTitle": "Valeurs des fonctionnalités (en direct)",
+        "featureName": "Fonctionnalité",
+        "featureLastChanged": "Dernier changement",
+        "logsTitle": "Événements en direct",
+        "levelAll": "Tous les niveaux",
+        "textFilterPlaceholder": "Filtrer le texte...",
+        "pause": "Pause",
+        "resume": "Reprendre",
+        "clear": "Vider",
+        "noLogs": "Aucun événement reçu pour l'instant. Les événements apparaissent ici en temps réel (les lectures ont lieu toutes les 10 secondes).",
+        "supportedTitle": "Fonctionnalités prises en charge",
+        "unsupportedTitle": "Non prises en charge (entrée brute uniquement)",
+        "ignoredTitle": "Ignorées",
+        "colCode": "Code",
+        "colRaw": "Valeur d’entrée",
+        "colGladysValue": "Valeur Gladys",
+        "copyContent": "Copier le contenu",
+        "copied": "Copié !",
+        "emptySection": "Rien ici.",
+        "noImage": "Pas encore d’image",
+        "infoProtocol": "Protocole",
+        "infoPersistent": "Persistant",
+        "infoDegraded": "Dégradé",
+        "colLocal": "DP local",
+        "colCloud": "Chemin cloud"
       }
     },
     "sonos": {

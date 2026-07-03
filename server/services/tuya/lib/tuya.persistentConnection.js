@@ -49,6 +49,14 @@ const formatSocketError = (err) => {
 
 const getRetryDelay = (retryCount) => RETRY_DELAYS_MS[Math.min(retryCount, RETRY_DELAYS_MS.length - 1)];
 
+// The diagnostics collector is an optional collaborator (test harnesses assemble this module
+// without it): record only when the handler carries it.
+const diag = (self, level, deviceId, event, message, data) => {
+  if (typeof self.recordDiagnostic === 'function') {
+    self.recordDiagnostic(level, deviceId, event, message, data);
+  }
+};
+
 const teardownApi = (api) => {
   if (!api) {
     return;
@@ -90,6 +98,13 @@ const scheduleReconnect = (self, entry) => {
     entry.status = 'failed';
     logger.info(
       `[Tuya][persistent] giving up device=${topic} after ${entry.retryCount} retries; scheduled poll takes over`,
+    );
+    diag(
+      self,
+      'error',
+      topic,
+      'persistent_failed',
+      `Giving up persistent connection after ${entry.retryCount} retries; scheduled poll takes over`,
     );
     return;
   }
@@ -150,6 +165,7 @@ function openPersistentConnection(self, entry) {
       return;
     }
     logger.info(`[Tuya][persistent] socket error device=${topic}: ${formatSocketError(err)}`);
+    diag(self, 'warn', topic, 'persistent_error', `Persistent socket error: ${formatSocketError(err)}`);
     recordLocalFailure(self.degradedDevices, topic, err);
   });
   api.on('connected', () => {
@@ -161,12 +177,15 @@ function openPersistentConnection(self, entry) {
     entry.lastConnectedAt = Date.now();
     recordLocalSuccess(self.degradedDevices, topic);
     logger.debug(`[Tuya][persistent] connected device=${topic}`);
+    diag(self, 'info', topic, 'persistent_connected', 'Persistent local connection established');
   });
   const onPush = (payload) => {
     if (!isActive()) {
       return;
     }
-    self.handlePushedDps(device, extractPushedDps(payload));
+    const dps = extractPushedDps(payload);
+    diag(self, 'debug', topic, 'push_dps', 'DPS pushed by the device', dps);
+    self.handlePushedDps(device, dps);
   };
   api.on('data', onPush);
   api.on('dp-refresh', onPush);
@@ -175,6 +194,7 @@ function openPersistentConnection(self, entry) {
       return;
     }
     logger.debug(`[Tuya][persistent] disconnected device=${topic}`);
+    diag(self, 'warn', topic, 'persistent_disconnected', 'Persistent local connection dropped by the device');
     scheduleReconnect(self, entry);
   });
 
@@ -188,6 +208,7 @@ function openPersistentConnection(self, entry) {
         return;
       }
       logger.info(`[Tuya][persistent] connect failed device=${topic}: ${formatSocketError(err)}`);
+      diag(self, 'warn', topic, 'persistent_connect_failed', `Connect failed: ${formatSocketError(err)}`);
       recordLocalFailure(self.degradedDevices, topic, err);
       scheduleReconnect(self, entry);
     }
@@ -343,8 +364,14 @@ function handlePushedDps(device, dps) {
     entry.lastDataAt = Date.now();
   }
 
+  if (typeof this.recordRawValues === 'function') {
+    this.recordRawValues(topic, 'local_push', dps, 'dps');
+  }
   const throttledDps = filterThrottledContinuousDps(entry, device, dps);
-  const { handledCodes } = emitLocalDpsStates(this.gladys, device, throttledDps);
+  // Event DPs (doorbell ring...) share the same raw-payload memory as the scheduled poll, so a ring
+  // seen by one path is not re-fired by the other.
+  this.eventDpMemory = this.eventDpMemory || {};
+  const { handledCodes } = emitLocalDpsStates(this.gladys, device, throttledDps, undefined, this.eventDpMemory);
   if (handledCodes.size > 0) {
     recordLocalSuccess(this.degradedDevices, topic);
   }

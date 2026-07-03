@@ -517,6 +517,23 @@ async function poll(device) {
     typeof this.isPersistentConnectionConnected === 'function' &&
     this.isPersistentConnectionConnected(topic);
   if (persistentConnected) {
+    // Some firmwares only report on change and ignore the heartbeat refresh: their socket looks
+    // silent while being alive. Probe it with an active local read before sacrificing it — an
+    // answer refreshes the states over the same socket (zero cloud) and ends the cycle here.
+    const probeAnswered =
+      typeof this.probePersistentConnection === 'function' && (await this.probePersistentConnection(topic));
+    if (probeAnswered) {
+      fallbackReason = 'persistent_probe_refreshed';
+      logger.debug(`[Tuya][poll] device=${topic} silent persistent socket answered the probe: state refreshed locally`);
+      diag(
+        this,
+        'debug',
+        topic,
+        'persistent_probe_ok',
+        'Silent persistent socket answered the probe: state refreshed locally',
+      );
+      return;
+    }
     // Recycle the stale-but-open socket so the single local session frees up: the next cycles then
     // follow the intended priority (persistent -> local poll -> cloud) instead of staying on cloud.
     this.recyclePersistentConnection(topic);

@@ -29,6 +29,7 @@ const {
   isPersistentConnectionHealthy,
   isPersistentConnectionConnected,
   sendCommandViaPersistentConnection,
+  probePersistentConnection,
   recyclePersistentConnection,
   stopPersistentConnectionForDevice,
   stopPersistentConnections,
@@ -85,6 +86,7 @@ TuyaHandler.prototype.handlePushedDps = handlePushedDps;
 TuyaHandler.prototype.isPersistentConnectionHealthy = isPersistentConnectionHealthy;
 TuyaHandler.prototype.isPersistentConnectionConnected = isPersistentConnectionConnected;
 TuyaHandler.prototype.sendCommandViaPersistentConnection = sendCommandViaPersistentConnection;
+TuyaHandler.prototype.probePersistentConnection = probePersistentConnection;
 TuyaHandler.prototype.recyclePersistentConnection = recyclePersistentConnection;
 TuyaHandler.prototype.stopPersistentConnectionForDevice = stopPersistentConnectionForDevice;
 TuyaHandler.prototype.stopPersistentConnections = stopPersistentConnections;

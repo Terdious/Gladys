@@ -22,8 +22,9 @@ const PULSAR_DEFAULT_HOST = PULSAR_HOSTS.centralEurope;
 const PULSAR_TOPIC_QUERY = 'ackTimeoutMillis=3000&subscriptionType=Failover';
 const PULSAR_PING_INTERVAL_MS = 30 * 1000;
 const PULSAR_RECONNECT_DELAYS_MS = [3000, 10000, 30000, 60000];
-// Protocol 4 = device data report ({ devId, status: [{ code, value, t }] }).
-const PULSAR_PROTOCOL_DATA_REPORT = 4;
+// Protocol 4 = legacy device data report ({ devId, status: [{ code, value, t }] });
+// protocol 1000 = its IoT-core twin ({ bizCode: 'devicePropertyMessage', bizData }).
+const PULSAR_ROUTED_PROTOCOLS = new Set([4, 1000]);
 
 const md5Hex = (value) =>
   crypto
@@ -78,6 +79,43 @@ const diag = (self, level, deviceId, event, message, data) => {
   }
 };
 
+// Every report currently arrives TWICE (legacy protocol 4 statusReport AND its IoT-core twin,
+// protocol 1000 devicePropertyMessage): remember the recent ones to route each report only once.
+const PULSAR_DUPLICATE_WINDOW_MS = 5 * 1000;
+
+const routePulsarValues = (self, devId, values) => {
+  const now = Date.now();
+  self.pulsarRecentReports = self.pulsarRecentReports || new Map();
+  const duplicateKey = `${devId}:${JSON.stringify(values)}`;
+  const lastSeenAt = self.pulsarRecentReports.get(duplicateKey);
+  self.pulsarRecentReports.forEach((seenAt, key) => {
+    if (now - seenAt > PULSAR_DUPLICATE_WINDOW_MS) {
+      self.pulsarRecentReports.delete(key);
+    }
+  });
+  self.pulsarRecentReports.set(duplicateKey, now);
+  if (lastSeenAt !== undefined && now - lastSeenAt <= PULSAR_DUPLICATE_WINDOW_MS) {
+    diag(self, 'debug', devId, 'pulsar_duplicate_skipped', 'Twin-format Pulsar report already routed');
+    return;
+  }
+  diag(self, 'debug', devId, 'pulsar_report', `Pulsar real-time report (${Object.keys(values).join(', ')})`, values);
+
+  const device = self.gladys.stateManager.get('deviceByExternalId', `tuya:${devId}`);
+  if (!device) {
+    diag(self, 'debug', devId, 'pulsar_unknown_device', 'Pulsar report for a device not in Gladys');
+    return;
+  }
+  if (typeof self.recordRawValues === 'function') {
+    self.recordRawValues(devId, 'pulsar', values, 'codes');
+  }
+  if (typeof self.processMediaCodes === 'function') {
+    // The whole point for the doorbell: the snapshot URL arrives while its signature is fresh.
+    self.processMediaCodes(device, values);
+  }
+  self.eventDpMemory = self.eventDpMemory || {};
+  emitCloudCodeStates(self.gladys, device, values, self.eventDpMemory);
+};
+
 /**
  * @description Handle one decrypted Pulsar event: route data reports into the exact pipelines the
  * poll uses (raw-value memory, media snapshots, feature states with the shared event gate).
@@ -86,6 +124,23 @@ const diag = (self, level, deviceId, event, message, data) => {
  * this.handlePulsarEvent({ devId: 'device-id', status: [{ code: 'switch_1', value: true }] });
  */
 function handlePulsarEvent(decrypted) {
+  // IoT-core format (protocol 1000): { bizCode: 'devicePropertyMessage', bizData: { devId,
+  // properties: [{ code, value, ... }] } } — same content as the legacy status report.
+  if (decrypted && decrypted.bizCode === 'devicePropertyMessage' && decrypted.bizData) {
+    const propertyList = Array.isArray(decrypted.bizData.properties) ? decrypted.bizData.properties : [];
+    const values = {};
+    propertyList.forEach((entry) => {
+      if (entry && entry.code !== undefined && entry.code !== null) {
+        values[String(entry.code)] = entry.value;
+      }
+    });
+    if (!decrypted.bizData.devId || Object.keys(values).length === 0) {
+      diag(this, 'debug', decrypted.bizData.devId || null, 'pulsar_event_skipped', 'Empty property message', decrypted);
+      return;
+    }
+    routePulsarValues(this, decrypted.bizData.devId, values);
+    return;
+  }
   const devId = decrypted && (decrypted.devId || decrypted.deviceId);
   if (!devId) {
     diag(this, 'debug', null, 'pulsar_event_skipped', 'Pulsar event without device id', decrypted);
@@ -107,22 +162,7 @@ function handlePulsarEvent(decrypted) {
     diag(this, 'debug', devId, 'pulsar_event_skipped', 'Pulsar report without status values', decrypted);
     return;
   }
-  diag(this, 'debug', devId, 'pulsar_report', `Pulsar real-time report (${Object.keys(values).join(', ')})`, values);
-
-  const device = this.gladys.stateManager.get('deviceByExternalId', `tuya:${devId}`);
-  if (!device) {
-    diag(this, 'debug', devId, 'pulsar_unknown_device', 'Pulsar report for a device not in Gladys');
-    return;
-  }
-  if (typeof this.recordRawValues === 'function') {
-    this.recordRawValues(devId, 'pulsar', values, 'codes');
-  }
-  if (typeof this.processMediaCodes === 'function') {
-    // The whole point for the doorbell: the snapshot URL arrives while its signature is fresh.
-    this.processMediaCodes(device, values);
-  }
-  this.eventDpMemory = this.eventDpMemory || {};
-  emitCloudCodeStates(this.gladys, device, values, this.eventDpMemory);
+  routePulsarValues(this, devId, values);
 }
 
 /**
@@ -241,7 +281,7 @@ function openPulsarConnection(self, context) {
     }
     // The `em` message property selects the encryption model of the data blob (aes_gcm or ECB).
     const decryptModel = envelope.properties && envelope.properties.em;
-    if (payload.protocol !== undefined && payload.protocol !== PULSAR_PROTOCOL_DATA_REPORT) {
+    if (payload.protocol !== undefined && !PULSAR_ROUTED_PROTOCOLS.has(payload.protocol)) {
       // Test-phase visibility: keep the decrypted content (or the raw payload) in the diagnostics
       // so an unknown protocol is immediately understandable.
       diag(self, 'debug', null, 'pulsar_other_protocol', `Pulsar message with protocol ${payload.protocol}`, {

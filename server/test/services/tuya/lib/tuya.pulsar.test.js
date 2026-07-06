@@ -298,6 +298,33 @@ describe('Tuya Pulsar listener', () => {
       expect(stateEvent.args[1].state).to.equal(1);
     });
 
+    it('routes the IoT-core devicePropertyMessage twin and dedups it against the legacy report', () => {
+      const clock = sandbox.useFakeTimers();
+      const self = buildSelf({ device: doorbell });
+
+      // Real-life sequence: the same change arrives as protocol 4 THEN as devicePropertyMessage.
+      self.handlePulsarEvent({ devId: 'dev-1', status: [{ code: 'switch_1', value: true }] });
+      self.handlePulsarEvent({
+        bizCode: 'devicePropertyMessage',
+        bizData: { devId: 'dev-1', productId: 'p', properties: [{ code: 'switch_1', dpId: 1, value: true }] },
+      });
+      sinon.assert.calledOnce(self.recordRawValues);
+      const events = self.recordDiagnostic.getCalls().map((call) => call.args[2]);
+      expect(events).to.include('pulsar_duplicate_skipped');
+
+      // Outside the window (or a different value), the property message is routed on its own.
+      clock.tick(6000);
+      self.handlePulsarEvent({
+        bizCode: 'devicePropertyMessage',
+        bizData: { devId: 'dev-1', productId: 'p', properties: [{ code: 'switch_1', dpId: 1, value: false }] },
+      });
+      sinon.assert.calledWith(self.recordRawValues, 'dev-1', 'pulsar', { switch_1: false }, 'codes');
+
+      // Empty property message: skipped.
+      self.handlePulsarEvent({ bizCode: 'devicePropertyMessage', bizData: { devId: 'dev-1', properties: [] } });
+      sinon.assert.calledTwice(self.recordRawValues);
+    });
+
     it('skips events without device id, lifecycle events and unknown devices', () => {
       const self = buildSelf({ device: null });
 

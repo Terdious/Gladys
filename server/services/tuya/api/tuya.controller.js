@@ -5,6 +5,13 @@ const { buildLocalScanResponse } = require('../lib/tuya.localScan');
 const { getAllDegraded, getLocalStatus, resetLocalStatus } = require('../lib/utils/tuya.degraded');
 
 module.exports = function TuyaController(tuyaManager) {
+  // The diagnostics collector is an optional collaborator: record only when the manager carries it.
+  const diag = (level, deviceId, event, message, data) => {
+    if (typeof tuyaManager.recordDiagnostic === 'function') {
+      tuyaManager.recordDiagnostic(level, deviceId, event, message, data);
+    }
+  };
+
   /**
    * @api {get} /api/v1/service/tuya/discover Retrieve tuya devices from cloud.
    * @apiName discover
@@ -25,7 +32,35 @@ module.exports = function TuyaController(tuyaManager) {
     // Manual user-triggered local poll resets the degraded backoff so the test
     // can attempt the local path even if the automatic poll has marked it.
     resetLocalStatus(tuyaManager.degradedDevices, payload.deviceId);
-    const result = await tuyaManager.localPoll(payload);
+    // Every manual attempt lands in the diagnostic page (one call per protocol version when the
+    // front runs its full analysis) so a failing device leaves a complete verbatim trace.
+    diag(
+      'info',
+      payload.deviceId,
+      'local_dp_read_started',
+      `Manual local DP read (ip=${payload.ip || 'none'} protocol=${payload.protocolVersion || 'auto'})`,
+    );
+    let result;
+    try {
+      result = await tuyaManager.localPoll(payload);
+    } catch (e) {
+      diag(
+        'error',
+        payload.deviceId,
+        'local_dp_read_failed',
+        `Manual local DP read failed (protocol=${payload.protocolVersion || 'auto'}): ${e.message}`,
+      );
+      throw e;
+    }
+    diag(
+      'info',
+      payload.deviceId,
+      'local_dp_read_ok',
+      `Manual local DP read succeeded (protocol=${payload.protocolVersion || 'auto'}, ${
+        Object.keys(result.dps || {}).length
+      } DPS)`,
+      result.dps,
+    );
     const updatedDevice = updateDiscoveredDeviceAfterLocalPoll(tuyaManager, {
       ...payload,
       dps: result.dps,
@@ -50,9 +85,32 @@ module.exports = function TuyaController(tuyaManager) {
   async function localScan(req, res) {
     const { timeoutSeconds } = req.body || {};
     logger.info(`[Tuya][localScan] API request received (timeoutSeconds=${timeoutSeconds || 10})`);
-    const localScanResult = await tuyaManager.localScan({
-      timeoutSeconds,
-    });
+    diag('info', null, 'local_scan_started', `Manual UDP scan started (timeout=${timeoutSeconds || 10}s)`);
+    let localScanResult;
+    try {
+      localScanResult = await tuyaManager.localScan({
+        timeoutSeconds,
+      });
+    } catch (e) {
+      diag('error', null, 'local_scan_failed', `Manual UDP scan failed: ${e.message}`);
+      throw e;
+    }
+    const foundDevices = (localScanResult && localScanResult.devices) || {};
+    const portErrors = (localScanResult && localScanResult.portErrors) || {};
+    diag(
+      'info',
+      null,
+      'local_scan_completed',
+      `Manual UDP scan completed: ${Object.keys(foundDevices).length} device(s) answered`,
+      {
+        devices: Object.values(foundDevices).map((entry) => ({
+          id: entry.gwId || entry.id,
+          ip: entry.ip,
+          version: entry.version,
+        })),
+        port_errors: portErrors,
+      },
+    );
     res.json(buildLocalScanResponse(tuyaManager, localScanResult));
   }
 

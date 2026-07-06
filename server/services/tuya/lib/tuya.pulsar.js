@@ -42,17 +42,29 @@ const md5Hex = (value) =>
 const buildPulsarPassword = (accessId, accessKey) => md5Hex(`${accessId}${md5Hex(accessKey)}`).substr(8, 16);
 
 /**
- * @description Decrypt a Pulsar message data blob (AES-128-ECB keyed on a fragment of the secret).
+ * @description Decrypt a Pulsar message data blob, keyed on a fragment of the secret. The message
+ * properties carry the model in `em`: 'aes_gcm' (12-byte nonce prefix + ciphertext + 16-byte auth
+ * tag, no AAD — per the official tuya-pulsar-sdk-go tyutils/aes.go) or legacy AES-128-ECB.
  * @param {string} data - The base64 encrypted data.
  * @param {string} accessKey - The Tuya cloud Access Secret.
+ * @param {string} [decryptModel] - The `em` message property ('aes_gcm' or undefined for ECB).
  * @returns {object|null} The decrypted JSON document, or null when it cannot be decrypted.
  * @example
- * decryptPulsarData('kTVln...', 'accessKey');
+ * decryptPulsarData('kTVln...', 'accessKey', 'aes_gcm');
  */
-const decryptPulsarData = (data, accessKey) => {
+const decryptPulsarData = (data, accessKey, decryptModel) => {
   try {
-    const decipher = crypto.createDecipheriv('aes-128-ecb', Buffer.from(accessKey.substring(8, 24), 'utf8'), null);
-    const decrypted = Buffer.concat([decipher.update(Buffer.from(data, 'base64')), decipher.final()]);
+    const key = Buffer.from(accessKey.substring(8, 24), 'utf8');
+    const encrypted = Buffer.from(data, 'base64');
+    let decrypted;
+    if (decryptModel === 'aes_gcm') {
+      const decipher = crypto.createDecipheriv('aes-128-gcm', key, encrypted.subarray(0, 12));
+      decipher.setAuthTag(encrypted.subarray(encrypted.length - 16));
+      decrypted = Buffer.concat([decipher.update(encrypted.subarray(12, encrypted.length - 16)), decipher.final()]);
+    } else {
+      const decipher = crypto.createDecipheriv('aes-128-ecb', key, null);
+      decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+    }
     return JSON.parse(decrypted.toString('utf8'));
   } catch (e) {
     return null;
@@ -206,7 +218,7 @@ function openPulsarConnection(self, context) {
     try {
       envelope = JSON.parse(raw.toString());
     } catch (e) {
-      diag(self, 'warn', null, 'pulsar_bad_message', `Unparseable Pulsar frame: ${e.message}`);
+      diag(self, 'warn', null, 'pulsar_bad_message', `Unparseable Pulsar frame: ${e.message}`, raw.toString());
       return;
     }
     // Acknowledge first: an unacked message is redelivered after ackTimeoutMillis.
@@ -224,16 +236,27 @@ function openPulsarConnection(self, context) {
     try {
       payload = JSON.parse(Buffer.from(envelope.payload, 'base64').toString('utf8'));
     } catch (e) {
-      diag(self, 'warn', null, 'pulsar_bad_message', `Unparseable Pulsar payload: ${e.message}`);
+      diag(self, 'warn', null, 'pulsar_bad_message', `Unparseable Pulsar payload: ${e.message}`, envelope);
       return;
     }
+    // The `em` message property selects the encryption model of the data blob (aes_gcm or ECB).
+    const decryptModel = envelope.properties && envelope.properties.em;
     if (payload.protocol !== undefined && payload.protocol !== PULSAR_PROTOCOL_DATA_REPORT) {
-      diag(self, 'debug', null, 'pulsar_other_protocol', `Pulsar message with protocol ${payload.protocol}`);
+      // Test-phase visibility: keep the decrypted content (or the raw payload) in the diagnostics
+      // so an unknown protocol is immediately understandable.
+      diag(self, 'debug', null, 'pulsar_other_protocol', `Pulsar message with protocol ${payload.protocol}`, {
+        properties: envelope.properties,
+        payload,
+        decrypted: decryptPulsarData(payload.data, accessKey, decryptModel),
+      });
       return;
     }
-    const decrypted = decryptPulsarData(payload.data, accessKey);
+    const decrypted = decryptPulsarData(payload.data, accessKey, decryptModel);
     if (!decrypted) {
-      diag(self, 'warn', null, 'pulsar_decrypt_failed', 'Pulsar message could not be decrypted');
+      diag(self, 'warn', null, 'pulsar_decrypt_failed', 'Pulsar message could not be decrypted', {
+        properties: envelope.properties,
+        payload,
+      });
       return;
     }
     self.handlePulsarEvent(decrypted);

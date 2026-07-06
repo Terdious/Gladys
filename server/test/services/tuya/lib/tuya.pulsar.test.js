@@ -19,9 +19,19 @@ const encryptPulsarData = (document) => {
   );
 };
 
-const buildEnvelope = (document, { protocol = 4, messageId = 'message-1' } = {}) => {
-  const payload = Buffer.from(JSON.stringify({ protocol, data: encryptPulsarData(document) })).toString('base64');
-  return JSON.stringify({ messageId, payload });
+// The pv 2.0 format observed in real life: 12-byte nonce + ciphertext + 16-byte auth tag, and the
+// message properties carry em='aes_gcm'.
+const encryptPulsarDataGcm = (document) => {
+  const nonce = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-128-gcm', Buffer.from(ACCESS_KEY.substring(8, 24), 'utf8'), nonce);
+  const encrypted = Buffer.concat([cipher.update(Buffer.from(JSON.stringify(document), 'utf8')), cipher.final()]);
+  return Buffer.concat([nonce, encrypted, cipher.getAuthTag()]).toString('base64');
+};
+
+const buildEnvelope = (document, { protocol = 4, messageId = 'message-1', gcm = false } = {}) => {
+  const data = gcm ? encryptPulsarDataGcm(document) : encryptPulsarData(document);
+  const payload = Buffer.from(JSON.stringify({ protocol, data })).toString('base64');
+  return JSON.stringify({ messageId, payload, properties: gcm ? { em: 'aes_gcm' } : {} });
 };
 
 const wsInstances = [];
@@ -85,7 +95,9 @@ describe('Tuya Pulsar listener', () => {
 
     const document = { devId: 'dev-1', status: [{ code: 'switch_1', value: true }] };
     expect(decryptPulsarData(encryptPulsarData(document), ACCESS_KEY)).to.deep.equal(document);
+    expect(decryptPulsarData(encryptPulsarDataGcm(document), ACCESS_KEY, 'aes_gcm')).to.deep.equal(document);
     expect(decryptPulsarData('not-encrypted', ACCESS_KEY)).to.equal(null);
+    expect(decryptPulsarData('not-encrypted', ACCESS_KEY, 'aes_gcm')).to.equal(null);
   });
 
   it('stays off when disabled and reports a missing configuration', async () => {
@@ -130,6 +142,11 @@ describe('Tuya Pulsar listener', () => {
 
     sinon.assert.calledWith(ws.send, JSON.stringify({ messageId: 'message-1' }));
     sinon.assert.calledWithMatch(self.handlePulsarEvent, document);
+
+    // The pv 2.0 messages observed in real life: properties.em selects the GCM decryption.
+    ws.emit('message', Buffer.from(buildEnvelope(document, { messageId: 'message-2', gcm: true })));
+    sinon.assert.calledTwice(self.handlePulsarEvent);
+    sinon.assert.calledWithMatch(self.handlePulsarEvent.secondCall, document);
   });
 
   it('reports unparseable frames, foreign protocols and undecryptable payloads', async () => {

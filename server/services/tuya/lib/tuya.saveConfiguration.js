@@ -19,6 +19,16 @@ async function saveConfiguration(configuration) {
   await this.gladys.variable.setValue(GLADYS_VARIABLES.APP_USERNAME, appUsername, this.serviceId);
   await this.gladys.variable.setValue(GLADYS_VARIABLES.MANUAL_DISCONNECT, 'false', this.serviceId);
   await this.gladys.variable.setValue(GLADYS_VARIABLES.LAST_CONNECTED_CONFIG_HASH, '', this.serviceId);
+  if (configuration.pulsarEnabled !== undefined) {
+    await this.gladys.variable.setValue(
+      GLADYS_VARIABLES.PULSAR_ENABLED,
+      configuration.pulsarEnabled === true || configuration.pulsarEnabled === 'true' ? 'true' : 'false',
+      this.serviceId,
+    );
+    // Apply the toggle immediately (startPulsar re-reads the variable and is a no-op when disabled).
+    this.stopPulsar();
+    await this.startPulsar();
+  }
 
   return configuration;
 }

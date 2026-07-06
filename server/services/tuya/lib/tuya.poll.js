@@ -681,11 +681,70 @@ async function poll(device) {
   });
 }
 
+/**
+ * @description Apply cloud code values to a device's features and emit their new states. Used by
+ * the Pulsar real-time reports with the exact transform and event-gate pipeline of the cloud poll,
+ * without the poll summaries.
+ * @param {object} gladys - The Gladys instance (stateManager + event emit).
+ * @param {object} device - The Gladys device (with features).
+ * @param {object} values - The reported values keyed by Tuya code.
+ * @param {object} [eventMemory] - Raw-payload memory for `event: true` mapping entries (handler-scoped).
+ * @returns {object} The { handledCodes: Set<string>, changed: number } summary of emitted features.
+ * @example
+ * const { handledCodes } = emitCloudCodeStates(gladys, device, { switch_1: true });
+ */
+const emitCloudCodeStates = (gladys, device, values, eventMemory = {}) => {
+  const handledCodes = new Set();
+  let changed = 0;
+  if (!device || !values || typeof values !== 'object') {
+    return { handledCodes, changed };
+  }
+  const deviceFeatures = Array.isArray(device.features) ? device.features : [];
+  const deviceTemperatureUnit = getTemperatureUnitFromValues(values) || getTemperatureUnitFromProperties(device);
+  deviceFeatures.forEach((deviceFeature) => {
+    const code = getFeatureCode(deviceFeature);
+    if (!code || !Object.prototype.hasOwnProperty.call(values, code) || values[code] === undefined) {
+      return;
+    }
+    const reader = getFeatureReader(deviceFeature);
+    if (!reader) {
+      return;
+    }
+    const value = values[code];
+    const mappingEntry = resolveFeatureMappingEntry(device, code);
+    let eventGateAction = null;
+    if (mappingEntry && mappingEntry.event === true) {
+      eventGateAction = getEventGateAction(eventMemory, device, code, value);
+      if (eventGateAction !== 'fire') {
+        handledCodes.add(code);
+        return;
+      }
+    }
+    try {
+      const { transformedValue } = transformFeatureValue(device, deviceFeature, code, value, deviceTemperatureUnit);
+      const { lastValue, lastValueChanged } = getCurrentFeatureState(gladys, deviceFeature);
+      const emitResult = emitFeatureState(gladys, deviceFeature, transformedValue, lastValue, lastValueChanged, {
+        force: eventGateAction === 'fire',
+      });
+      handledCodes.add(code);
+      if (emitResult.changed) {
+        changed += 1;
+      }
+    } catch (e) {
+      logger.warn(`[Tuya][pulsar] reader failed for code=${code}`, e);
+    }
+  });
+  return { handledCodes, changed };
+};
+
 module.exports = {
   poll,
   // Exported so the persistent-connection push handler reuses the exact same DPS -> feature -> state
   // pipeline as the scheduled poll (single source of truth).
   emitLocalDpsStates,
+  // Exported so the Pulsar listener reuses the exact same code -> feature -> state pipeline as the
+  // cloud poll (single source of truth).
+  emitCloudCodeStates,
   getFeatureCode,
   getFeatureReader,
   hasDpsKey,

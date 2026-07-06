@@ -48,6 +48,7 @@ describe('TuyaHandler.getStatus', () => {
       configured: false,
       error: null,
       manual_disconnect: false,
+      pulsar: 'stopped',
     });
 
     assert.calledWith(gladys.variable.getValue, GLADYS_VARIABLES.ENDPOINT, serviceId);
@@ -81,6 +82,7 @@ describe('TuyaHandler.getStatus', () => {
       configured: true,
       error: 'nope',
       manual_disconnect: true,
+      pulsar: 'stopped',
     });
   });
 });

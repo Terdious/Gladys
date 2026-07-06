@@ -46,4 +46,35 @@ describe('TuyaHandler.saveConfiguration', () => {
     assert.calledWith(gladys.variable.setValue, GLADYS_VARIABLES.MANUAL_DISCONNECT, 'false', serviceId);
     assert.calledWith(gladys.variable.setValue, GLADYS_VARIABLES.LAST_CONNECTED_CONFIG_HASH, '', serviceId);
   });
+
+  it('should persist the Pulsar toggle and apply it immediately', async () => {
+    tuyaHandler.stopPulsar = fake.returns(null);
+    tuyaHandler.startPulsar = fake.resolves(null);
+
+    await tuyaHandler.saveConfiguration({
+      endpoint: 'endpoint',
+      accessKey: 'accessKey',
+      secretKey: 'secretKey',
+      appAccountId: 'appAccountUID',
+      appUsername: 'user@example.com',
+      pulsarEnabled: true,
+    });
+
+    assert.calledWith(gladys.variable.setValue, GLADYS_VARIABLES.PULSAR_ENABLED, 'true', serviceId);
+    assert.calledOnce(tuyaHandler.stopPulsar);
+    assert.calledOnce(tuyaHandler.startPulsar);
+
+    await tuyaHandler.saveConfiguration({
+      endpoint: 'endpoint',
+      accessKey: 'accessKey',
+      secretKey: 'secretKey',
+      appAccountId: 'appAccountUID',
+      appUsername: 'user@example.com',
+      pulsarEnabled: false,
+    });
+    assert.calledWith(gladys.variable.setValue, GLADYS_VARIABLES.PULSAR_ENABLED, 'false', serviceId);
+
+    delete tuyaHandler.stopPulsar;
+    delete tuyaHandler.startPulsar;
+  });
 });

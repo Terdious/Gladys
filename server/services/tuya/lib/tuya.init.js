@@ -51,6 +51,10 @@ async function init() {
   // Open persistent local connections (real-time pushed DP updates) for local-capable devices.
   // Internally guarded (kill-switch + per-device config) and never throws, so it cannot break init.
   await this.startPersistentConnections();
+
+  // Open the Pulsar message-service listener (opt-in real-time cloud events). Internally guarded
+  // (variable + credentials) and never throws, so it cannot break init.
+  await this.startPulsar();
 }
 
 module.exports = {

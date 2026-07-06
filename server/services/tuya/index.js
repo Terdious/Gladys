@@ -35,6 +35,11 @@ module.exports = function TuyaService(gladys, serviceId) {
     } catch (e) {
       logger.warn('Tuya: failed to stop persistent connections on service stop', e);
     }
+    try {
+      tuyaHandler.stopPulsar();
+    } catch (e) {
+      logger.warn('Tuya: failed to stop the Pulsar listener on service stop', e);
+    }
     await tuyaHandler.disconnect();
   }
 

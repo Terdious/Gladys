@@ -1193,7 +1193,8 @@
         "notConnected": "Gladys failed to connect to Tuya cloud account, please go to ",
         "setupPageLink": "Tuya configuration page.",
         "online": "Online",
-        "offline": "Offline"
+        "offline": "Offline",
+        "pulsarUnauthorized": "Tuya rejected the Pulsar real-time connection (HTTP 401): enable \"Message Service\" on your <a href=\"https://iot.tuya.com/cloud/\" target=\"_blank\">Tuya IoT project</a> (\"Service API\" tab), then save the Tuya configuration again."
       },
       "device": {
         "title": "Devices in Gladys",
@@ -1296,7 +1297,9 @@
         "disconnectedUnexpected": "You have been disconnected from the Tuya cloud! Please check your credentials and your <a href=\"https://platform.tuya.com/cloud/products?productType=all\" target=\"_blank\" rel=\"noopener noreferrer\">Tuya IoT Core</a> trial status.",
         "disconnectedManual": "Disconnected from the Tuya cloud! Local service still works (it will not auto-reconnect when Gladys restarts).",
         "disconnectedMissingConfig": "Disconnected from the Tuya cloud.",
-        "disconnectLabel": "Disconnect from cloud"
+        "disconnectLabel": "Disconnect from cloud",
+        "pulsarEnabledLabel": "Real-time events (Tuya Pulsar, experimental)",
+        "pulsarEnabledHint": "Receives device events instantly through the Tuya message service instead of waiting for the next poll. Requires \"Message Service\" to be enabled on your <a href=\"https://iot.tuya.com/cloud/\" target=\"_blank\">Tuya IoT project</a> (\"Service API\" tab)."
       },
       "error": {
         "defaultError": "There was an error saving the device.",

@@ -52,7 +52,18 @@ class DiscoverTab extends Component {
   async componentWillMount() {
     this.getDiscoveredDevices();
     this.getHouses();
+    this.getPulsarStatus();
   }
+
+  getPulsarStatus = async () => {
+    try {
+      const response = await this.props.httpClient.get('/api/v1/service/tuya/status');
+      // Only ever true when the Pulsar toggle is enabled AND the message service refused us.
+      this.setState({ pulsarUnauthorized: response && response.pulsar === 'unauthorized' });
+    } catch (e) {
+      this.setState({ pulsarUnauthorized: false });
+    }
+  };
 
   async getHouses() {
     this.setState({
@@ -223,6 +234,11 @@ class DiscoverTab extends Component {
                   <Link href="/dashboard/integration/device/tuya/setup">
                     <Text id="integration.tuya.status.setupPageLink" />
                   </Link>
+                </p>
+              )}
+              {this.state.pulsarUnauthorized && (
+                <p class="alert alert-warning">
+                  <MarkupText id="integration.tuya.status.pulsarUnauthorized" />
                 </p>
               )}
               <div class="row">

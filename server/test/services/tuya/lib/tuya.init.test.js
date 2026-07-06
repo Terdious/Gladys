@@ -63,7 +63,7 @@ describe('TuyaHandler.init', () => {
 
     expect(tuyaHandler.status).to.eq(STATUS.CONNECTED);
 
-    assert.callCount(gladys.variable.getValue, 7);
+    assert.callCount(gladys.variable.getValue, 8);
     assert.calledWith(gladys.variable.getValue, GLADYS_VARIABLES.ENDPOINT, serviceId);
     assert.calledWith(gladys.variable.getValue, GLADYS_VARIABLES.ACCESS_KEY, serviceId);
     assert.calledWith(gladys.variable.getValue, GLADYS_VARIABLES.SECRET_KEY, serviceId);

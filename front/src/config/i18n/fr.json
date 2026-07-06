@@ -1431,7 +1431,8 @@
         "notConnected": "Gladys n'a pas réussi à se connecter au compte cloud Tuya, plus d'informations sur la ",
         "setupPageLink": "page de configuration Tuya.",
         "online": "En ligne",
-        "offline": "Hors ligne"
+        "offline": "Hors ligne",
+        "pulsarUnauthorized": "Tuya a refusé la connexion temps réel Pulsar (HTTP 401) : activez « Message Service » sur votre <a href=\"https://iot.tuya.com/cloud/\" target=\"_blank\">projet Tuya IoT</a> (onglet « Service API »), puis réenregistrez la configuration Tuya."
       },
       "device": {
         "title": "Appareils Tuya dans Gladys",
@@ -1534,7 +1535,9 @@
         "disconnectedUnexpected": "Vous avez été déconnecté du cloud Tuya ! Vérifiez vos informations de connexion et l'état de votre abonnement d'essai <a href=\"https://eu.platform.tuya.com/cloud/products?productType=all\" target=\"_blank\" rel=\"noopener noreferrer\">Tuya IoT Core</a>.",
         "disconnectedManual": "Déconnecté du cloud Tuya ! Le service local fonctionne toujours (vous ne serez pas reconnecté automatiquement au redémarrage de Gladys).",
         "disconnectedMissingConfig": "Déconnecté du cloud Tuya.",
-        "disconnectLabel": "Se déconnecter du cloud"
+        "disconnectLabel": "Se déconnecter du cloud",
+        "pulsarEnabledLabel": "Événements temps réel (Tuya Pulsar, expérimental)",
+        "pulsarEnabledHint": "Reçoit instantanément les événements des appareils via le service de messages Tuya au lieu d'attendre le prochain poll. Nécessite d'activer « Message Service » sur votre <a href=\"https://iot.tuya.com/cloud/\" target=\"_blank\">projet Tuya IoT</a> (onglet « Service API »)."
       },
       "error": {
         "defaultError": "Une erreur s'est produite lors de l'enregistrement de l'appareil.",

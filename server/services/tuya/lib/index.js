@@ -40,6 +40,7 @@ const {
 const { recordDiagnostic, getDiagnostics, recordRawValues, getRawValues } = require('./tuya.diagnostics');
 const { getDeviceSnapshot } = require('./tuya.deviceSnapshot');
 const { handleMediaValue, processMediaCodes } = require('./tuya.media');
+const { handlePulsarEvent, startPulsar, stopPulsar } = require('./tuya.pulsar');
 
 const { STATUS } = require('./utils/tuya.constants');
 
@@ -104,5 +105,9 @@ TuyaHandler.prototype.getDeviceSnapshot = getDeviceSnapshot;
 // Doorbell snapshots: gate the media DPs on their raw payload and store the image on the camera feature.
 TuyaHandler.prototype.processMediaCodes = processMediaCodes;
 TuyaHandler.prototype.handleMediaValue = handleMediaValue;
+// Pulsar message service (opt-in real-time cloud events).
+TuyaHandler.prototype.startPulsar = startPulsar;
+TuyaHandler.prototype.stopPulsar = stopPulsar;
+TuyaHandler.prototype.handlePulsarEvent = handlePulsarEvent;
 
 module.exports = TuyaHandler;

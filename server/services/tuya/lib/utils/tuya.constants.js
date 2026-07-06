@@ -11,6 +11,10 @@ const GLADYS_VARIABLES = {
   // Kill-switch for the persistent local connection listener (real-time pushed DP updates).
   // Defaults to enabled when the variable is unset; set to '0'/'false' to force poll-only behavior.
   PERSISTENT_PUSH_ENABLED: 'TUYA_PERSISTENT_PUSH_ENABLED',
+  // Opt-in for the Tuya Pulsar message service listener (real-time cloud events over websocket).
+  // Defaults to DISABLED when the variable is unset; requires "Message Service" to be enabled on
+  // the Tuya IoT project.
+  PULSAR_ENABLED: 'TUYA_PULSAR_ENABLED',
 };
 
 const TUYA_ENDPOINTS = {

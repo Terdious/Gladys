@@ -23,6 +23,7 @@ async function getStatus() {
     configured,
     error: this.lastError,
     manual_disconnect: manualDisconnectEnabled,
+    pulsar: this.pulsar ? this.pulsar.status : 'stopped',
   };
 }
 

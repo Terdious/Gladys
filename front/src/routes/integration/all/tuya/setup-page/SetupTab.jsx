@@ -66,12 +66,21 @@ class SetupTab extends Component {
     };
 
     try {
-      [tuyaEndpoint, tuyaAccessKey, tuyaSecretKey, tuyaAppAccountId, tuyaAppUsername] = await Promise.all([
+      let tuyaPulsarEnabled;
+      [
+        tuyaEndpoint,
+        tuyaAccessKey,
+        tuyaSecretKey,
+        tuyaAppAccountId,
+        tuyaAppUsername,
+        tuyaPulsarEnabled
+      ] = await Promise.all([
         getVariable('TUYA_ENDPOINT'),
         getVariable('TUYA_ACCESS_KEY'),
         getVariable('TUYA_SECRET_KEY'),
         getVariable('TUYA_APP_ACCOUNT_UID'),
-        getVariable('TUYA_APP_USERNAME')
+        getVariable('TUYA_APP_USERNAME'),
+        getVariable('TUYA_PULSAR_ENABLED', 'false')
       ]);
 
       this.setState({
@@ -81,6 +90,7 @@ class SetupTab extends Component {
         tuyaSecretKey,
         tuyaAppAccountId,
         tuyaAppUsername,
+        tuyaPulsarEnabled: tuyaPulsarEnabled === 'true' || tuyaPulsarEnabled === '1',
         tuyaConfigured: !!(tuyaEndpoint && tuyaAccessKey && tuyaSecretKey && tuyaAppAccountId)
       });
     } catch (e) {
@@ -105,6 +115,7 @@ class SetupTab extends Component {
       const status = response && response.status;
       const configured = response && response.configured;
       const manualDisconnect = response && response.manual_disconnect;
+      const pulsarUnauthorized = response && response.pulsar === 'unauthorized';
       const isConnected = status === 'connected';
       const isConnecting = status === 'connecting';
       const isError = status === 'error';
@@ -114,6 +125,7 @@ class SetupTab extends Component {
       this.setState({
         tuyaStatusLoading: false,
         tuyaConfigured: !!configured,
+        tuyaPulsarUnauthorized: pulsarUnauthorized,
         tuyaConnected: isManualDisconnect ? false : isConnected,
         tuyaConnecting: isManualDisconnect ? false : isConnecting,
         tuyaDisconnected: isUnexpectedDisconnect,
@@ -160,7 +172,8 @@ class SetupTab extends Component {
         accessKey: tuyaAccessKey,
         secretKey: tuyaSecretKey,
         appAccountId: tuyaAppAccountId,
-        appUsername: tuyaAppUsername
+        appUsername: tuyaAppUsername,
+        pulsarEnabled: this.state.tuyaPulsarEnabled === true
       });
 
       const configured = !!(tuyaEndpoint && tuyaAccessKey && tuyaSecretKey && tuyaAppAccountId);
@@ -291,6 +304,12 @@ class SetupTab extends Component {
   toggleClientSecret = () => {
     this.setState(previousState => ({
       showClientSecret: !previousState.showClientSecret
+    }));
+  };
+
+  togglePulsarEnabled = () => {
+    this.setState(previousState => ({
+      tuyaPulsarEnabled: !previousState.tuyaPulsarEnabled
     }));
   };
 
@@ -544,6 +563,28 @@ class SetupTab extends Component {
                       onInput={this.updateConfiguration}
                     />
                   </Localizer>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-check form-switch">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      checked={state.tuyaPulsarEnabled}
+                      onClick={this.togglePulsarEnabled}
+                    />
+                    <span class="form-check-label">
+                      <Text id="integration.tuya.setup.pulsarEnabledLabel" />
+                    </span>
+                  </label>
+                  <div class="text-muted small">
+                    <MarkupText id="integration.tuya.setup.pulsarEnabledHint" />
+                  </div>
+                  {state.tuyaPulsarEnabled && state.tuyaPulsarUnauthorized && (
+                    <p class="alert alert-warning mt-2">
+                      <MarkupText id="integration.tuya.status.pulsarUnauthorized" />
+                    </p>
+                  )}
                 </div>
 
                 <div class="row mt-5">

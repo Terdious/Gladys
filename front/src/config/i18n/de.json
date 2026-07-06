@@ -1298,7 +1298,8 @@
         "notConnected": "Gladys konnte keine Verbindung zum Tuya-Cloud-Account herstellen. Bitte gehe zur ",
         "setupPageLink": "Tuya-Einrichtungsseite.",
         "online": "Online",
-        "offline": "Offline"
+        "offline": "Offline",
+        "pulsarUnauthorized": "Tuya hat die Pulsar-Echtzeitverbindung abgelehnt (HTTP 401): Aktiviere „Message Service\" in deinem <a href=\"https://iot.tuya.com/cloud/\" target=\"_blank\">Tuya-IoT-Projekt</a> (Tab „Service API\") und speichere die Tuya-Konfiguration erneut."
       },
       "device": {
         "title": "Meine Geräte",
@@ -1401,7 +1402,9 @@
         "disconnectedUnexpected": "Du wurdest von der Tuya-Cloud getrennt! Bitte überprüfe deine Zugangsdaten und den Status deines <a href=\"https://eu.platform.tuya.com/cloud/products?productType=all\" target=\"_blank\" rel=\"noopener noreferrer\">Tuya IoT Core</a>-Testabos.",
         "disconnectedManual": "Von der Tuya-Cloud getrennt! Der lokale Dienst funktioniert weiterhin (bei einem Neustart von Gladys wird keine automatische Verbindung hergestellt).",
         "disconnectedMissingConfig": "Von der Tuya-Cloud getrennt.",
-        "disconnectLabel": "Von der Cloud trennen"
+        "disconnectLabel": "Von der Cloud trennen",
+        "pulsarEnabledLabel": "Echtzeit-Ereignisse (Tuya Pulsar, experimentell)",
+        "pulsarEnabledHint": "Empfängt Geräteereignisse sofort über den Tuya-Nachrichtendienst statt auf den nächsten Poll zu warten. Erfordert die Aktivierung von „Message Service\" in deinem <a href=\"https://iot.tuya.com/cloud/\" target=\"_blank\">Tuya-IoT-Projekt</a> (Tab „Service API\")."
       },
       "error": {
         "defaultError": "Beim Sichern des Geräts ist ein Fehler aufgetreten.",

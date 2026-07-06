@@ -1,4 +1,7 @@
 const axios = require('axios');
+const childProcess = require('child_process');
+const fs = require('fs/promises');
+const path = require('path');
 const logger = require('../../../utils/logger');
 
 // Doorbell event DPs carrying a snapshot reference: the raw value is the base64 of a JSON
@@ -23,6 +26,37 @@ const buildMediaUrlCandidates = (bucket, filePath) => [
 const MEDIA_DOWNLOAD_TIMEOUT_MS = 10 * 1000;
 // camera.setImage rejects images whose base64 string exceeds 150KB.
 const MAX_IMAGE_STRING_LENGTH = 150 * 1024;
+const FFMPEG_TIMEOUT_MS = 20 * 1000;
+
+// Re-encode an oversized snapshot with the proven rtsp-camera recipe (qscale 15): write the
+// downloaded bytes to the temp folder, let ffmpeg recompress, read it back. Returns null when
+// ffmpeg is unavailable or the re-encode fails — the caller decides how to report it.
+const reencodeImageWithFfmpeg = async (self, topic, buffer) => {
+  const tempFolder = self.gladys && self.gladys.config && self.gladys.config.tempFolder;
+  if (!tempFolder) {
+    return null;
+  }
+  const baseName = `tuya-media-${topic}-${process.hrtime.bigint()}`;
+  const inputPath = path.join(tempFolder, `${baseName}-in.jpg`);
+  const outputPath = path.join(tempFolder, `${baseName}-out.jpg`);
+  try {
+    await fs.writeFile(inputPath, buffer);
+    await new Promise((resolve, reject) => {
+      childProcess.execFile(
+        'ffmpeg',
+        ['-i', inputPath, '-f', 'image2', '-qscale:v', '15', outputPath],
+        { timeout: FFMPEG_TIMEOUT_MS },
+        (error) => (error ? reject(error) : resolve()),
+      );
+    });
+    return await fs.readFile(outputPath);
+  } catch (e) {
+    logger.warn(`[Tuya][media] ffmpeg re-encode failed for device=${topic}: ${e.message}`);
+    return null;
+  } finally {
+    await Promise.allSettled([fs.rm(inputPath, { force: true }), fs.rm(outputPath, { force: true })]);
+  }
+};
 
 // The diagnostics collector is an optional collaborator: record only when the handler carries it.
 const diag = (self, level, deviceId, event, message, data) => {
@@ -90,9 +124,9 @@ async function handleMediaValue(device, code, rawValue) {
     return false;
   }
 
-  let image = null;
+  let imageBuffer = null;
   const candidates = buildMediaUrlCandidates(media.bucket, media.filePath);
-  for (let i = 0; i < candidates.length && image === null; i += 1) {
+  for (let i = 0; i < candidates.length && imageBuffer === null; i += 1) {
     const url = candidates[i];
     const { host } = new URL(url);
     try {
@@ -101,19 +135,38 @@ async function handleMediaValue(device, code, rawValue) {
         responseType: 'arraybuffer',
         timeout: MEDIA_DOWNLOAD_TIMEOUT_MS,
       });
-      image = `image/jpg;base64,${Buffer.from(response.data).toString('base64')}`;
+      imageBuffer = Buffer.from(response.data);
       diag(this, 'info', topic, 'media_download_ok', `Snapshot of ${code} downloaded from ${host}`);
     } catch (e) {
       const status = e && e.response && e.response.status ? `HTTP ${e.response.status}` : e.message;
       diag(this, 'warn', topic, 'media_download_failed', `Snapshot download failed on ${host}: ${status}`);
     }
   }
-  if (image === null) {
+  if (imageBuffer === null) {
     return false;
   }
+  let image = `image/jpg;base64,${imageBuffer.toString('base64')}`;
   if (image.length > MAX_IMAGE_STRING_LENGTH) {
-    diag(this, 'warn', topic, 'media_image_too_big', `Snapshot of ${code} exceeds the 150KB camera limit`);
-    return false;
+    // Same recipe as rtsp-camera/Netatmo cameras: recompress instead of dropping the snapshot.
+    diag(
+      this,
+      'warn',
+      topic,
+      'media_image_too_big',
+      `Snapshot of ${code} exceeds the 150KB camera limit, re-encoding with ffmpeg`,
+    );
+    const reencoded = await reencodeImageWithFfmpeg(this, topic, imageBuffer);
+    image = reencoded === null ? null : `image/jpg;base64,${reencoded.toString('base64')}`;
+    if (image === null || image.length > MAX_IMAGE_STRING_LENGTH) {
+      diag(
+        this,
+        'error',
+        topic,
+        'media_image_unusable',
+        `Snapshot of ${code} still unusable after the ffmpeg re-encode`,
+      );
+      return false;
+    }
   }
 
   try {

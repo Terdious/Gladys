@@ -1,3 +1,5 @@
+const os = require('os');
+const fsSync = require('fs');
 const sinon = require('sinon');
 const { expect } = require('chai');
 const proxyquire = require('proxyquire').noCallThru();
@@ -21,6 +23,7 @@ const buildPayload = (overrides = {}) => {
 const buildSelf = (mediaLib, { withDiagnostics = true } = {}) => {
   const self = {
     gladys: {
+      config: { tempFolder: os.tmpdir() },
       device: {
         camera: { setImage: sinon.stub().resolves() },
       },
@@ -73,9 +76,11 @@ describe('Tuya doorbell media', () => {
   });
 
   describe('handleMediaValue', () => {
-    const load = (axiosStub) =>
+    const load = (axiosStub, childProcessStub) =>
       proxyquire('../../../../services/tuya/lib/tuya.media', {
         axios: axiosStub,
+        // eslint-disable-next-line camelcase
+        child_process: childProcessStub || { execFile: sinon.stub().yields(new Error('ffmpeg not stubbed')) },
       });
 
     it('downloads the snapshot and stores it on the camera feature', async () => {
@@ -123,9 +128,8 @@ describe('Tuya doorbell media', () => {
       sinon.assert.notCalled(self.gladys.device.camera.setImage);
     });
 
-    it('skips invalid payloads, encrypted images and oversized snapshots', async () => {
-      const bigBuffer = Buffer.alloc(120 * 1024);
-      const axiosStub = { get: sinon.stub().resolves({ data: bigBuffer }) };
+    it('skips invalid payloads and encrypted images', async () => {
+      const axiosStub = { get: sinon.stub().resolves({ data: Buffer.from('jpeg-bytes') }) };
       const media = load(axiosStub);
       const self = buildSelf(media);
 
@@ -135,11 +139,51 @@ describe('Tuya doorbell media', () => {
       ).to.equal(false);
       const encrypted = self.recordDiagnostic.getCalls().find((call) => call.args[2] === 'media_encrypted_unsupported');
       expect(encrypted).to.not.equal(undefined);
-      // 120KB of bytes -> base64 above the 150KB camera cap.
-      expect(await self.handleMediaValue(device, 'doorbell_pic', buildPayload())).to.equal(false);
+      sinon.assert.notCalled(self.gladys.device.camera.setImage);
+    });
+
+    it('re-encodes an oversized snapshot with ffmpeg and stores the compressed image', async () => {
+      // 120KB of bytes -> base64 above the 150KB camera cap -> ffmpeg fallback (rtsp-camera recipe).
+      const bigBuffer = Buffer.alloc(120 * 1024);
+      const axiosStub = { get: sinon.stub().resolves({ data: bigBuffer }) };
+      const execFile = sinon.stub().callsFake((bin, args, options, callback) => {
+        // The stub plays ffmpeg's role: it writes the (now small) output file.
+        fsSync.writeFileSync(args[args.length - 1], Buffer.from('small-jpeg'));
+        callback(null);
+      });
+      const media = load(axiosStub, { execFile });
+      const self = buildSelf(media);
+
+      const stored = await self.handleMediaValue(device, 'doorbell_pic', buildPayload());
+
+      expect(stored).to.equal(true);
+      expect(execFile.firstCall.args[0]).to.equal('ffmpeg');
+      expect(execFile.firstCall.args[1]).to.include('-qscale:v');
+      sinon.assert.calledWith(
+        self.gladys.device.camera.setImage,
+        'tuya-doorbell',
+        `image/jpg;base64,${Buffer.from('small-jpeg').toString('base64')}`,
+      );
       const tooBig = self.recordDiagnostic.getCalls().find((call) => call.args[2] === 'media_image_too_big');
       expect(tooBig).to.not.equal(undefined);
+    });
+
+    it('reports an unusable snapshot when ffmpeg fails or no temp folder is available', async () => {
+      const bigBuffer = Buffer.alloc(120 * 1024);
+      const axiosStub = { get: sinon.stub().resolves({ data: bigBuffer }) };
+      const execFile = sinon.stub().yields(new Error('ffmpeg: command not found'));
+      const media = load(axiosStub, { execFile });
+      const self = buildSelf(media);
+
+      expect(await self.handleMediaValue(device, 'doorbell_pic', buildPayload())).to.equal(false);
+      const unusable = self.recordDiagnostic.getCalls().find((call) => call.args[2] === 'media_image_unusable');
+      expect(unusable).to.not.equal(undefined);
       sinon.assert.notCalled(self.gladys.device.camera.setImage);
+
+      // Without a temp folder the re-encode cannot even start.
+      const selfWithoutTemp = buildSelf(media);
+      delete selfWithoutTemp.gladys.config;
+      expect(await selfWithoutTemp.handleMediaValue(device, 'doorbell_pic', buildPayload())).to.equal(false);
     });
 
     it('reports a storage failure and works without the diagnostics collector', async () => {

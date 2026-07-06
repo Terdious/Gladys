@@ -15,6 +15,7 @@
   "dependencies": {
     "@demirdeniz/tuyapi-newgen": "8.1.5",
     "@tuya/tuya-connector-nodejs": "^2.1.2",
+    "axios": "^1.7.9",
     "tuyapi": "^7.7.1"
   }
 }

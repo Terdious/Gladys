@@ -7,7 +7,8 @@ const { DEVICE_FEATURE_CATEGORIES, DEVICE_FEATURE_TYPES } = require('../../../..
 //  - motion_sensitivity / record_mode / basic_nightvision: enums needing a select UI (follow-up).
 //  - basic_device_volume: numeric volume (follow-up).
 //  - sd_storge / sd_format: storage string / maintenance action (follow-up).
-//  - doorbell_pic / movement_detect_pic: camera snapshots (step 2 of this PR, payload-driven).
+//  - movement_detect_pic: snapshot payload — no feature of its own, it feeds the doorbell_pic
+//    camera image through the media pipeline (tuya.media.js), like doorbell_pic itself.
 module.exports = {
   ignoredCodes: [
     'sd_format_state',
@@ -18,9 +19,18 @@ module.exports = {
     'basic_device_volume',
     'sd_storge',
     'sd_format',
-    'doorbell_pic',
     'movement_detect_pic',
   ],
+  doorbell_pic: {
+    // The device camera image (Gladys camera dashboard box + diagnostic page panel). The state
+    // pipeline has no reader for camera/image: the feature is only written by the media pipeline
+    // (ring and motion snapshots downloaded from the payload's signed URL).
+    name: 'Snapshot',
+    category: DEVICE_FEATURE_CATEGORIES.CAMERA,
+    type: DEVICE_FEATURE_TYPES.CAMERA.IMAGE,
+    read_only: true,
+    keep_history: false,
+  },
   doorbell_active: {
     // The ring: an event DP holding the last ring payload (empty string when the device has never
     // rung). `event: true` routes it through the raw-payload event gate — each NEW payload fires one

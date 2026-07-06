@@ -8,6 +8,7 @@ const { recordLocalFailure, recordLocalSuccess } = require('./utils/tuya.degrade
 // Reuse the poll's DPS -> feature -> state pipeline so pushed updates and the scheduled poll apply the
 // exact same transformation (scale, temperature conversion, ...).
 const { emitLocalDpsStates, getFeatureCode, hasDpsKey } = require('./tuya.poll');
+const { mapDpsToMediaCodes } = require('./tuya.media');
 const { getLocalDpsFromCode } = require('./device/tuya.localMapping');
 
 // A persistent local connection stays open and receives pushed DP updates in real time (events),
@@ -378,6 +379,9 @@ function handlePushedDps(device, dps) {
 
   if (typeof this.recordRawValues === 'function') {
     this.recordRawValues(topic, 'local_push', dps, 'dps');
+  }
+  if (typeof this.processMediaCodes === 'function') {
+    this.processMediaCodes(device, mapDpsToMediaCodes(dps));
   }
   const throttledDps = filterThrottledContinuousDps(entry, device, dps);
   // Event DPs (doorbell ring...) share the same raw-payload memory as the scheduled poll, so a ring

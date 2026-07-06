@@ -8,6 +8,7 @@ const { normalizeBoolean, normalizeTemperatureUnit } = require('./utils/tuya.nor
 const { CLOUD_STRATEGY, getConfiguredCloudStrategy } = require('./utils/tuya.cloudStrategy');
 const { getParamValue } = require('./utils/tuya.deviceParams');
 const { localPoll } = require('./tuya.localPoll');
+const { mapDpsToMediaCodes } = require('./tuya.media');
 const { getLocalDpsFromCode } = require('./device/tuya.localMapping');
 const { getDeviceType, getFeatureMapping, getProductIdFromDevice } = require('./mappings');
 const { isLocalSkipNeeded, recordLocalFailure, recordLocalSuccess } = require('./utils/tuya.degraded');
@@ -382,6 +383,9 @@ const pollCloudFeatures = async function pollCloudFeatures(device, deviceFeature
   if (typeof this.recordRawValues === 'function') {
     this.recordRawValues(topic, 'cloud', values, 'codes');
   }
+  if (typeof this.processMediaCodes === 'function') {
+    this.processMediaCodes(device, values);
+  }
 
   const deviceTemperatureUnit = getTemperatureUnitFromValues(values) || currentTemperatureUnit;
 
@@ -564,6 +568,9 @@ async function poll(device) {
       if (dps && typeof dps === 'object') {
         if (typeof this.recordRawValues === 'function') {
           this.recordRawValues(topic, 'local_poll', dps, 'dps');
+        }
+        if (typeof this.processMediaCodes === 'function') {
+          this.processMediaCodes(device, mapDpsToMediaCodes(dps));
         }
         deviceTemperatureUnit = getTemperatureUnitFromLocalDps(device, dps) || deviceTemperatureUnit;
         this.eventDpMemory = this.eventDpMemory || {};

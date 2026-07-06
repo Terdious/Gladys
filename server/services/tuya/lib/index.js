@@ -39,6 +39,7 @@ const {
 } = require('./tuya.persistentConnection');
 const { recordDiagnostic, getDiagnostics, recordRawValues, getRawValues } = require('./tuya.diagnostics');
 const { getDeviceSnapshot } = require('./tuya.deviceSnapshot');
+const { handleMediaValue, processMediaCodes } = require('./tuya.media');
 
 const { STATUS } = require('./utils/tuya.constants');
 
@@ -100,5 +101,8 @@ TuyaHandler.prototype.getDiagnostics = getDiagnostics;
 TuyaHandler.prototype.recordRawValues = recordRawValues;
 TuyaHandler.prototype.getRawValues = getRawValues;
 TuyaHandler.prototype.getDeviceSnapshot = getDeviceSnapshot;
+// Doorbell snapshots: gate the media DPs on their raw payload and store the image on the camera feature.
+TuyaHandler.prototype.processMediaCodes = processMediaCodes;
+TuyaHandler.prototype.handleMediaValue = handleMediaValue;
 
 module.exports = TuyaHandler;

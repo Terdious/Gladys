@@ -6,17 +6,21 @@ const MAX_TAKE = 500;
 
 const ONE_HOUR_IN_MS = 60 * 60 * 1000;
 const ONE_DAY_IN_MS = 24 * ONE_HOUR_IN_MS;
-// Progressively widening lower time bounds (relative to the window reference, see
-// below) tried until a full page is collected. Without a lower bound, `ORDER BY
-// created_at DESC LIMIT n` forces DuckDB to run a Top-N over every row that passes
-// the filter (the whole table on the unfiltered "All" view), which is why the
-// request took tens of seconds on large databases. Adding `created_at >= ?` lets
-// DuckDB skip old row groups thanks to its per-row-group min/max metadata (zone maps): states are
-// stored time-contiguously (live inserts are appended in order, and the SQLite ->
-// DuckDB migration inserts each feature's history contiguously), so a recent window
-// only has to scan the most recent row groups. The final `null` window removes the
-// lower bound so older states are still returned when recent windows are sparse.
-const PROGRESSIVE_WINDOWS_IN_MS = [
+// Lower time bounds (relative to the window reference, see below) of the disjoint,
+// progressively wider time slices scanned until a full page is collected. Without a
+// time bound, `ORDER BY created_at DESC LIMIT n` forces DuckDB to run a Top-N over
+// every row that passes the filter (the whole table on the unfiltered "All" view),
+// which is why the request took tens of seconds on large databases. Bounding
+// `created_at` lets DuckDB skip row groups thanks to its per-row-group min/max
+// metadata (zone maps): states are stored time-contiguously (live inserts are
+// appended in order, and the SQLite -> DuckDB migration inserts each feature's
+// history contiguously), so each slice only has to scan its own row groups.
+// Each slice is queried once, results are accumulated across slices, and no row
+// group is ever scanned twice: sparse categories (a few states per month) fill
+// their page by accumulation instead of forcing an unbounded scan to find the
+// whole page on its own. The final `null` bound scans the remaining history so
+// older states are still returned when every bounded slice was sparse.
+const PROGRESSIVE_SLICE_BOUNDS_IN_MS = [
   ONE_HOUR_IN_MS,
   ONE_DAY_IN_MS,
   7 * ONE_DAY_IN_MS,
@@ -125,36 +129,47 @@ async function getDeviceStatesHistory(options = {}) {
 
   const featureIdPlaceholders = filteredFeatureIds.map(() => '?').join(',');
 
-  // Query progressively wider time windows and stop as soon as we have a full page.
-  // A recent window is answered almost instantly thanks to zone map pruning; the
-  // wider windows (up to the unbounded one) only run when recent states are scarce.
-  let rows = [];
-  for (let i = 0; i < PROGRESSIVE_WINDOWS_IN_MS.length; i += 1) {
-    const windowInMs = PROGRESSIVE_WINDOWS_IN_MS[i];
+  // Scan the history as disjoint time slices, newest first, accumulating results
+  // until a full page is collected or the history is exhausted. The first slice is
+  // bounded above by the pagination cursor; each following slice is bounded above
+  // by the previous slice's lower bound, so no row is ever scanned or returned
+  // twice. Slices are scanned in descending time order and rows are ordered inside
+  // each slice, so plain concatenation keeps the global ordering.
+  const rows = [];
+  let previousLowerBound = null;
+  for (let i = 0; i < PROGRESSIVE_SLICE_BOUNDS_IN_MS.length && rows.length < take; i += 1) {
+    const boundInMs = PROGRESSIVE_SLICE_BOUNDS_IN_MS[i];
+    const lowerBound = boundInMs === null ? null : new Date(windowReference.getTime() - boundInMs);
     const queryParams = [];
     let lowerBoundClause = '';
-    if (windowInMs !== null) {
+    if (lowerBound !== null) {
       lowerBoundClause = 'created_at >= CAST(? AS TIMESTAMPTZ) AND ';
-      queryParams.push(new Date(windowReference.getTime() - windowInMs).toISOString());
+      queryParams.push(lowerBound.toISOString());
     }
-    queryParams.push(...cursorParams, ...filteredFeatureIds, take);
+    let upperBoundClause;
+    if (previousLowerBound === null) {
+      // First slice: the pagination cursor is the upper bound.
+      upperBoundClause = cursorClause;
+      queryParams.push(...cursorParams);
+    } else {
+      upperBoundClause = 'created_at < CAST(? AS TIMESTAMPTZ)';
+      queryParams.push(previousLowerBound.toISOString());
+    }
+    queryParams.push(...filteredFeatureIds, take - rows.length);
 
     const query = `
       SELECT device_feature_id, value, created_at
       FROM t_device_feature_state
-      WHERE ${lowerBoundClause}${cursorClause}
+      WHERE ${lowerBoundClause}${upperBoundClause}
       AND device_feature_id IN (${featureIdPlaceholders})
       ORDER BY created_at DESC, device_feature_id DESC
       LIMIT ?
     `;
 
     // eslint-disable-next-line no-await-in-loop
-    rows = await db.duckDbReadConnectionAllAsync(query, ...queryParams);
-    // A full page is, by construction, the most recent `take` states before the
-    // cursor: any state inside the window is more recent than any state below it.
-    if (rows.length >= take) {
-      break;
-    }
+    const sliceRows = await db.duckDbReadConnectionAllAsync(query, ...queryParams);
+    rows.push(...sliceRows);
+    previousLowerBound = lowerBound;
   }
 
   return rows

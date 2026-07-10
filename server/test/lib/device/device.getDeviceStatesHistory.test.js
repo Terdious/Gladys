@@ -140,6 +140,66 @@ describe('Device.getDeviceStatesHistory', function Describe() {
     }
   });
 
+  it('should accumulate states across disjoint slices until the page is full', async () => {
+    const before = new Date('2026-01-01T00:00:00.000Z');
+    const inFirstSlice = new Date(before.getTime() - 30 * 60 * 1000);
+    const inSevenDaySlice = new Date(before.getTime() - 3 * 24 * ONE_HOUR_IN_MS);
+    const inThirtyDaySlice = new Date(before.getTime() - 20 * 24 * ONE_HOUR_IN_MS);
+    await db.duckDbBatchInsertState(LIGHT_BINARY_FEATURE_ID, [
+      { value: 1, created_at: inFirstSlice },
+      { value: 0, created_at: inSevenDaySlice },
+      { value: 1, created_at: inThirtyDaySlice },
+    ]);
+    await db.DeviceFeature.update(
+      { last_value_changed: inFirstSlice },
+      { where: { id: [LIGHT_BINARY_FEATURE_ID, LIGHT_BRIGHTNESS_FEATURE_ID] } },
+    );
+    const querySpy = spy(db, 'duckDbReadConnectionAllAsync');
+    try {
+      const states = await deviceInstance.getDeviceStatesHistory({
+        categories: 'light',
+        take: 3,
+        before: before.toISOString(),
+      });
+      expect(states).to.have.lengthOf(3);
+      expect(states.map((state) => new Date(state.created_at).toISOString())).to.deep.equal(
+        [inFirstSlice, inSevenDaySlice, inThirtyDaySlice].map((date) => date.toISOString()),
+      );
+      // 4 slice queries: 1h (1 state), 24h (0), 7d (1), 30d (1) — page full, the
+      // wider slices are never scanned.
+      expect(querySpy.callCount).to.equal(4);
+    } finally {
+      querySpy.restore();
+    }
+  });
+
+  it('should not return a state twice at slice boundaries', async () => {
+    const before = new Date('2026-01-01T00:00:00.000Z');
+    // Exactly on the first slice's lower bound: belongs to the first slice (>=),
+    // while the next slice is bounded above by a strict < on the same date.
+    const onBoundary = new Date(before.getTime() - ONE_HOUR_IN_MS);
+    const justBelowBoundary = new Date(onBoundary.getTime() - 1000);
+    await db.duckDbWriteConnectionAllAsync('DELETE FROM t_device_feature_state');
+    await db.duckDbBatchInsertState(LIGHT_BINARY_FEATURE_ID, [
+      { value: 1, created_at: onBoundary },
+      { value: 0, created_at: justBelowBoundary },
+    ]);
+    await db.DeviceFeature.update(
+      { last_value_changed: null },
+      { where: { id: [LIGHT_BINARY_FEATURE_ID, LIGHT_BRIGHTNESS_FEATURE_ID] } },
+    );
+    // take > total: every slice down to the unbounded one is scanned, and each
+    // state must still be returned exactly once.
+    const states = await deviceInstance.getDeviceStatesHistory({
+      categories: 'light',
+      take: 5,
+      before: before.toISOString(),
+    });
+    expect(states).to.have.lengthOf(2);
+    expect(new Date(states[0].created_at).toISOString()).to.equal(onBoundary.toISOString());
+    expect(new Date(states[1].created_at).toISOString()).to.equal(justBelowBoundary.toISOString());
+  });
+
   it('should filter by categories', async () => {
     const states = await deviceInstance.getDeviceStatesHistory({ categories: 'temperature-sensor,humidity-sensor' });
     expect(states).to.have.lengthOf(1);

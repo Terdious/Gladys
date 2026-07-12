@@ -40,9 +40,16 @@ describe('frigate handleMqttMessage', () => {
     assert.notCalled(frigateManager.configureAdminUser);
   });
 
-  it('should store parsed stats', async () => {
+  it('should store parsed stats and retry admin configuration', async () => {
     await frigateManager.handleMqttMessage('frigate/stats', '{"service":{"version":"0.17.2"}}');
     expect(frigateManager.stats).to.deep.equal({ service: { version: '0.17.2' } });
+    assert.calledOnce(frigateManager.configureAdminUser);
+  });
+
+  it('should not retry admin configuration on stats when already configured', async () => {
+    frigateManager.adminConfigured = true;
+    await frigateManager.handleMqttMessage('frigate/stats', '{"service":{"version":"0.17.2"}}');
+    assert.notCalled(frigateManager.configureAdminUser);
   });
 
   it('should not crash on invalid stats payload', async () => {

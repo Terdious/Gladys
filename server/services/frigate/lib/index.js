@@ -45,6 +45,7 @@ const FrigateManager = function FrigateManager(gladys, mqttLibrary, serviceId) {
   this.gladysConnected = false;
   this.frigateConnected = false;
   this.adminConfigured = false;
+  this.adminConfiguring = false;
   this.mqttPort = null;
   this.frigateUiPort = null;
   this.frigateApiPort = null;

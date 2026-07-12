@@ -13,34 +13,35 @@ const CheckStatus = ({
   networkModeValid,
   frigateStatus
 }) => {
-  let textLabel = null;
+  let textLabel;
+  let alertClass;
   if (frigateStatus === RequestStatus.Getting) {
     textLabel = 'integration.frigate.setup.activationFrigate';
+    alertClass = 'alert-info';
   } else if (!dockerBased) {
     textLabel = 'integration.frigate.status.nonDockerEnv';
+    alertClass = 'alert-danger';
   } else if (!networkModeValid) {
     textLabel = 'integration.frigate.status.invalidDockerNetwork';
-  } else if (frigateEnabled) {
-    if (!frigateExist) {
-      textLabel = 'integration.frigate.status.notInstalled';
-    } else if (!frigateRunning) {
-      textLabel = 'integration.frigate.status.notRunning';
-    } else {
-      textLabel = 'integration.frigate.status.running';
-    }
-  } else {
+    alertClass = 'alert-danger';
+  } else if (!frigateEnabled) {
     textLabel = 'integration.frigate.status.notEnabled';
+    alertClass = 'alert-info';
+  } else if (!frigateExist) {
+    textLabel = 'integration.frigate.status.notInstalled';
+    alertClass = 'alert-danger';
+  } else if (!frigateRunning) {
+    textLabel = 'integration.frigate.status.notRunning';
+    alertClass = 'alert-warning';
+  } else {
+    textLabel = 'integration.frigate.status.running';
+    alertClass = 'alert-success';
   }
 
   return (
     <div>
       <div
-        class={cx('d-flex', 'flex-row', 'flex-wrap', 'justify-content-between', 'mr-0', 'ml-0', 'alert', {
-          'alert-success': frigateEnabled && frigateExist && frigateRunning,
-          'alert-warning': frigateEnabled && frigateExist && !frigateRunning,
-          'alert-danger': (frigateEnabled && !frigateExist) || !dockerBased || !networkModeValid,
-          'alert-info': !frigateEnabled
-        })}
+        class={cx('d-flex', 'flex-row', 'flex-wrap', 'justify-content-between', 'mr-0', 'ml-0', 'alert', alertClass)}
       >
         <div class={cx(style.textAlignMiddleContainer)}>
           <span class={cx(style.textAlignMiddle)}>

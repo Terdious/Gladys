@@ -11,12 +11,16 @@ const CheckStatus = ({
   frigateRunning,
   dockerBased,
   networkModeValid,
-  frigateStatus
+  frigateStatus,
+  pendingAction
 }) => {
   let textLabel;
   let alertClass;
   if (frigateStatus === RequestStatus.Getting) {
-    textLabel = 'integration.frigate.setup.activationFrigate';
+    textLabel =
+      pendingAction === 'disable'
+        ? 'integration.frigate.setup.deactivationFrigate'
+        : 'integration.frigate.setup.activationFrigate';
     alertClass = 'alert-info';
   } else if (!dockerBased) {
     textLabel = 'integration.frigate.status.nonDockerEnv';

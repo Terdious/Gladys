@@ -1041,7 +1041,8 @@
       "setup": {
         "title": "Frigate configuration",
         "description": "This service uses Docker containers: a dedicated MQTT broker and the Frigate NVR (with go2rtc embedded). Enable Frigate to deploy these containers.\nLearn more on the Frigate documentation page.",
-        "activationFrigate": "Activating...",
+        "activationFrigate": "Enabling containers...",
+        "deactivationFrigate": "Disabling containers...",
         "enableFrigate": "Enable",
         "disableFrigate": "Disable",
         "confirmDisableWarning": "Disabling Frigate will stop and remove the Frigate and MQTT containers. Your configuration and recordings are kept on disk and will be reused if you enable Frigate again.",

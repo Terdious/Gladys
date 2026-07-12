@@ -104,7 +104,8 @@ class SetupTab extends Component {
   startContainers = async () => {
     let error = false;
     this.setState({
-      frigateStatus: RequestStatus.Getting
+      frigateStatus: RequestStatus.Getting,
+      pendingAction: 'enable'
     });
 
     try {
@@ -128,7 +129,8 @@ class SetupTab extends Component {
   stopContainers = async () => {
     let error = false;
     this.setState({
-      frigateStatus: RequestStatus.Getting
+      frigateStatus: RequestStatus.Getting,
+      pendingAction: 'disable'
     });
 
     try {
@@ -175,6 +177,7 @@ class SetupTab extends Component {
       frigateRtspPort,
       frigateUrl,
       frigateStatus,
+      pendingAction,
       showConfirmDisable,
       frigateAdminPassword,
       showPassword
@@ -199,6 +202,7 @@ class SetupTab extends Component {
             dockerBased={dockerBased}
             networkModeValid={networkModeValid}
             frigateStatus={frigateStatus}
+            pendingAction={pendingAction}
           />
 
           {dockerBased && networkModeValid && !frigateEnabled && !showConfirmDisable && (

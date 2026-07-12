@@ -1146,7 +1146,8 @@
       "setup": {
         "title": "Frigate-Konfiguration",
         "description": "Dieser Dienst verwendet Docker-Container: einen dedizierten MQTT-Broker und den Frigate-NVR (mit integriertem go2rtc). Aktivieren Sie Frigate, um diese Container bereitzustellen.\nWeitere Informationen finden Sie auf der Frigate-Dokumentationsseite.",
-        "activationFrigate": "Aktivierung...",
+        "activationFrigate": "Container werden aktiviert...",
+        "deactivationFrigate": "Container werden deaktiviert...",
         "enableFrigate": "Aktivieren",
         "disableFrigate": "Deaktivieren",
         "confirmDisableWarning": "Das Deaktivieren von Frigate stoppt und entfernt die Frigate- und MQTT-Container. Ihre Konfiguration und Aufnahmen bleiben auf der Festplatte erhalten und werden bei erneuter Aktivierung wiederverwendet.",

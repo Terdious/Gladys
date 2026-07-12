@@ -73,8 +73,11 @@ class FrigateCameraBox extends Component {
   toggleLabel = e => {
     this.props.toggleCameraLabel(this.props.cameraIndex, e.target.value);
   };
+  togglePassword = () => {
+    this.setState({ showPassword: !this.state.showPassword });
+  };
 
-  render(props, { loading, saveError }) {
+  render(props, { loading, saveError, showPassword }) {
     const { camera } = props;
     return (
       <div class="col-lg-6">
@@ -102,7 +105,6 @@ class FrigateCameraBox extends Component {
                       value={camera.name}
                       onInput={this.updateCameraName}
                       class="form-control"
-                      disabled={Boolean(camera.created_at)}
                       placeholder={<Text id="integration.frigate.device.namePlaceholder" />}
                     />
                   </Localizer>
@@ -162,6 +164,9 @@ class FrigateCameraBox extends Component {
                         placeholder={<Text id="integration.frigate.device.hostPlaceholder" />}
                       />
                     </Localizer>
+                    <div class="help-block">
+                      <Text id="integration.frigate.device.hostHelp" />
+                    </div>
                   </div>
                 )}
                 {camera.sourceType === SOURCE_TYPES.RTSP && (
@@ -177,7 +182,22 @@ class FrigateCameraBox extends Component {
                     <label>
                       <Text id="integration.frigate.device.passwordLabel" />
                     </label>
-                    <input type="password" value={camera.password} onInput={this.updatePassword} class="form-control" />
+                    <div class="input-icon">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={camera.password}
+                        onInput={this.updatePassword}
+                        class="form-control"
+                      />
+                      <span class="input-icon-addon cursor-pointer" onClick={this.togglePassword}>
+                        <i
+                          class={cx('fe', {
+                            'fe-eye': !showPassword,
+                            'fe-eye-off': showPassword
+                          })}
+                        />
+                      </span>
+                    </div>
                     {camera.sourceType === SOURCE_TYPES.TAPO && (
                       <div class="help-block">
                         <Text id="integration.frigate.device.tapoPasswordHelp" />
@@ -199,6 +219,9 @@ class FrigateCameraBox extends Component {
                         placeholder={<Text id="integration.frigate.device.pathPlaceholder" />}
                       />
                     </Localizer>
+                    <div class="help-block">
+                      <Text id="integration.frigate.device.pathHelp" />
+                    </div>
                   </div>
                 )}
                 {camera.sourceType === SOURCE_TYPES.TAPO && (
@@ -206,15 +229,21 @@ class FrigateCameraBox extends Component {
                     <label>
                       <Text id="integration.frigate.device.extraLabel" />
                     </label>
-                    <Localizer>
-                      <input
-                        type="text"
-                        value={camera.extra}
-                        onInput={this.updateExtra}
-                        class="form-control"
-                        placeholder={<Text id="integration.frigate.device.extraPlaceholder" />}
-                      />
-                    </Localizer>
+                    <select
+                      onChange={this.updateExtra}
+                      value={camera.extra || 'channel=0&subtype=1'}
+                      class="form-control"
+                    >
+                      <option value="channel=0&subtype=1">
+                        <Text id="integration.frigate.device.extraSubStream" />
+                      </option>
+                      <option value="channel=0&subtype=0">
+                        <Text id="integration.frigate.device.extraMainStream" />
+                      </option>
+                    </select>
+                    <div class="help-block">
+                      <Text id="integration.frigate.device.extraHelp" />
+                    </div>
                   </div>
                 )}
                 {camera.sourceType === SOURCE_TYPES.CUSTOM && (

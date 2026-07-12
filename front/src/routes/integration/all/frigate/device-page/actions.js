@@ -67,6 +67,18 @@ function createActions(store) {
         });
       }
     },
+    async getFrigateStatus(state) {
+      try {
+        const frigateStatus = await state.httpClient.get('/api/v1/service/frigate/status');
+        store.setState({
+          frigateStatus
+        });
+      } catch (e) {
+        store.setState({
+          frigateStatus: null
+        });
+      }
+    },
     async getHouses(state) {
       store.setState({
         housesGetStatus: RequestStatus.Getting

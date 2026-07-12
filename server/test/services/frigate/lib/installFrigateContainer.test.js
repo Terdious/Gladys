@@ -87,6 +87,7 @@ describe('frigate installFrigateContainer', () => {
       frigateUiPort: 8972,
       frigateApiPort: 5001,
       frigateRtspPort: 8555,
+      timezone: 'Europe/Paris',
     };
     const getContainersStub = sinon.stub();
     getContainersStub
@@ -114,9 +115,31 @@ describe('frigate installFrigateContainer', () => {
       '5000/tcp': [{ HostIp: '127.0.0.1', HostPort: '5001' }],
       '8554/tcp': [{ HostIp: '127.0.0.1', HostPort: '8555' }],
     });
+    expect(descriptor.Env).to.deep.equal(['TZ=Europe/Paris']);
     assert.calledOnceWithExactly(gladys.system.restartContainer, container.id);
     expect(frigateManager.frigateRunning).to.equal(true);
     expect(frigateManager.frigateExist).to.equal(true);
+  });
+
+  it('should install Frigate container without timezone', async () => {
+    const config = {
+      frigateUiPort: 8971,
+      frigateApiPort: 5000,
+      frigateRtspPort: 8554,
+    };
+    const getContainersStub = sinon.stub();
+    getContainersStub
+      .onFirstCall()
+      .resolves([])
+      .onSecondCall()
+      .resolves([container]);
+    gladys.system.getContainers = getContainersStub;
+
+    await frigateManager.installFrigateContainer(config);
+
+    const descriptor = gladys.system.createContainer.firstCall.args[0];
+    expect(descriptor.Env).to.deep.equal([]);
+    expect(frigateManager.frigateRunning).to.equal(true);
   });
 
   it('should fail to install Frigate container', async () => {

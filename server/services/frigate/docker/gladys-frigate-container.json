@@ -1,6 +1,7 @@
 {
   "name": "gladys-frigate",
   "Image": "ghcr.io/blakeblackshear/frigate:0.17.2",
+  "Env": [],
   "ExposedPorts": {
     "8971/tcp": {},
     "5000/tcp": {},

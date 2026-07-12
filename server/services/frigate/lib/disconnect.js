@@ -24,10 +24,7 @@ async function disconnect() {
   this.emitStatusEvent();
 
   // Stop & remove MQTT container
-  let dockerContainer = await this.gladys.system.getContainers({
-    all: true,
-    filters: { name: [mqttContainerDescriptor.name] },
-  });
+  let dockerContainer = await this.getDockerContainer(mqttContainerDescriptor.name);
   if (dockerContainer.length > 0) {
     [container] = dockerContainer;
     await this.gladys.system.stopContainer(container.id);
@@ -37,10 +34,7 @@ async function disconnect() {
   this.emitStatusEvent();
 
   // Stop & remove Frigate container
-  dockerContainer = await this.gladys.system.getContainers({
-    all: true,
-    filters: { name: [frigateContainerDescriptor.name] },
-  });
+  dockerContainer = await this.getDockerContainer(frigateContainerDescriptor.name);
   if (dockerContainer.length > 0) {
     [container] = dockerContainer;
     await this.gladys.system.stopContainer(container.id);

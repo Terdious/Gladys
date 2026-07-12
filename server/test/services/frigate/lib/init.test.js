@@ -101,7 +101,8 @@ describe('frigate init', () => {
     assert.calledOnce(frigateManager.installMqttContainer);
     assert.calledOnce(frigateManager.installFrigateContainer);
     assert.calledOnce(frigateManager.connect);
-    assert.calledOnce(frigateManager.saveConfiguration);
+    // Credentials/ports are saved before containers install, and again at the end
+    assert.calledTwice(frigateManager.saveConfiguration);
 
     const savedConfig = frigateManager.saveConfiguration.firstCall.args[0];
     expect(savedConfig.mqttUsername).to.equal('gladys');

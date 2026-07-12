@@ -16,10 +16,7 @@ const sleep = promisify(setTimeout);
  * await frigate.installMqttContainer(config);
  */
 async function installMqttContainer(config) {
-  let dockerContainers = await this.gladys.system.getContainers({
-    all: true,
-    filters: { name: [containerDescriptor.name] },
-  });
+  let dockerContainers = await this.getDockerContainer(containerDescriptor.name);
   let [container] = dockerContainers;
 
   if (dockerContainers.length === 0) {
@@ -104,10 +101,7 @@ async function installMqttContainer(config) {
   } else {
     this.mqttExist = true;
     try {
-      dockerContainers = await this.gladys.system.getContainers({
-        all: true,
-        filters: { name: [containerDescriptor.name] },
-      });
+      dockerContainers = await this.getDockerContainer(containerDescriptor.name);
       [container] = dockerContainers;
       if (container.state !== 'running') {
         logger.info('Frigate MQTT broker is starting...');

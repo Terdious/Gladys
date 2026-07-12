@@ -81,6 +81,10 @@ async function init() {
   this.frigateRtspPort = configuration.frigateRtspPort;
   this.emitStatusEvent();
 
+  // Persist credentials and ports before any container operation, so that a
+  // failure below does not leave containers configured with lost credentials
+  await this.saveConfiguration(configuration);
+
   logger.debug('Frigate: installing and starting required docker containers...');
   await this.checkForContainerUpdates(configuration);
   await this.installMqttContainer(configuration);

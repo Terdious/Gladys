@@ -16,10 +16,7 @@ const sleep = promisify(setTimeout);
  * await frigate.installFrigateContainer(config);
  */
 async function installFrigateContainer(config) {
-  let dockerContainers = await this.gladys.system.getContainers({
-    all: true,
-    filters: { name: [containerDescriptor.name] },
-  });
+  let dockerContainers = await this.getDockerContainer(containerDescriptor.name);
   let [container] = dockerContainers;
 
   const { basePathOnContainer, basePathOnHost } = await this.gladys.system.getGladysBasePath();
@@ -68,10 +65,7 @@ async function installFrigateContainer(config) {
   const { configChanged } = await this.configureContainer(basePathOnContainer, config);
 
   try {
-    dockerContainers = await this.gladys.system.getContainers({
-      all: true,
-      filters: { name: [containerDescriptor.name] },
-    });
+    dockerContainers = await this.getDockerContainer(containerDescriptor.name);
     [container] = dockerContainers;
 
     // Check if we need to restart the container (container is not running / config changed)

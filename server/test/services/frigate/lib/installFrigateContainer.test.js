@@ -7,11 +7,13 @@ const FrigateManager = require('../../../../services/frigate/lib');
 
 const container = {
   id: 'docker-test',
+  name: '/gladys-frigate',
   state: 'running',
 };
 
 const containerStopped = {
   id: 'docker-test',
+  name: '/gladys-frigate',
   state: 'stopped',
 };
 

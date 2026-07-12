@@ -36,12 +36,16 @@ describe('frigate checkForContainerUpdates', () => {
 
   it('should remove existing containers on version change', async () => {
     const config = { dockerMqttVersion: '0', dockerFrigateVersion: '0' };
-    gladys.system.getContainers = fake.resolves([{ id: 'docker-test' }]);
+    gladys.system.getContainers = fake.resolves([
+      { id: 'docker-test-mqtt', name: '/gladys-frigate-mqtt' },
+      { id: 'docker-test-frigate', name: '/gladys-frigate' },
+    ]);
 
     await frigateManager.checkForContainerUpdates(config);
 
     assert.calledTwice(gladys.system.removeContainer);
-    assert.alwaysCalledWithExactly(gladys.system.removeContainer, 'docker-test', { force: true });
+    assert.calledWithExactly(gladys.system.removeContainer, 'docker-test-mqtt', { force: true });
+    assert.calledWithExactly(gladys.system.removeContainer, 'docker-test-frigate', { force: true });
     expect(config.dockerMqttVersion).to.equal('1');
     expect(config.dockerFrigateVersion).to.equal('1');
   });

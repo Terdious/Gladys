@@ -17,7 +17,10 @@ describe('frigate disconnect', () => {
         emit: fake.resolves(null),
       },
       system: {
-        getContainers: fake.resolves([{ id: 'docker-test', state: 'running' }]),
+        getContainers: fake.resolves([
+          { id: 'docker-test-mqtt', name: '/gladys-frigate-mqtt', state: 'running' },
+          { id: 'docker-test-frigate', name: '/gladys-frigate', state: 'running' },
+        ]),
         stopContainer: fake.resolves(true),
         removeContainer: fake.resolves(true),
       },

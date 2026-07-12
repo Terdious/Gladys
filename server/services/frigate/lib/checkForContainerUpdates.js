@@ -17,10 +17,7 @@ async function checkForContainerUpdates(config) {
   if (config.dockerMqttVersion !== DEFAULT.DOCKER_MQTT_VERSION) {
     logger.info(`Frigate MQTT container: update #${DEFAULT.DOCKER_MQTT_VERSION} of the container required...`);
 
-    const containers = await this.gladys.system.getContainers({
-      all: true,
-      filters: { name: [mqttContainerDescriptor.name] },
-    });
+    const containers = await this.getDockerContainer(mqttContainerDescriptor.name);
 
     if (containers.length !== 0) {
       logger.debug('Removing current installed Frigate MQTT container...');
@@ -39,10 +36,7 @@ async function checkForContainerUpdates(config) {
   if (config.dockerFrigateVersion !== DEFAULT.DOCKER_FRIGATE_VERSION) {
     logger.info(`Frigate container: update #${DEFAULT.DOCKER_FRIGATE_VERSION} of the container required...`);
 
-    const containers = await this.gladys.system.getContainers({
-      all: true,
-      filters: { name: [frigateContainerDescriptor.name] },
-    });
+    const containers = await this.getDockerContainer(frigateContainerDescriptor.name);
 
     if (containers.length !== 0) {
       logger.debug('Removing current installed Frigate container...');

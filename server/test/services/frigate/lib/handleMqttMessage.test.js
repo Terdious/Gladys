@@ -18,37 +18,40 @@ describe('frigate handleMqttMessage', () => {
       },
     };
     frigateManager = new FrigateManager(gladys, null, serviceId);
+    frigateManager.configureAdminUser = fake.resolves(null);
   });
 
   afterEach(() => {
     sinon.reset();
   });
 
-  it('should set frigate as connected on available online', () => {
-    frigateManager.handleMqttMessage('frigate/available', 'online');
+  it('should set frigate as connected on available online and configure admin user', async () => {
+    await frigateManager.handleMqttMessage('frigate/available', 'online');
     expect(frigateManager.frigateConnected).to.equal(true);
     assert.calledOnce(gladys.event.emit);
+    assert.calledOnce(frigateManager.configureAdminUser);
   });
 
-  it('should set frigate as disconnected on available offline', () => {
+  it('should set frigate as disconnected on available offline', async () => {
     frigateManager.frigateConnected = true;
-    frigateManager.handleMqttMessage('frigate/available', 'offline');
+    await frigateManager.handleMqttMessage('frigate/available', 'offline');
     expect(frigateManager.frigateConnected).to.equal(false);
     assert.calledOnce(gladys.event.emit);
+    assert.notCalled(frigateManager.configureAdminUser);
   });
 
-  it('should store parsed stats', () => {
-    frigateManager.handleMqttMessage('frigate/stats', '{"service":{"version":"0.17.2"}}');
+  it('should store parsed stats', async () => {
+    await frigateManager.handleMqttMessage('frigate/stats', '{"service":{"version":"0.17.2"}}');
     expect(frigateManager.stats).to.deep.equal({ service: { version: '0.17.2' } });
   });
 
-  it('should not crash on invalid stats payload', () => {
-    frigateManager.handleMqttMessage('frigate/stats', 'not-json');
+  it('should not crash on invalid stats payload', async () => {
+    await frigateManager.handleMqttMessage('frigate/stats', 'not-json');
     expect(frigateManager.stats).to.equal(null);
   });
 
-  it('should ignore unhandled topics', () => {
-    frigateManager.handleMqttMessage('frigate/some/other/topic', 'message');
+  it('should ignore unhandled topics', async () => {
+    await frigateManager.handleMqttMessage('frigate/some/other/topic', 'message');
     expect(frigateManager.stats).to.equal(null);
     assert.notCalled(gladys.event.emit);
   });

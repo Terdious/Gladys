@@ -72,6 +72,8 @@ const DEFAULT = {
   TAPO_INPUT_ARGS:
     '-avoid_negative_ts make_zero -fflags +genpts+discardcorrupt -rtsp_transport tcp -use_wallclock_as_timestamps 1',
   TAPO_SOURCE_EXTRA: 'channel=0&subtype=1',
+  TAPO_DETECT_WIDTH: 640,
+  TAPO_DETECT_HEIGHT: 360,
   RTSP_PORT: 554,
   // Frigate 0.16+ record schema (continuous/alerts/detections)
   RECORD_CONTENT: {

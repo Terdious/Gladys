@@ -94,14 +94,22 @@ function buildCameraConfig(device) {
     input.input_args = DEFAULT.TAPO_INPUT_ARGS;
   }
 
+  const detect = {
+    enabled: true,
+    fps: detectFps,
+  };
+  if (sourceType === SOURCE_TYPES.TAPO) {
+    // The tapo substream does not expose its parameters fast enough for the
+    // Frigate resolution probe: set the known substream dimensions explicitly
+    detect.width = DEFAULT.TAPO_DETECT_WIDTH;
+    detect.height = DEFAULT.TAPO_DETECT_HEIGHT;
+  }
+
   const cameraSection = {
     ffmpeg: {
       inputs: [input],
     },
-    detect: {
-      enabled: true,
-      fps: detectFps,
-    },
+    detect,
     objects: {
       track: trackedLabels,
     },

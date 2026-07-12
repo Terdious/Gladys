@@ -8,6 +8,11 @@ const logger = require('../../../utils/logger');
  * await frigate.poll(device);
  */
 async function poll(device) {
+  if (!this.frigateConnected) {
+    // Frigate is starting or stopped: don't flood it (and the logs)
+    logger.debug(`Frigate: skipping poll of camera ${device.selector}, Frigate is not connected`);
+    return;
+  }
   try {
     const image = await this.getImage(device);
     await this.gladys.device.camera.setImage(device.selector, image);

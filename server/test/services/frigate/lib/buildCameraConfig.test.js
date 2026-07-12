@@ -107,6 +107,7 @@ describe('frigate buildCameraConfig', () => {
     expect(cameraSection.ffmpeg.inputs[0].input_args).to.equal(
       '-avoid_negative_ts make_zero -fflags +genpts+discardcorrupt -rtsp_transport tcp -use_wallclock_as_timestamps 1',
     );
+    expect(cameraSection.detect).to.deep.equal({ enabled: true, fps: 5, width: 640, height: 360 });
   });
 
   it('should build a tapo source with custom extra', () => {

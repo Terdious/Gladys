@@ -19,6 +19,7 @@ describe('frigate poll', () => {
       },
     };
     frigateManager = new FrigateManager(gladys, null, serviceId);
+    frigateManager.frigateConnected = true;
     frigateManager.getImage = fake.resolves('image/webp;base64,xxx');
   });
 
@@ -40,6 +41,15 @@ describe('frigate poll', () => {
 
     await frigateManager.poll({ selector: 'frigate-c660', external_id: 'frigate:c660' });
 
+    assert.notCalled(gladys.device.camera.setImage);
+  });
+
+  it('should skip polling when Frigate is not connected', async () => {
+    frigateManager.frigateConnected = false;
+
+    await frigateManager.poll({ selector: 'frigate-c660', external_id: 'frigate:c660' });
+
+    assert.notCalled(frigateManager.getImage);
     assert.notCalled(gladys.device.camera.setImage);
   });
 });

@@ -16,9 +16,13 @@ describe('frigate handleMqttMessage', () => {
       event: {
         emit: fake.resolves(null),
       },
+      stateManager: {
+        get: fake.returns(null),
+      },
     };
     frigateManager = new FrigateManager(gladys, null, serviceId);
     frigateManager.configureAdminUser = fake.resolves(null);
+    frigateManager.updateCameraImage = fake.resolves(null);
   });
 
   afterEach(() => {
@@ -57,8 +61,48 @@ describe('frigate handleMqttMessage', () => {
     expect(frigateManager.stats).to.equal(null);
   });
 
+  it('should emit a new state and refresh the image on label detection start', async () => {
+    gladys.stateManager.get = fake.returns({ external_id: 'frigate:c660:person' });
+
+    await frigateManager.handleMqttMessage('frigate/c660/person', '1');
+
+    assert.calledOnceWithExactly(gladys.stateManager.get, 'deviceFeatureByExternalId', 'frigate:c660:person');
+    assert.calledOnceWithExactly(gladys.event.emit, 'device.new-state', {
+      device_feature_external_id: 'frigate:c660:person',
+      state: 1,
+    });
+    assert.calledOnceWithExactly(frigateManager.updateCameraImage, 'c660');
+  });
+
+  it('should emit a new state without refreshing the image on label detection end', async () => {
+    gladys.stateManager.get = fake.returns({ external_id: 'frigate:c660:person' });
+
+    await frigateManager.handleMqttMessage('frigate/c660/person', '0');
+
+    assert.calledOnceWithExactly(gladys.event.emit, 'device.new-state', {
+      device_feature_external_id: 'frigate:c660:person',
+      state: 0,
+    });
+    assert.notCalled(frigateManager.updateCameraImage);
+  });
+
+  it('should ignore label topics of unknown features', async () => {
+    await frigateManager.handleMqttMessage('frigate/unknown/person', '1');
+
+    assert.notCalled(gladys.event.emit);
+    assert.notCalled(frigateManager.updateCameraImage);
+  });
+
+  it('should ignore label topics with non numeric payload', async () => {
+    gladys.stateManager.get = fake.returns({ external_id: 'frigate:c660:person' });
+
+    await frigateManager.handleMqttMessage('frigate/c660/person', 'not-a-number');
+
+    assert.notCalled(gladys.event.emit);
+  });
+
   it('should ignore unhandled topics', async () => {
-    await frigateManager.handleMqttMessage('frigate/some/other/topic', 'message');
+    await frigateManager.handleMqttMessage('frigate/events/some/other/topic', 'message');
     expect(frigateManager.stats).to.equal(null);
     assert.notCalled(gladys.event.emit);
   });

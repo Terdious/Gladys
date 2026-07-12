@@ -5,6 +5,7 @@ const yaml = require('yaml');
 
 const logger = require('../../../utils/logger');
 const { DEFAULT } = require('./constants');
+const { buildCameraConfig } = require('./buildCameraConfig');
 
 const YAML_CONFIG = { singleQuote: true };
 
@@ -59,9 +60,35 @@ async function configureContainer(basePathOnContainer, config) {
     configChanged = true;
   }
 
+  // Build go2rtc streams and cameras sections from Gladys devices
+  // (the Gladys DB is the source of truth for these two sections)
+  const devices = await this.gladys.device.get({ service: 'frigate' });
+  const go2rtcStreams = {};
+  const cameras = {};
+  devices.forEach((device) => {
+    try {
+      const { cameraName, go2rtcSource, cameraSection } = buildCameraConfig(device);
+      go2rtcStreams[cameraName] = [go2rtcSource];
+      cameras[cameraName] = cameraSection;
+    } catch (e) {
+      logger.warn(`Frigate: skipping camera ${device.external_id} - ${e}`);
+    }
+  });
+
+  if (Object.keys(go2rtcStreams).length > 0) {
+    const newGo2rtc = { streams: go2rtcStreams };
+    if (JSON.stringify(loadedConfig.go2rtc) !== JSON.stringify(newGo2rtc)) {
+      loadedConfig.go2rtc = newGo2rtc;
+      configChanged = true;
+    }
+  } else if (loadedConfig.go2rtc) {
+    delete loadedConfig.go2rtc;
+    configChanged = true;
+  }
+
   // Frigate refuses to start without a cameras section
-  if (!loadedConfig.cameras) {
-    loadedConfig.cameras = {};
+  if (JSON.stringify(loadedConfig.cameras) !== JSON.stringify(cameras)) {
+    loadedConfig.cameras = cameras;
     configChanged = true;
   }
 

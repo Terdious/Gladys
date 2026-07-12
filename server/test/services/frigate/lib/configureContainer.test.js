@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+const sinon = require('sinon');
 const { promises: fs } = require('fs');
 const path = require('path');
 
@@ -17,8 +18,15 @@ describe('frigate configureContainer', () => {
     mqttPort: 1885,
   };
 
+  let gladys;
+
   beforeEach(async () => {
-    frigateManager = new FrigateManager({}, null, serviceId);
+    gladys = {
+      device: {
+        get: sinon.fake.resolves([]),
+      },
+    };
+    frigateManager = new FrigateManager(gladys, null, serviceId);
     await fs.rm(TEMP_GLADYS_FOLDER, { recursive: true, force: true });
   });
 
@@ -55,6 +63,62 @@ describe('frigate configureContainer', () => {
     expect(configChanged).to.equal(true);
     const fileContent = (await fs.readFile(configFilePath)).toString();
     expect(fileContent).to.contain('password: new-password');
+  });
+
+  it('should generate go2rtc and cameras sections from Gladys devices', async () => {
+    gladys.device.get = sinon.fake.resolves([
+      {
+        external_id: 'frigate:c660',
+        params: [
+          { name: 'FRIGATE_SOURCE_TYPE', value: 'tapo' },
+          { name: 'FRIGATE_SOURCE_HOST', value: '10.6.0.222' },
+          { name: 'FRIGATE_SOURCE_PASSWORD', value: 'password' },
+          { name: 'FRIGATE_TRACKED_LABELS', value: 'person,dog' },
+        ],
+      },
+      {
+        // invalid device, should be skipped without failing
+        external_id: 'frigate:broken',
+        params: [{ name: 'FRIGATE_SOURCE_TYPE', value: 'rtsp' }],
+      },
+    ]);
+
+    const { configChanged } = await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, config);
+
+    expect(configChanged).to.equal(true);
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.contain('go2rtc:');
+    expect(fileContent).to.contain('tapo://password@10.6.0.222?channel=0&subtype=1');
+    expect(fileContent).to.contain('rtsp://127.0.0.1:8554/c660');
+    expect(fileContent).to.contain('use_wallclock_as_timestamps');
+    expect(fileContent).to.contain('- person');
+    expect(fileContent).to.contain('- dog');
+    expect(fileContent).to.not.contain('broken');
+
+    // Re-run with same devices: no change
+    const secondRun = await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, config);
+    expect(secondRun.configChanged).to.equal(false);
+  });
+
+  it('should remove go2rtc and cameras when devices are deleted', async () => {
+    gladys.device.get = sinon.fake.resolves([
+      {
+        external_id: 'frigate:c660',
+        params: [
+          { name: 'FRIGATE_SOURCE_TYPE', value: 'rtsp' },
+          { name: 'FRIGATE_SOURCE_HOST', value: '192.168.1.10' },
+        ],
+      },
+    ]);
+    await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, config);
+
+    gladys.device.get = sinon.fake.resolves([]);
+    const { configChanged } = await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, config);
+
+    expect(configChanged).to.equal(true);
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.not.contain('go2rtc:');
+    expect(fileContent).to.contain('cameras: {}');
   });
 
   it('should add missing mqtt section to existing config', async () => {

@@ -51,6 +51,19 @@ module.exports = function FrigateController(gladys, frigateManager) {
     });
   }
 
+  /**
+   * @api {post} /api/v1/service/frigate/config/apply Regenerate Frigate config from Gladys devices
+   * @apiName applyConfig
+   * @apiGroup Frigate
+   */
+  async function applyConfig(req, res) {
+    logger.debug('Applying Frigate configuration');
+    await frigateManager.init();
+    res.json({
+      success: true,
+    });
+  }
+
   return {
     'get /api/v1/service/frigate/status': {
       authenticated: true,
@@ -69,6 +82,10 @@ module.exports = function FrigateController(gladys, frigateManager) {
       authenticated: true,
       admin: true,
       controller: asyncMiddleware(disconnect),
+    },
+    'post /api/v1/service/frigate/config/apply': {
+      authenticated: true,
+      controller: asyncMiddleware(applyConfig),
     },
   };
 };

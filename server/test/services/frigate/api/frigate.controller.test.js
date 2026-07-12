@@ -73,4 +73,16 @@ describe('frigate API', () => {
     assert.calledOnce(frigateManager.disconnect);
     assert.calledWith(res.json, { success: true });
   });
+
+  it('post /api/v1/service/frigate/config/apply', async () => {
+    const req = {};
+    const res = {
+      json: fake.returns(null),
+    };
+
+    await controller['post /api/v1/service/frigate/config/apply'].controller(req, res);
+
+    assert.calledOnce(frigateManager.init);
+    assert.calledWith(res.json, { success: true });
+  });
 });

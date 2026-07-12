@@ -21,6 +21,29 @@ const MQTT_TOPICS = {
   STATS: 'frigate/stats',
 };
 
+const DEVICE_EXTERNAL_ID_PREFIX = 'frigate';
+
+const CAMERA_PARAMS = {
+  SOURCE_TYPE: 'FRIGATE_SOURCE_TYPE',
+  SOURCE_HOST: 'FRIGATE_SOURCE_HOST',
+  SOURCE_USERNAME: 'FRIGATE_SOURCE_USERNAME',
+  SOURCE_PASSWORD: 'FRIGATE_SOURCE_PASSWORD',
+  SOURCE_PATH: 'FRIGATE_SOURCE_PATH',
+  SOURCE_EXTRA: 'FRIGATE_SOURCE_EXTRA',
+  CUSTOM_SOURCE: 'FRIGATE_CUSTOM_SOURCE',
+  TRACKED_LABELS: 'FRIGATE_TRACKED_LABELS',
+  DETECT_FPS: 'FRIGATE_DETECT_FPS',
+};
+
+const SOURCE_TYPES = {
+  RTSP: 'rtsp',
+  TAPO: 'tapo',
+  CUSTOM: 'custom',
+};
+
+// Subset of the COCO labelmap relevant for home video surveillance
+const TRACKABLE_LABELS = ['person', 'car', 'dog', 'cat', 'horse', 'bird', 'bicycle', 'motorcycle', 'bus', 'truck'];
+
 const DEFAULT = {
   TOPICS: [
     'frigate/#', // Default frigate topic
@@ -43,10 +66,45 @@ const DEFAULT = {
     },
     cameras: {},
   },
+  DETECT_FPS: 5,
+  // Validated defaults for the tapo:// producer: non-monotonic DTS make ffmpeg
+  // runaway without wallclock re-timestamping
+  TAPO_INPUT_ARGS:
+    '-avoid_negative_ts make_zero -fflags +genpts+discardcorrupt -rtsp_transport tcp -use_wallclock_as_timestamps 1',
+  TAPO_SOURCE_EXTRA: 'channel=0&subtype=1',
+  RTSP_PORT: 554,
+  // Frigate 0.16+ record schema (continuous/alerts/detections)
+  RECORD_CONTENT: {
+    enabled: true,
+    continuous: {
+      days: 2,
+    },
+    alerts: {
+      retain: {
+        days: 7,
+      },
+    },
+    detections: {
+      retain: {
+        days: 7,
+      },
+    },
+  },
+  SNAPSHOTS_CONTENT: {
+    enabled: true,
+    retain: {
+      default: 14,
+    },
+  },
+  IMAGE_HEIGHT: 360,
 };
 
 module.exports = {
   CONFIGURATION,
   MQTT_TOPICS,
+  DEVICE_EXTERNAL_ID_PREFIX,
+  CAMERA_PARAMS,
+  SOURCE_TYPES,
+  TRACKABLE_LABELS,
   DEFAULT,
 };

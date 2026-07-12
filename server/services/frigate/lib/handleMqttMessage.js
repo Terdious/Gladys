@@ -1,5 +1,6 @@
 const logger = require('../../../utils/logger');
-const { MQTT_TOPICS } = require('./constants');
+const { EVENTS } = require('../../../utils/constants');
+const { MQTT_TOPICS, DEVICE_EXTERNAL_ID_PREFIX } = require('./constants');
 
 /**
  * @description Handle a new message receive in MQTT.
@@ -34,6 +35,25 @@ async function handleMqttMessage(topic, message) {
       break;
     }
     default: {
+      const topicParts = topic.split('/');
+      // frigate/<camera>/<label> => 1/0 detection state
+      if (topicParts.length === 3) {
+        const [, cameraName, label] = topicParts;
+        const featureExternalId = `${DEVICE_EXTERNAL_ID_PREFIX}:${cameraName}:${label}`;
+        const feature = this.gladys.stateManager.get('deviceFeatureByExternalId', featureExternalId);
+        const state = parseInt(message, 10);
+        if (feature && !Number.isNaN(state)) {
+          this.gladys.event.emit(EVENTS.DEVICE.NEW_STATE, {
+            device_feature_external_id: featureExternalId,
+            state,
+          });
+          if (state === 1) {
+            // Push a fresh snapshot to the dashboard when a detection starts
+            await this.updateCameraImage(cameraName);
+          }
+          break;
+        }
+      }
       logger.debug(`Frigate: MQTT topic ${topic} not handled`);
       break;
     }

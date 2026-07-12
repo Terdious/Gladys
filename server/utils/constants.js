@@ -1543,6 +1543,9 @@ const WEBSOCKET_MESSAGE_TYPES = {
   MATTERBRIDGE: {
     STATUS_CHANGE: 'matterbridge.status-change',
   },
+  FRIGATE: {
+    STATUS_CHANGE: 'frigate.status-change',
+  },
 };
 
 const DASHBOARD_TYPE = {

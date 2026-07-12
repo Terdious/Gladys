@@ -1130,6 +1130,47 @@
         "majorVersionUpdateButton": "Node-RED-Version aktualisieren"
       }
     },
+    "frigate": {
+      "title": "Frigate (Videoüberwachung)",
+      "description": "Lokale Videoüberwachung mit KI-Objekterkennung.",
+      "setupTab": "Einrichtung",
+      "documentation": "Frigate-Dokumentation",
+      "status": {
+        "notInstalled": "Frigate konnte nicht installiert werden.",
+        "notRunning": "Frigate konnte nicht gestartet werden.",
+        "running": "Frigate wurde erfolgreich gestartet.",
+        "notEnabled": "Frigate ist nicht aktiviert.",
+        "nonDockerEnv": "Gladys läuft nicht auf Docker, daher kann Frigate hier nicht installiert werden.",
+        "invalidDockerNetwork": "Gladys ist eine benutzerdefinierte Installation. Um Frigate hier zu installieren, muss der Gladys-Container mit dem Netzwerkmodus \"host\" konfiguriert sein."
+      },
+      "setup": {
+        "title": "Frigate-Konfiguration",
+        "description": "Dieser Dienst verwendet Docker-Container: einen dedizierten MQTT-Broker und den Frigate-NVR (mit integriertem go2rtc). Aktivieren Sie Frigate, um diese Container bereitzustellen.\nWeitere Informationen finden Sie auf der Frigate-Dokumentationsseite.",
+        "activationFrigate": "Aktivierung...",
+        "enableFrigate": "Aktivieren",
+        "disableFrigate": "Deaktivieren",
+        "confirmDisableWarning": "Das Deaktivieren von Frigate stoppt und entfernt die Frigate- und MQTT-Container. Ihre Konfiguration und Aufnahmen bleiben auf der Festplatte erhalten und werden bei erneuter Aktivierung wiederverwendet.",
+        "confirmDisableLabel": "Sind Sie sicher, dass Sie Frigate deaktivieren möchten?",
+        "confirmDisableCancelButton": "Abbrechen",
+        "urlLabel": "Frigate-Oberfläche: <a href=\"{{frigateUrl}}\" target=\"_blank\" rel=\"noopener noreferrer\">{{frigateUrl}}</a> (Nicht über Gladys Plus erreichbar)",
+        "urlHelp": "Frigate verwendet ein selbstsigniertes HTTPS-Zertifikat: Ihr Browser zeigt beim ersten Zugriff eine Sicherheitswarnung an. Beim ersten Start wird ein Benutzer \"admin\" erstellt, dessen Passwort in den Logs des Frigate-Containers angezeigt wird.",
+        "portsTitle": "Zugewiesene Ports",
+        "portService": "Dienst",
+        "portNumber": "Port",
+        "portAccess": "Zugriff",
+        "portUi": "Frigate-Weboberfläche (HTTPS)",
+        "portMqtt": "MQTT-Broker",
+        "portApi": "Frigate-API",
+        "portRtsp": "RTSP-Restream (go2rtc)",
+        "accessLan": "Lokales Netzwerk",
+        "accessLocalhost": "Nur Localhost",
+        "serviceStatus": "Status des Frigate-Dienstes",
+        "containersStatus": "Container im Zusammenhang mit Frigate",
+        "status": "Status",
+        "gladys": "Gladys",
+        "mqttBroker": "MQTT-Broker"
+      }
+    },
     "matterbridge": {
       "title": "Matterbridge",
       "description": "Steuere deine Matterbridge-Geräte in Gladys.",

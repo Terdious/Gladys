@@ -184,6 +184,9 @@ import NodeRedPage from '../routes/integration/all/node-red/setup-page';
 // Matterbridge integration
 import MatterbridgePage from '../routes/integration/all/matterbridge/setup-page';
 
+// Frigate integration
+import FrigateSetupPage from '../routes/integration/all/frigate/setup-page';
+
 // Free Mobile integration
 import FreeMobilePage from '../routes/integration/all/free-mobile';
 // CallMeBot integration
@@ -297,6 +300,8 @@ const AppRouter = connect(
         <NodeRedPage path="/dashboard/integration/device/node-red" />
 
         <MatterbridgePage path="/dashboard/integration/device/matterbridge" />
+
+        <FrigateSetupPage path="/dashboard/integration/device/frigate" />
 
         <FreeMobilePage path="dashboard/integration/communication/free-mobile" />
         <CallMeBotPage path="dashboard/integration/communication/callmebot" />

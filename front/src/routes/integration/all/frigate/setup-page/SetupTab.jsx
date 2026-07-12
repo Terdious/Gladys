@@ -1,0 +1,461 @@
+import { Component } from 'preact';
+import { Text, MarkupText } from 'preact-i18n';
+import { RequestStatus } from '../../../../../utils/consts';
+import CheckStatus from './CheckStatus.js';
+import classNames from 'classnames/bind';
+import style from './style.css';
+import get from 'get-value';
+import { WEBSOCKET_MESSAGE_TYPES } from '../../../../../../../server/utils/constants';
+import config from '../../../../../config';
+
+let cx = classNames.bind(style);
+
+class SetupTab extends Component {
+  componentDidMount = () => {
+    this.checkStatus();
+  };
+
+  async componentWillMount() {
+    this.props.session.dispatcher.addListener(WEBSOCKET_MESSAGE_TYPES.FRIGATE.STATUS_CHANGE, this.checkStatus);
+  }
+
+  componentWillUnmount = () => {
+    this.props.session.dispatcher.removeListener(WEBSOCKET_MESSAGE_TYPES.FRIGATE.STATUS_CHANGE, this.checkStatus);
+  };
+
+  checkStatus = async () => {
+    let frigateStatus = {
+      dockerBased: false,
+      networkModeValid: false,
+      frigateEnabled: false,
+      mqttExist: false,
+      mqttRunning: false,
+      frigateExist: false,
+      frigateRunning: false,
+      gladysConnected: false,
+      frigateConnected: false,
+      mqttPort: null,
+      frigateUiPort: null,
+      frigateApiPort: null,
+      frigateRtspPort: null
+    };
+    try {
+      frigateStatus = await this.props.httpClient.get('/api/v1/service/frigate/status');
+    } finally {
+      let frigateUrl = null;
+      const isGladysPlus = this.props.session.gatewayClient !== undefined;
+      if (!isGladysPlus && frigateStatus.frigateUiPort) {
+        const url = new URL(config.localApiUrl);
+        frigateUrl = `https://${url.hostname}:${frigateStatus.frigateUiPort}`;
+      }
+      this.setState({
+        dockerBased: frigateStatus.dockerBased,
+        networkModeValid: frigateStatus.networkModeValid,
+        frigateEnabled: frigateStatus.frigateEnabled,
+        mqttExist: frigateStatus.mqttExist,
+        mqttRunning: frigateStatus.mqttRunning,
+        frigateExist: frigateStatus.frigateExist,
+        frigateRunning: frigateStatus.frigateRunning,
+        gladysConnected: frigateStatus.gladysConnected,
+        frigateConnected: frigateStatus.frigateConnected,
+        mqttPort: frigateStatus.mqttPort,
+        frigateUiPort: frigateStatus.frigateUiPort,
+        frigateApiPort: frigateStatus.frigateApiPort,
+        frigateRtspPort: frigateStatus.frigateRtspPort,
+        frigateUrl
+      });
+    }
+  };
+
+  startContainers = async () => {
+    let error = false;
+    this.setState({
+      frigateStatus: RequestStatus.Getting
+    });
+
+    try {
+      await this.props.httpClient.post('/api/v1/service/frigate/connect');
+    } catch (e) {
+      error = error | get(e, 'response.status');
+    }
+
+    if (error) {
+      this.setState({
+        frigateStatus: RequestStatus.Error
+      });
+    } else {
+      this.setState({
+        frigateStatus: RequestStatus.Success
+      });
+    }
+    await this.checkStatus();
+  };
+
+  stopContainers = async () => {
+    let error = false;
+    this.setState({
+      frigateStatus: RequestStatus.Getting
+    });
+
+    try {
+      await this.props.httpClient.post('/api/v1/service/frigate/disconnect');
+    } catch (e) {
+      error = error | get(e, 'response.status');
+    }
+
+    if (error) {
+      this.setState({
+        frigateStatus: RequestStatus.Error
+      });
+    } else {
+      this.setState({
+        frigateStatus: RequestStatus.Success
+      });
+    }
+    this.setState({ showConfirmDisable: false });
+    await this.checkStatus();
+  };
+
+  showConfirmDisable = () => {
+    this.setState({ showConfirmDisable: true });
+  };
+
+  cancelDisable = () => {
+    this.setState({ showConfirmDisable: false });
+  };
+
+  render(
+    props,
+    {
+      dockerBased,
+      networkModeValid,
+      frigateEnabled,
+      mqttRunning,
+      frigateExist,
+      frigateRunning,
+      gladysConnected,
+      frigateConnected,
+      mqttPort,
+      frigateUiPort,
+      frigateApiPort,
+      frigateRtspPort,
+      frigateUrl,
+      frigateStatus,
+      showConfirmDisable
+    }
+  ) {
+    return (
+      <div class="card">
+        <div class="card-header">
+          <h1 class="card-title">
+            <Text id="integration.frigate.setup.title" />
+          </h1>
+        </div>
+        <div class="card-body">
+          <p>
+            <MarkupText id="integration.frigate.setup.description" />
+          </p>
+
+          <CheckStatus
+            frigateEnabled={frigateEnabled}
+            frigateExist={frigateExist}
+            frigateRunning={frigateRunning}
+            dockerBased={dockerBased}
+            networkModeValid={networkModeValid}
+            frigateStatus={frigateStatus}
+          />
+
+          {dockerBased && networkModeValid && !frigateEnabled && !showConfirmDisable && (
+            <button
+              onClick={this.startContainers}
+              class="btn btn-primary"
+              disabled={frigateStatus === RequestStatus.Getting}
+            >
+              <Text id="integration.frigate.setup.enableFrigate" />
+            </button>
+          )}
+          {dockerBased && networkModeValid && frigateEnabled && !showConfirmDisable && (
+            <button
+              onClick={this.showConfirmDisable}
+              class="btn btn-danger"
+              disabled={frigateStatus === RequestStatus.Getting}
+            >
+              <Text id="integration.frigate.setup.disableFrigate" />
+            </button>
+          )}
+          {dockerBased && networkModeValid && frigateEnabled && showConfirmDisable && (
+            <div
+              class={cx(
+                'd-flex',
+                'justify-content-between',
+                'align-items-start',
+                'flex-column',
+                style.confirmDisableContainer
+              )}
+            >
+              <div class="alert alert-warning">
+                <Text id="integration.frigate.setup.confirmDisableWarning" />
+              </div>
+              <Text id="integration.frigate.setup.confirmDisableLabel" />
+              <div>
+                <button
+                  onClick={this.stopContainers}
+                  className="btn btn-danger"
+                  disabled={frigateStatus === RequestStatus.Getting}
+                >
+                  <Text id="integration.frigate.setup.disableFrigate" />
+                </button>
+                <button
+                  onClick={this.cancelDisable}
+                  className="btn ml-2"
+                  disabled={frigateStatus === RequestStatus.Getting}
+                >
+                  <Text id="integration.frigate.setup.confirmDisableCancelButton" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {frigateRunning && frigateUrl && (
+            <div class="mt-4">
+              <div class="form-group">
+                <label htmlFor="frigateUrl" className="form-label">
+                  <MarkupText
+                    id="integration.frigate.setup.urlLabel"
+                    fields={{
+                      frigateUrl
+                    }}
+                  />
+                </label>
+                <div class="help-block">
+                  <Text id="integration.frigate.setup.urlHelp" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {frigateEnabled && mqttPort && (
+            <div class="mt-4">
+              <div class="card-header pl-0">
+                <h2 class="card-title">
+                  <Text id="integration.frigate.setup.portsTitle" />
+                </h2>
+              </div>
+              <table className="table table-responsive table-sm">
+                <thead>
+                  <tr>
+                    <th>
+                      <Text id="integration.frigate.setup.portService" />
+                    </th>
+                    <th>
+                      <Text id="integration.frigate.setup.portNumber" />
+                    </th>
+                    <th>
+                      <Text id="integration.frigate.setup.portAccess" />
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <Text id="integration.frigate.setup.portUi" />
+                    </td>
+                    <td>{frigateUiPort}</td>
+                    <td>
+                      <span class="tag tag-success">
+                        <Text id="integration.frigate.setup.accessLan" />
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <Text id="integration.frigate.setup.portMqtt" />
+                    </td>
+                    <td>{mqttPort}</td>
+                    <td>
+                      <span class="tag tag-success">
+                        <Text id="integration.frigate.setup.accessLan" />
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <Text id="integration.frigate.setup.portApi" />
+                    </td>
+                    <td>{frigateApiPort}</td>
+                    <td>
+                      <span class="tag tag-warning">
+                        <Text id="integration.frigate.setup.accessLocalhost" />
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <Text id="integration.frigate.setup.portRtsp" />
+                    </td>
+                    <td>{frigateRtspPort}</td>
+                    <td>
+                      <span class="tag tag-warning">
+                        <Text id="integration.frigate.setup.accessLocalhost" />
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {frigateEnabled && (
+            <div class="mt-4">
+              <div class="card-header d-none d-sm-block pl-0">
+                <h2 class="card-title">
+                  <Text id="integration.frigate.setup.serviceStatus" />
+                </h2>
+              </div>
+              <div class="row justify-content-center">
+                <div class="col-auto">
+                  <table className="table table-responsive table-borderless table-sm d-none d-sm-block">
+                    <thead class="text-center">
+                      <tr>
+                        <th className="text-center">
+                          <Text id="integration.frigate.setup.gladys" />
+                        </th>
+                        <th className="text-center" />
+                        <th className="text-center">
+                          <Text id="integration.frigate.setup.mqttBroker" />
+                        </th>
+                        <th className="text-center" />
+                        <th className="text-center">Frigate</th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-center">
+                      <tr>
+                        <td className="text-center">
+                          <img
+                            src="/assets/icons/favicon-96x96.png"
+                            alt={`Gladys`}
+                            title={`Gladys`}
+                            width="80"
+                            height="80"
+                          />
+                        </td>
+                        <td className={style.tdCenter}>
+                          <hr className={style.line} />
+                          <i
+                            className={cx('fe', {
+                              'fe-check': gladysConnected,
+                              'fe-x': !gladysConnected,
+                              greenIcon: gladysConnected,
+                              redIcon: !gladysConnected
+                            })}
+                          />
+                          <hr className={style.line} />
+                        </td>
+                        <td className="text-center">
+                          <img
+                            src="/assets/integrations/logos/logo_mqtt.png"
+                            alt={`MQTT`}
+                            title={`MQTT`}
+                            width="80"
+                            height="80"
+                          />
+                        </td>
+                        <td className={style.tdCenter}>
+                          <hr className={style.line} />
+                          <i
+                            className={cx('fe', {
+                              'fe-check': frigateConnected,
+                              'fe-x': !frigateConnected,
+                              greenIcon: frigateConnected,
+                              redIcon: !frigateConnected
+                            })}
+                          />
+                          <hr className={style.line} />
+                        </td>
+                        <td className="text-center">
+                          <i class={cx('fe', 'fe-video', style.frigateIcon)} title={`Frigate`} />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="text-center">
+                          <div class="tag tag-success">
+                            <Text id={`systemSettings.containerState.running`} />
+                          </div>
+                        </td>
+                        <td className="text-center" />
+                        <td className="text-center">
+                          <span class={mqttRunning ? 'tag tag-success' : 'tag tag-danger'}>
+                            <Text id={`systemSettings.containerState.${mqttRunning ? 'running' : 'exited'}`} />
+                          </span>
+                        </td>
+                        <td className="text-center" />
+                        <td className="text-center">
+                          <span class={frigateRunning ? 'tag tag-success' : 'tag tag-danger'}>
+                            <Text id={`systemSettings.containerState.${frigateRunning ? 'running' : 'exited'}`} />
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="card-header d-sm-none pl-0">
+                <h2 class="card-title">
+                  <Text id="integration.frigate.setup.containersStatus" />
+                </h2>
+              </div>
+              <div class="row justify-content-center d-sm-none">
+                <div class="col-auto">
+                  <table className="table table-responsive table-borderless table-sm">
+                    <thead class="text-center">
+                      <tr>
+                        <th>
+                          <Text id="systemSettings.containers" />
+                        </th>
+                        <th>
+                          <Text id="integration.frigate.setup.status" />
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-center">
+                      <tr>
+                        <td>
+                          <Text id="integration.frigate.setup.gladys" />
+                        </td>
+                        <td>
+                          <span class="tag tag-success">
+                            <Text id={`systemSettings.containerState.running`} />
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <Text id="integration.frigate.setup.mqttBroker" />
+                        </td>
+                        <td>
+                          <span class={mqttRunning ? 'tag tag-success' : 'tag tag-danger'}>
+                            <Text id={`systemSettings.containerState.${mqttRunning ? 'running' : 'exited'}`} />
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Frigate</td>
+                        <td>
+                          <span class={frigateRunning ? 'tag tag-success' : 'tag tag-danger'}>
+                            <Text id={`systemSettings.containerState.${frigateRunning ? 'running' : 'exited'}`} />
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+}
+
+export default SetupTab;

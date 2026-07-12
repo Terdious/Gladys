@@ -1263,6 +1263,47 @@
         "majorVersionUpdateButton": "Mettre à jour la version de Node-RED"
       }
     },
+    "frigate": {
+      "title": "Frigate (vidéosurveillance)",
+      "description": "Vidéosurveillance locale avec détection d'objets par IA.",
+      "setupTab": "Configuration",
+      "documentation": "Documentation Frigate",
+      "status": {
+        "notInstalled": "L'installation de Frigate a échoué.",
+        "notRunning": "Le démarrage de Frigate a échoué.",
+        "running": "Frigate a démarré avec succès.",
+        "notEnabled": "Frigate n'est pas activé.",
+        "nonDockerEnv": "Gladys ne tourne pas sur Docker, vous ne pouvez pas installer Frigate depuis cette page.",
+        "invalidDockerNetwork": "Gladys est dans une installation personnalisée, pour installer Frigate depuis cette page, le conteneur Gladys doit être configuré avec le mode réseau \"host\"."
+      },
+      "setup": {
+        "title": "Configuration de Frigate",
+        "description": "Ce service utilise des conteneurs Docker : un broker MQTT dédié et le NVR Frigate (avec go2rtc embarqué). Activez Frigate pour déployer ces conteneurs.\nEn savoir plus sur la page de documentation Frigate.",
+        "activationFrigate": "Activation...",
+        "enableFrigate": "Activer",
+        "disableFrigate": "Désactiver",
+        "confirmDisableWarning": "Désactiver Frigate arrête et supprime les conteneurs Frigate et MQTT. Votre configuration et vos enregistrements sont conservés sur le disque et seront réutilisés si vous réactivez Frigate.",
+        "confirmDisableLabel": "Êtes-vous sûr de vouloir désactiver Frigate ?",
+        "confirmDisableCancelButton": "Annuler",
+        "urlLabel": "Url de l'interface Frigate : <a href=\"{{frigateUrl}}\" target=\"_blank\" rel=\"noopener noreferrer\">{{frigateUrl}}</a> (Non accessible depuis Gladys Plus)",
+        "urlHelp": "Frigate utilise un certificat HTTPS auto-signé : votre navigateur affichera un avertissement de sécurité au premier accès. Au premier démarrage, un utilisateur \"admin\" est créé et son mot de passe est affiché dans les logs du conteneur Frigate.",
+        "portsTitle": "Ports alloués",
+        "portService": "Service",
+        "portNumber": "Port",
+        "portAccess": "Accès",
+        "portUi": "Interface web Frigate (HTTPS)",
+        "portMqtt": "Broker MQTT",
+        "portApi": "API Frigate",
+        "portRtsp": "Restream RTSP (go2rtc)",
+        "accessLan": "Réseau local",
+        "accessLocalhost": "Localhost uniquement",
+        "serviceStatus": "État du service Frigate",
+        "containersStatus": "Conteneurs liés à Frigate",
+        "status": "État",
+        "gladys": "Gladys",
+        "mqttBroker": "Broker MQTT"
+      }
+    },
     "matterbridge": {
       "title": "Matterbridge",
       "description": "Contrôlez dans Gladys vos appareils Matterbridge.",

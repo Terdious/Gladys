@@ -24,6 +24,9 @@ describe('frigate configureAdminUser', () => {
     });
 
     gladys = {
+      event: {
+        emit: fake.resolves(null),
+      },
       variable: {
         getValue: fake.resolves(null),
         setValue: fake.resolves(null),
@@ -31,6 +34,7 @@ describe('frigate configureAdminUser', () => {
     };
     frigateManager = new FrigateManager(gladys, null, serviceId);
     frigateManager.frigateApiPort = 5000;
+    frigateManager.containerRestartWaitTimeInMs = 0;
   });
 
   afterEach(() => {
@@ -39,6 +43,15 @@ describe('frigate configureAdminUser', () => {
 
   it('should do nothing when admin is already configured', async () => {
     frigateManager.adminConfigured = true;
+
+    await frigateManager.configureAdminUser();
+
+    assert.notCalled(gladys.variable.getValue);
+    assert.notCalled(axios.put);
+  });
+
+  it('should do nothing when a configuration is already in progress', async () => {
+    frigateManager.adminConfiguring = true;
 
     await frigateManager.configureAdminUser();
 
@@ -74,14 +87,31 @@ describe('frigate configureAdminUser', () => {
     expect(body.password).to.have.lengthOf(20);
     assert.calledOnceWithExactly(gladys.variable.setValue, 'FRIGATE_ADMIN_PASSWORD', body.password, serviceId);
     expect(frigateManager.adminConfigured).to.equal(true);
+    expect(frigateManager.adminConfiguring).to.equal(false);
+    assert.calledOnce(gladys.event.emit);
   });
 
-  it('should not store the password when the Frigate API call fails', async () => {
+  it('should retry when Frigate API is not ready yet', async () => {
+    const notReadyError = new Error('Request failed with status code 500');
+    notReadyError.response = { status: 500, data: { message: 'not ready' } };
+    axios.put.onFirstCall().rejects(notReadyError);
+    axios.put.onSecondCall().resolves({});
+
+    await frigateManager.configureAdminUser();
+
+    assert.calledTwice(axios.put);
+    assert.calledOnce(gladys.variable.setValue);
+    expect(frigateManager.adminConfigured).to.equal(true);
+  });
+
+  it('should give up after all attempts and not store the password', async () => {
     axios.put.rejects(new Error('ECONNREFUSED'));
 
     await frigateManager.configureAdminUser();
 
+    assert.calledThrice(axios.put);
     assert.notCalled(gladys.variable.setValue);
     expect(frigateManager.adminConfigured).to.equal(false);
+    expect(frigateManager.adminConfiguring).to.equal(false);
   });
 });

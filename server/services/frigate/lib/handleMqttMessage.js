@@ -27,6 +27,10 @@ async function handleMqttMessage(topic, message) {
       } catch (e) {
         logger.warn(`Frigate: unable to parse stats message - ${e}`);
       }
+      // Periodic backstop: retry until the admin user is configured
+      if (!this.adminConfigured) {
+        await this.configureAdminUser();
+      }
       break;
     }
     default: {

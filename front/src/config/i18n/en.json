@@ -1028,6 +1028,7 @@
     "frigate": {
       "title": "Frigate (video surveillance)",
       "description": "Local AI video surveillance with object detection.",
+      "deviceTab": "Devices",
       "setupTab": "Setup",
       "documentation": "Frigate documentation",
       "status": {
@@ -1067,6 +1068,53 @@
         "status": "Status",
         "gladys": "Gladys",
         "mqttBroker": "MQTT broker"
+      },
+      "device": {
+        "title": "Frigate cameras",
+        "search": "Search cameras",
+        "emptyState": "No camera yet. Click on \"+\" to add your first camera.",
+        "saveError": "There was an error while saving the camera. Check that the name is filled and the source is complete.",
+        "nameLabel": "Camera name",
+        "namePlaceholder": "My camera (cannot be renamed later)",
+        "roomLabel": "Room",
+        "sourceTypeLabel": "Source type",
+        "sourceTypes": {
+          "rtsp": "RTSP camera (generic)",
+          "tapo": "TP-Link Tapo (without RTSP)",
+          "custom": "Custom go2rtc source"
+        },
+        "tapoHelp": "For Tapo battery/solar cameras without RTSP: uses the TP-Link protocol on port 8800 through go2rtc.",
+        "hostLabel": "IP address or hostname",
+        "hostPlaceholder": "192.168.1.20",
+        "usernameLabel": "Username",
+        "passwordLabel": "Password",
+        "tapoPasswordHelp": "Your TP-Link cloud account password (special characters are supported, Gladys encodes them for you).",
+        "pathLabel": "Stream path (optional)",
+        "pathPlaceholder": "stream1",
+        "extraLabel": "Stream options",
+        "extraPlaceholder": "channel=0&subtype=1",
+        "customSourceLabel": "go2rtc source",
+        "customSourcePlaceholder": "ffmpeg:http://192.168.1.20/flv?stream=main#video=copy",
+        "customSourceHelp": "Any source supported by go2rtc (rtsp://, onvif://, ffmpeg:, http://...).",
+        "labelsLabel": "Objects to detect",
+        "labels": {
+          "person": "Person",
+          "car": "Car",
+          "dog": "Dog",
+          "cat": "Cat",
+          "horse": "Horse",
+          "bird": "Bird",
+          "bicycle": "Bicycle",
+          "motorcycle": "Motorcycle",
+          "bus": "Bus",
+          "truck": "Truck"
+        },
+        "pollFrequencyLabel": "Image refresh frequency",
+        "everyMinutes": "Every minute",
+        "every30Seconds": "Every 30 seconds",
+        "every10Seconds": "Every 10 seconds",
+        "saveButton": "Save",
+        "deleteButton": "Delete"
       }
     },
     "matterbridge": {

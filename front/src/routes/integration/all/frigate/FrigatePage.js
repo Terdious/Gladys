@@ -20,6 +20,16 @@ const FrigatePage = ({ children, user }) => (
                     class="list-group-item list-group-item-action d-flex align-items-center"
                   >
                     <span class="icon mr-3">
+                      <i class="fe fe-video" />
+                    </span>
+                    <Text id="integration.frigate.deviceTab" />
+                  </Link>
+                  <Link
+                    href="/dashboard/integration/device/frigate/setup"
+                    activeClassName="active"
+                    class="list-group-item list-group-item-action d-flex align-items-center"
+                  >
+                    <span class="icon mr-3">
                       <i class="fe fe-sliders" />
                     </span>
                     <Text id="integration.frigate.setupTab" />

@@ -1133,6 +1133,7 @@
     "frigate": {
       "title": "Frigate (Videoüberwachung)",
       "description": "Lokale Videoüberwachung mit KI-Objekterkennung.",
+      "deviceTab": "Geräte",
       "setupTab": "Einrichtung",
       "documentation": "Frigate-Dokumentation",
       "status": {
@@ -1172,6 +1173,53 @@
         "status": "Status",
         "gladys": "Gladys",
         "mqttBroker": "MQTT-Broker"
+      },
+      "device": {
+        "title": "Frigate-Kameras",
+        "search": "Kameras durchsuchen",
+        "emptyState": "Noch keine Kamera. Klicken Sie auf \"+\", um Ihre erste Kamera hinzuzufügen.",
+        "saveError": "Beim Speichern der Kamera ist ein Fehler aufgetreten. Prüfen Sie, ob der Name ausgefüllt und die Quelle vollständig ist.",
+        "nameLabel": "Kameraname",
+        "namePlaceholder": "Meine Kamera (kann später nicht umbenannt werden)",
+        "roomLabel": "Raum",
+        "sourceTypeLabel": "Quellentyp",
+        "sourceTypes": {
+          "rtsp": "RTSP-Kamera (generisch)",
+          "tapo": "TP-Link Tapo (ohne RTSP)",
+          "custom": "Benutzerdefinierte go2rtc-Quelle"
+        },
+        "tapoHelp": "Für Tapo-Akku-/Solarkameras ohne RTSP: verwendet das TP-Link-Protokoll auf Port 8800 über go2rtc.",
+        "hostLabel": "IP-Adresse oder Hostname",
+        "hostPlaceholder": "192.168.1.20",
+        "usernameLabel": "Benutzername",
+        "passwordLabel": "Passwort",
+        "tapoPasswordHelp": "Das Passwort Ihres TP-Link-Cloud-Kontos (Sonderzeichen werden unterstützt, Gladys kodiert sie für Sie).",
+        "pathLabel": "Stream-Pfad (optional)",
+        "pathPlaceholder": "stream1",
+        "extraLabel": "Stream-Optionen",
+        "extraPlaceholder": "channel=0&subtype=1",
+        "customSourceLabel": "go2rtc-Quelle",
+        "customSourcePlaceholder": "ffmpeg:http://192.168.1.20/flv?stream=main#video=copy",
+        "customSourceHelp": "Jede von go2rtc unterstützte Quelle (rtsp://, onvif://, ffmpeg:, http://...).",
+        "labelsLabel": "Zu erkennende Objekte",
+        "labels": {
+          "person": "Person",
+          "car": "Auto",
+          "dog": "Hund",
+          "cat": "Katze",
+          "horse": "Pferd",
+          "bird": "Vogel",
+          "bicycle": "Fahrrad",
+          "motorcycle": "Motorrad",
+          "bus": "Bus",
+          "truck": "LKW"
+        },
+        "pollFrequencyLabel": "Aktualisierungsfrequenz des Bildes",
+        "everyMinutes": "Jede Minute",
+        "every30Seconds": "Alle 30 Sekunden",
+        "every10Seconds": "Alle 10 Sekunden",
+        "saveButton": "Speichern",
+        "deleteButton": "Löschen"
       }
     },
     "matterbridge": {

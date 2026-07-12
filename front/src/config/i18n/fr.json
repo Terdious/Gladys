@@ -1266,6 +1266,7 @@
     "frigate": {
       "title": "Frigate (vidéosurveillance)",
       "description": "Vidéosurveillance locale avec détection d'objets par IA.",
+      "deviceTab": "Appareils",
       "setupTab": "Configuration",
       "documentation": "Documentation Frigate",
       "status": {
@@ -1305,6 +1306,53 @@
         "status": "État",
         "gladys": "Gladys",
         "mqttBroker": "Broker MQTT"
+      },
+      "device": {
+        "title": "Caméras Frigate",
+        "search": "Rechercher une caméra",
+        "emptyState": "Aucune caméra pour le moment. Cliquez sur « + » pour ajouter votre première caméra.",
+        "saveError": "Une erreur s'est produite lors de l'enregistrement de la caméra. Vérifiez que le nom est rempli et que la source est complète.",
+        "nameLabel": "Nom de la caméra",
+        "namePlaceholder": "Ma caméra (non renommable ensuite)",
+        "roomLabel": "Pièce",
+        "sourceTypeLabel": "Type de source",
+        "sourceTypes": {
+          "rtsp": "Caméra RTSP (générique)",
+          "tapo": "TP-Link Tapo (sans RTSP)",
+          "custom": "Source go2rtc personnalisée"
+        },
+        "tapoHelp": "Pour les caméras Tapo batterie/solaire sans RTSP : utilise le protocole TP-Link sur le port 8800 via go2rtc.",
+        "hostLabel": "Adresse IP ou nom d'hôte",
+        "hostPlaceholder": "192.168.1.20",
+        "usernameLabel": "Nom d'utilisateur",
+        "passwordLabel": "Mot de passe",
+        "tapoPasswordHelp": "Le mot de passe de votre compte cloud TP-Link (les caractères spéciaux sont acceptés, Gladys les encode pour vous).",
+        "pathLabel": "Chemin du flux (optionnel)",
+        "pathPlaceholder": "stream1",
+        "extraLabel": "Options du flux",
+        "extraPlaceholder": "channel=0&subtype=1",
+        "customSourceLabel": "Source go2rtc",
+        "customSourcePlaceholder": "ffmpeg:http://192.168.1.20/flv?stream=main#video=copy",
+        "customSourceHelp": "Toute source supportée par go2rtc (rtsp://, onvif://, ffmpeg:, http://...).",
+        "labelsLabel": "Objets à détecter",
+        "labels": {
+          "person": "Personne",
+          "car": "Voiture",
+          "dog": "Chien",
+          "cat": "Chat",
+          "horse": "Cheval",
+          "bird": "Oiseau",
+          "bicycle": "Vélo",
+          "motorcycle": "Moto",
+          "bus": "Bus",
+          "truck": "Camion"
+        },
+        "pollFrequencyLabel": "Fréquence de rafraîchissement de l'image",
+        "everyMinutes": "Toutes les minutes",
+        "every30Seconds": "Toutes les 30 secondes",
+        "every10Seconds": "Toutes les 10 secondes",
+        "saveButton": "Sauvegarder",
+        "deleteButton": "Supprimer"
       }
     },
     "matterbridge": {

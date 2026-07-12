@@ -1,5 +1,5 @@
 import { Component } from 'preact';
-import { Text, MarkupText } from 'preact-i18n';
+import { Text, MarkupText, Localizer } from 'preact-i18n';
 import { RequestStatus } from '../../../../../utils/consts';
 import CheckStatus from './CheckStatus.js';
 import classNames from 'classnames/bind';
@@ -21,6 +21,37 @@ class SetupTab extends Component {
 
   componentWillUnmount = () => {
     this.props.session.dispatcher.removeListener(WEBSOCKET_MESSAGE_TYPES.FRIGATE.STATUS_CHANGE, this.checkStatus);
+    if (this.showPasswordTimer) {
+      clearTimeout(this.showPasswordTimer);
+      this.showPasswordTimer = null;
+    }
+  };
+
+  getAdminCredentials = async () => {
+    try {
+      const passwordVariable = await this.props.httpClient.get(
+        '/api/v1/service/frigate/variable/FRIGATE_ADMIN_PASSWORD'
+      );
+      this.setState({ frigateAdminPassword: passwordVariable.value });
+    } catch (e) {
+      // Password not configured yet
+      this.setState({ frigateAdminPassword: null });
+    }
+  };
+
+  togglePassword = () => {
+    const { showPassword } = this.state;
+
+    if (this.showPasswordTimer) {
+      clearTimeout(this.showPasswordTimer);
+      this.showPasswordTimer = null;
+    }
+
+    this.setState({ showPassword: !showPassword });
+
+    if (!showPassword) {
+      this.showPasswordTimer = setTimeout(() => this.setState({ showPassword: false }), 5000);
+    }
   };
 
   checkStatus = async () => {
@@ -64,6 +95,9 @@ class SetupTab extends Component {
         frigateRtspPort: frigateStatus.frigateRtspPort,
         frigateUrl
       });
+      if (frigateStatus.frigateConnected) {
+        await this.getAdminCredentials();
+      }
     }
   };
 
@@ -141,7 +175,9 @@ class SetupTab extends Component {
       frigateRtspPort,
       frigateUrl,
       frigateStatus,
-      showConfirmDisable
+      showConfirmDisable,
+      frigateAdminPassword,
+      showPassword
     }
   ) {
     return (
@@ -229,6 +265,45 @@ class SetupTab extends Component {
                 </label>
                 <div class="help-block">
                   <Text id="integration.frigate.setup.urlHelp" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {frigateRunning && frigateAdminPassword && (
+            <div>
+              <div class="form-group">
+                <label htmlFor="frigateUsername" className="form-label">
+                  <Text id="integration.frigate.setup.usernameLabel" />
+                </label>
+                <Localizer>
+                  <input id="frigateUsername" name="frigateUsername" value="admin" className="form-control" disabled />
+                </Localizer>
+              </div>
+
+              <div class="form-group">
+                <label htmlFor="frigatePassword" className="form-label">
+                  <Text id="integration.frigate.setup.passwordLabel" />
+                </label>
+                <div class="input-icon mb-3">
+                  <Localizer>
+                    <input
+                      id="frigatePassword"
+                      name="frigatePassword"
+                      type={showPassword ? 'text' : 'password'}
+                      value={frigateAdminPassword}
+                      className="form-control"
+                      disabled
+                    />
+                  </Localizer>
+                  <span class="input-icon-addon cursor-pointer" onClick={this.togglePassword}>
+                    <i
+                      class={cx('fe', {
+                        'fe-eye': !showPassword,
+                        'fe-eye-off': showPassword
+                      })}
+                    />
+                  </span>
                 </div>
               </div>
             </div>

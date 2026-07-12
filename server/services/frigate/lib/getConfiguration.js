@@ -1,3 +1,4 @@
+const { SYSTEM_VARIABLE_NAMES } = require('../../../utils/constants');
 const logger = require('../../../utils/logger');
 const { CONFIGURATION } = require('./constants');
 
@@ -38,6 +39,9 @@ async function getConfiguration() {
     this.serviceId,
   );
 
+  // Gladys params
+  const timezone = await this.gladys.variable.getValue(SYSTEM_VARIABLE_NAMES.TIMEZONE);
+
   return {
     frigateEnabled,
     mqttUsername,
@@ -50,6 +54,7 @@ async function getConfiguration() {
     frigateRtspPort,
     dockerMqttVersion,
     dockerFrigateVersion,
+    timezone,
   };
 }
 

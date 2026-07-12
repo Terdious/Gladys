@@ -33,6 +33,11 @@ async function installFrigateContainer(config) {
       const containerDescriptorToMutate = cloneDeep(containerDescriptor);
       containerDescriptorToMutate.HostConfig.Binds.push(`${basePathOnHost}/frigate/config:/config`);
       containerDescriptorToMutate.HostConfig.Binds.push(`${basePathOnHost}/frigate/media:/media/frigate`);
+      // Frigate runs in UTC by default: align it with the Gladys timezone
+      // so recordings and events are timestamped correctly
+      if (config.timezone) {
+        containerDescriptorToMutate.Env = [`TZ=${config.timezone}`];
+      }
       // Bind the authenticated UI on all interfaces, but keep the unauthenticated
       // API and RTSP restream on localhost only (consumed by Gladys itself)
       containerDescriptorToMutate.HostConfig.PortBindings = {

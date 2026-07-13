@@ -261,19 +261,26 @@ function createActions(store) {
       camera.labels.forEach(label => {
         const featureExternalId = `${externalId}:${label}`;
         const existingFeature = (camera.features || []).find(feature => feature.external_id === featureExternalId);
+        // Camera detection types, so the dashboard camera widget can display
+        // live detection badges (migrates older motion-sensor features)
+        const detectionCategoryAndType = {
+          category: DEVICE_FEATURE_CATEGORIES.CAMERA,
+          type: `${label}-detection`
+        };
         features.push(
-          existingFeature || {
-            name: `${camera.name} - ${label}`,
-            external_id: featureExternalId,
-            selector: featureExternalId,
-            category: DEVICE_FEATURE_CATEGORIES.MOTION_SENSOR,
-            type: DEVICE_FEATURE_TYPES.SENSOR.BINARY,
-            read_only: true,
-            keep_history: true,
-            has_feedback: true,
-            min: 0,
-            max: 1
-          }
+          existingFeature
+            ? { ...existingFeature, ...detectionCategoryAndType }
+            : {
+                name: `${camera.name} - ${label}`,
+                external_id: featureExternalId,
+                selector: featureExternalId,
+                ...detectionCategoryAndType,
+                read_only: true,
+                keep_history: true,
+                has_feedback: true,
+                min: 0,
+                max: 1
+              }
         );
         // Last image of this label, fed by the Frigate MQTT snapshots
         const imageFeatureExternalId = `${externalId}:${label}:image`;
@@ -300,26 +307,58 @@ function createActions(store) {
         }
       });
 
-      // Night mode switch, for cameras with a controllable IR (D-Link)
+      // Night mode toggle, for cameras with a controllable IR (D-Link):
+      // camera night-mode type, displayed by the dashboard camera widget
       if (camera.nightModeProtocol) {
         const nightModeExternalId = `${externalId}:nightmode`;
-        const existingNightMode = (camera.features || []).find(
-          feature => feature.external_id === nightModeExternalId
-        );
+        const existingNightMode = (camera.features || []).find(feature => feature.external_id === nightModeExternalId);
+        const nightModeCategoryAndType = {
+          category: DEVICE_FEATURE_CATEGORIES.CAMERA,
+          type: DEVICE_FEATURE_TYPES.CAMERA.NIGHT_MODE
+        };
         features.push(
-          existingNightMode || {
-            name: `${camera.name} - Night mode (IR)`,
-            external_id: nightModeExternalId,
-            selector: nightModeExternalId,
-            category: DEVICE_FEATURE_CATEGORIES.SWITCH,
-            type: DEVICE_FEATURE_TYPES.SWITCH.BINARY,
-            read_only: false,
-            keep_history: true,
-            has_feedback: false,
-            min: 0,
-            max: 1
-          }
+          existingNightMode
+            ? { ...existingNightMode, ...nightModeCategoryAndType }
+            : {
+                name: `${camera.name} - Night mode (IR)`,
+                external_id: nightModeExternalId,
+                selector: nightModeExternalId,
+                ...nightModeCategoryAndType,
+                read_only: false,
+                keep_history: true,
+                has_feedback: false,
+                min: 0,
+                max: 1
+              }
         );
+      }
+
+      // PTZ features, displayed as an overlay pad by the dashboard camera
+      // widget (value -1/0/+1 per axis). D-Link cameras have no zoom.
+      const hasPtz = camera.ptzProtocol || (camera.onvifUsername && camera.onvifPassword);
+      if (hasPtz) {
+        const ptzTypes = [DEVICE_FEATURE_TYPES.CAMERA.PAN, DEVICE_FEATURE_TYPES.CAMERA.TILT];
+        if (camera.ptzProtocol !== 'dlink-http') {
+          ptzTypes.push(DEVICE_FEATURE_TYPES.CAMERA.ZOOM);
+        }
+        ptzTypes.forEach(ptzType => {
+          const ptzExternalId = `${externalId}:${ptzType}`;
+          const existingPtzFeature = (camera.features || []).find(feature => feature.external_id === ptzExternalId);
+          features.push(
+            existingPtzFeature || {
+              name: `${camera.name} - ${ptzType}`,
+              external_id: ptzExternalId,
+              selector: ptzExternalId,
+              category: DEVICE_FEATURE_CATEGORIES.CAMERA,
+              type: ptzType,
+              read_only: false,
+              keep_history: false,
+              has_feedback: false,
+              min: -1,
+              max: 1
+            }
+          );
+        });
       }
 
       const deviceToSave = {

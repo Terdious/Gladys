@@ -28,9 +28,10 @@ function buildRtspUrl(device, path) {
   const host = getDeviceParam(device, CAMERA_PARAMS.SOURCE_HOST);
   const username = getDeviceParam(device, CAMERA_PARAMS.SOURCE_USERNAME);
   const password = getDeviceParam(device, CAMERA_PARAMS.SOURCE_PASSWORD);
+  const port = Number(getDeviceParam(device, CAMERA_PARAMS.SOURCE_RTSP_PORT)) || DEFAULT.RTSP_PORT;
   const credentials = username ? `${encodeURIComponent(username)}:${encodeURIComponent(password || '')}@` : '';
   const cleanPath = path ? `/${path.replace(/^\//, '')}` : '';
-  return `rtsp://${credentials}${host}:${DEFAULT.RTSP_PORT}${cleanPath}`;
+  return `rtsp://${credentials}${host}:${port}${cleanPath}`;
 }
 
 /**
@@ -74,9 +75,13 @@ function buildGo2rtcSource(device) {
       if (!host) {
         throw new BadParameters(`Frigate: camera ${device.external_id} has no host configured`);
       }
-      const username = getDeviceParam(device, CAMERA_PARAMS.SOURCE_USERNAME);
-      const credentials = username ? `${encodeURIComponent(username)}:${encodeURIComponent(password || '')}@` : '';
-      return `onvif://${credentials}${host}`;
+      // ONVIF has its own credentials and port, kept separately so switching
+      // source types never loses what the user typed
+      const username = getDeviceParam(device, CAMERA_PARAMS.ONVIF_USERNAME);
+      const onvifPassword = getDeviceParam(device, CAMERA_PARAMS.ONVIF_PASSWORD);
+      const port = Number(getDeviceParam(device, CAMERA_PARAMS.ONVIF_PORT)) || DEFAULT.ONVIF_PORT;
+      const credentials = username ? `${encodeURIComponent(username)}:${encodeURIComponent(onvifPassword || '')}@` : '';
+      return `onvif://${credentials}${host}:${port}`;
     }
     case SOURCE_TYPES.CUSTOM: {
       const customSource = getDeviceParam(device, CAMERA_PARAMS.CUSTOM_SOURCE);

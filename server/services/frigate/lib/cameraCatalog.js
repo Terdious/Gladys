@@ -22,6 +22,8 @@ const CAMERA_CATALOG = [
           sourceType: SOURCE_TYPES.RTSP,
           path: 'stream1',
           subPath: 'stream2',
+          rtspPort: 554,
+          onvifPort: 2020,
         },
       })),
       ...TAPO_BATTERY_MODELS.map((name) => ({
@@ -46,6 +48,8 @@ const CAMERA_CATALOG = [
           sourceType: SOURCE_TYPES.RTSP,
           path: 'h264Preview_01_main',
           subPath: 'h264Preview_01_sub',
+          rtspPort: 554,
+          onvifPort: 8000,
         },
       },
     ],

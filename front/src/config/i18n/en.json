@@ -1069,7 +1069,8 @@
         "containersStatus": "Containers related to Frigate",
         "status": "Status",
         "gladys": "Gladys",
-        "mqttBroker": "MQTT broker"
+        "mqttBroker": "MQTT broker",
+        "storageLabel": "Recordings storage: {{used}} GiB used of {{total}} GiB (automatic retention by age, oldest recordings are purged first)"
       },
       "device": {
         "title": "Frigate cameras",
@@ -1096,6 +1097,9 @@
         "hostLabel": "IP address or hostname",
         "hostPlaceholder": "192.168.1.20",
         "hostHelp": "You can find the IP address in the camera app (e.g. Tapo: camera settings → Device info) or in your router/box interface. Tip: assign it a static IP.",
+        "rtspPortLabel": "RTSP port",
+        "onvifPortLabel": "ONVIF port",
+        "portHelp": "Prefilled from the selected camera model — you normally don't need to change it.",
         "usernameLabel": "Username",
         "passwordLabel": "Password",
         "tapoPasswordHelp": "Your TP-Link cloud account password (special characters are supported, Gladys encodes them for you).",

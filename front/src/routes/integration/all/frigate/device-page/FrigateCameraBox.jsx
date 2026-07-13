@@ -83,6 +83,21 @@ class FrigateCameraBox extends Component {
   updateTapoAuthVariant = e => {
     this.props.updateCameraField(this.props.cameraIndex, 'tapoAuthVariant', e.target.value);
   };
+  updateRtspPort = e => {
+    this.props.updateCameraField(this.props.cameraIndex, 'rtspPort', e.target.value);
+  };
+  updateOnvifPort = e => {
+    this.props.updateCameraField(this.props.cameraIndex, 'onvifPort', e.target.value);
+  };
+  updateOnvifUsername = e => {
+    this.props.updateCameraField(this.props.cameraIndex, 'onvifUsername', e.target.value);
+  };
+  updateOnvifPassword = e => {
+    this.props.updateCameraField(this.props.cameraIndex, 'onvifPassword', e.target.value);
+  };
+  toggleOnvifPassword = () => {
+    this.setState({ showOnvifPassword: !this.state.showOnvifPassword });
+  };
   updateCustomSource = e => {
     this.props.updateCameraField(this.props.cameraIndex, 'customSource', e.target.value);
   };
@@ -106,7 +121,7 @@ class FrigateCameraBox extends Component {
     );
   };
 
-  render(props, { loading, saveError, showPassword }) {
+  render(props, { loading, saveError, showPassword, showOnvifPassword }) {
     const { camera } = props;
     const cameraName = camera.external_id ? camera.external_id.split(':')[1] : null;
     const cameraStats =
@@ -295,7 +310,41 @@ class FrigateCameraBox extends Component {
                     </div>
                   </div>
                 )}
-                {(camera.sourceType === SOURCE_TYPES.RTSP || camera.sourceType === SOURCE_TYPES.ONVIF) && (
+                {camera.sourceType === SOURCE_TYPES.RTSP && (
+                  <div class="form-group">
+                    <label>
+                      <Text id="integration.frigate.device.rtspPortLabel" />
+                    </label>
+                    <input
+                      type="number"
+                      value={camera.rtspPort}
+                      onInput={this.updateRtspPort}
+                      class="form-control"
+                      placeholder="554"
+                    />
+                    <div class="help-block">
+                      <Text id="integration.frigate.device.portHelp" />
+                    </div>
+                  </div>
+                )}
+                {camera.sourceType === SOURCE_TYPES.ONVIF && (
+                  <div class="form-group">
+                    <label>
+                      <Text id="integration.frigate.device.onvifPortLabel" />
+                    </label>
+                    <input
+                      type="number"
+                      value={camera.onvifPort}
+                      onInput={this.updateOnvifPort}
+                      class="form-control"
+                      placeholder="80"
+                    />
+                    <div class="help-block">
+                      <Text id="integration.frigate.device.portHelp" />
+                    </div>
+                  </div>
+                )}
+                {camera.sourceType === SOURCE_TYPES.RTSP && (
                   <div class="form-group">
                     <label>
                       <Text id="integration.frigate.device.usernameLabel" />
@@ -303,7 +352,20 @@ class FrigateCameraBox extends Component {
                     <input type="text" value={camera.username} onInput={this.updateUsername} class="form-control" />
                   </div>
                 )}
-                {camera.sourceType !== SOURCE_TYPES.CUSTOM && (
+                {camera.sourceType === SOURCE_TYPES.ONVIF && (
+                  <div class="form-group">
+                    <label>
+                      <Text id="integration.frigate.device.usernameLabel" />
+                    </label>
+                    <input
+                      type="text"
+                      value={camera.onvifUsername}
+                      onInput={this.updateOnvifUsername}
+                      class="form-control"
+                    />
+                  </div>
+                )}
+                {(camera.sourceType === SOURCE_TYPES.RTSP || camera.sourceType === SOURCE_TYPES.TAPO) && (
                   <div class="form-group">
                     <label>
                       <Text id="integration.frigate.device.passwordLabel" />
@@ -329,6 +391,29 @@ class FrigateCameraBox extends Component {
                         <Text id="integration.frigate.device.tapoPasswordHelp" />
                       </div>
                     )}
+                  </div>
+                )}
+                {camera.sourceType === SOURCE_TYPES.ONVIF && (
+                  <div class="form-group">
+                    <label>
+                      <Text id="integration.frigate.device.passwordLabel" />
+                    </label>
+                    <div class="input-icon">
+                      <input
+                        type={showOnvifPassword ? 'text' : 'password'}
+                        value={camera.onvifPassword}
+                        onInput={this.updateOnvifPassword}
+                        class="form-control"
+                      />
+                      <span class="input-icon-addon cursor-pointer" onClick={this.toggleOnvifPassword}>
+                        <i
+                          class={cx('fe', {
+                            'fe-eye': !showOnvifPassword,
+                            'fe-eye-off': showOnvifPassword
+                          })}
+                        />
+                      </span>
+                    </div>
                   </div>
                 )}
                 {camera.sourceType === SOURCE_TYPES.TAPO && (

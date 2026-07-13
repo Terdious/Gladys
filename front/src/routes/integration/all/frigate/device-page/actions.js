@@ -43,6 +43,10 @@ function createActions(store) {
       camera.customSource = getParamValue(camera, CAMERA_PARAMS.CUSTOM_SOURCE);
       camera.customSubSource = getParamValue(camera, CAMERA_PARAMS.CUSTOM_SUB_SOURCE);
       camera.tapoAuthVariant = getParamValue(camera, CAMERA_PARAMS.TAPO_AUTH_VARIANT);
+      camera.rtspPort = getParamValue(camera, CAMERA_PARAMS.SOURCE_RTSP_PORT);
+      camera.onvifPort = getParamValue(camera, CAMERA_PARAMS.ONVIF_PORT);
+      camera.onvifUsername = getParamValue(camera, CAMERA_PARAMS.ONVIF_USERNAME);
+      camera.onvifPassword = getParamValue(camera, CAMERA_PARAMS.ONVIF_PASSWORD);
       const labels = getParamValue(camera, CAMERA_PARAMS.TRACKED_LABELS);
       camera.labels = labels ? labels.split(',').filter(label => label.length > 0) : ['person'];
       return camera;
@@ -138,6 +142,10 @@ function createActions(store) {
             customSource: null,
             customSubSource: null,
             tapoAuthVariant: null,
+            rtspPort: null,
+            onvifPort: null,
+            onvifUsername: null,
+            onvifPassword: null,
             labels: ['person'],
             features: [],
             params: []
@@ -170,6 +178,8 @@ function createActions(store) {
         cameraUpdate.path = { $set: preset.path || null };
         cameraUpdate.subPath = { $set: preset.subPath || null };
         cameraUpdate.extra = { $set: preset.extra || null };
+        cameraUpdate.rtspPort = { $set: preset.rtspPort ? `${preset.rtspPort}` : null };
+        cameraUpdate.onvifPort = { $set: preset.onvifPort ? `${preset.onvifPort}` : null };
         cameraUpdate.customSource = { $set: null };
         cameraUpdate.customSubSource = { $set: null };
       }
@@ -205,6 +215,10 @@ function createActions(store) {
         { name: CAMERA_PARAMS.CUSTOM_SOURCE, value: camera.customSource && camera.customSource.trim() },
         { name: CAMERA_PARAMS.CUSTOM_SUB_SOURCE, value: camera.customSubSource && camera.customSubSource.trim() },
         { name: CAMERA_PARAMS.TAPO_AUTH_VARIANT, value: camera.tapoAuthVariant },
+        { name: CAMERA_PARAMS.SOURCE_RTSP_PORT, value: camera.rtspPort },
+        { name: CAMERA_PARAMS.ONVIF_PORT, value: camera.onvifPort },
+        { name: CAMERA_PARAMS.ONVIF_USERNAME, value: camera.onvifUsername },
+        { name: CAMERA_PARAMS.ONVIF_PASSWORD, value: camera.onvifPassword },
         { name: CAMERA_PARAMS.TRACKED_LABELS, value: camera.labels.join(',') }
       ].filter(param => param.value !== null && param.value !== undefined && param.value !== '');
 

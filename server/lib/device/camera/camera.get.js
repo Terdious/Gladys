@@ -12,7 +12,7 @@ async function get() {
   const cameras = await db.Device.findAll({
     include: [
       getFeaturesInclude({
-        attributes: ['name', 'selector'],
+        attributes: ['name', 'selector', 'type'],
         where: {
           category: DEVICE_FEATURE_CATEGORIES.CAMERA,
         },

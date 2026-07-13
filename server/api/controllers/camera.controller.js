@@ -46,7 +46,7 @@ module.exports = function HouseController(gladys) {
    * }
    */
   async function setImage(req, res) {
-    await gladys.device.camera.setImage(req.params.camera_selector, req.body.image);
+    await gladys.device.camera.setImage(req.params.camera_selector, req.body.image, req.body.feature || null);
     res.status(201).json({
       success: true,
     });
@@ -60,7 +60,7 @@ module.exports = function HouseController(gladys) {
    * image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z/C/HgAGgwJ/lK3Q6wAAAABJRU5ErkJggg==
    */
   async function getImage(req, res) {
-    const image = await gladys.device.camera.getImage(req.params.camera_selector);
+    const image = await gladys.device.camera.getImage(req.params.camera_selector, req.query.feature || null);
     res.send(image);
   }
 

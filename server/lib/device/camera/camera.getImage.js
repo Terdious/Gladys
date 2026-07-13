@@ -7,17 +7,22 @@ const CAMERA_IMAGE_EXPIRATION_TIME_IN_HOURS = 1;
 /**
  * @description Get image of a camera.
  * @param {string} selector - Selector of the camera.
+ * @param {string} [featureSelector] - Selector of a specific camera image feature,
+ * for cameras exposing several images. Defaults to the first image feature.
  * @returns {Promise} Resolve with camera image.
  * @example
  * camera.getImage('test-camera');
  */
-async function getImage(selector) {
+async function getImage(selector, featureSelector = null) {
   const device = this.stateManager.get('device', selector);
   if (device === null) {
     throw new NotFoundError('Camera not found');
   }
   const deviceFeature = device.features.find(
-    (dF) => dF.category === DEVICE_FEATURE_CATEGORIES.CAMERA && dF.type === DEVICE_FEATURE_TYPES.CAMERA.IMAGE,
+    (dF) =>
+      dF.category === DEVICE_FEATURE_CATEGORIES.CAMERA &&
+      dF.type === DEVICE_FEATURE_TYPES.CAMERA.IMAGE &&
+      (featureSelector === null || dF.selector === featureSelector),
   );
   if (!deviceFeature) {
     throw new NotFoundError('Camera image feature not found');

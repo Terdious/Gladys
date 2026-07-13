@@ -2,6 +2,7 @@ import { Component } from 'preact';
 import { connect } from 'unistore/preact';
 import { Text, Localizer } from 'preact-i18n';
 import BaseEditBox from '../baseEditBox';
+import { DEVICE_FEATURE_TYPES } from '../../../../../server/utils/constants';
 
 const EditCameraBox = ({ children, ...props }) => (
   <BaseEditBox {...props} titleKey="dashboard.boxTitle.camera" titleValue={props.box.name}>
@@ -21,6 +22,28 @@ const EditCameraBox = ({ children, ...props }) => (
           ))}
       </select>
     </div>
+    {props.selectedCameraImageFeatures && props.selectedCameraImageFeatures.length > 1 && (
+      <div class="form-group">
+        <label>
+          <Text id="dashboard.boxes.camera.editImageFeatureLabel" />
+        </label>
+        <select onChange={props.updateCameraFeature} class="form-control">
+          <option value="">
+            <Text id="global.emptySelectOption" />
+          </option>
+          {props.selectedCameraImageFeatures.map(feature => (
+            <option selected={feature.selector === props.box.camera_feature} value={feature.selector}>
+              {feature.name}
+            </option>
+          ))}
+        </select>
+        <p class="mt-1 mb-0">
+          <small class="text-muted">
+            <Text id="dashboard.boxes.camera.editImageFeatureDescription" />
+          </small>
+        </p>
+      </div>
+    )}
     <div class="form-group">
       <label>
         <Text id="dashboard.boxes.camera.editBoxNameLabel" />
@@ -86,7 +109,15 @@ const EditCameraBox = ({ children, ...props }) => (
 class EditCameraBoxComponent extends Component {
   updateCamera = e => {
     this.props.updateBoxConfig(this.props.x, this.props.y, {
-      camera: e.target.value
+      camera: e.target.value,
+      // The selected image feature belongs to the previous camera
+      camera_feature: null
+    });
+  };
+
+  updateCameraFeature = e => {
+    this.props.updateBoxConfig(this.props.x, this.props.y, {
+      camera_feature: e.target.value === '' ? null : e.target.value
     });
   };
 
@@ -140,11 +171,18 @@ class EditCameraBoxComponent extends Component {
   }
 
   render(props, { cameras }) {
+    const selectedCamera = cameras && cameras.find(camera => camera.selector === props.box.camera);
+    const selectedCameraImageFeatures =
+      selectedCamera && selectedCamera.features
+        ? selectedCamera.features.filter(feature => feature.type === DEVICE_FEATURE_TYPES.CAMERA.IMAGE)
+        : null;
     return (
       <EditCameraBox
         {...props}
         cameras={cameras}
+        selectedCameraImageFeatures={selectedCameraImageFeatures}
         updateCamera={this.updateCamera}
+        updateCameraFeature={this.updateCameraFeature}
         updateBoxName={this.updateBoxName}
         updateBoxLatency={this.updateBoxLatency}
         updateCameraLiveAutoStart={this.updateCameraLiveAutoStart}

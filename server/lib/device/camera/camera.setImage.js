@@ -9,11 +9,13 @@ const MAX_SIZE_IMAGE = 150 * 1024;
  * @description Set image of a camera.
  * @param {string} selector - Selector of the camera.
  * @param {string} image - Image in base64.
+ * @param {string} [featureSelector] - Selector of a specific camera image feature,
+ * for cameras exposing several images. Defaults to the first image feature.
  * @returns {Promise} Resolve when image has been set.
  * @example
  * camera.setImage('test-camera', 'sfdsf');
  */
-async function setImage(selector, image) {
+async function setImage(selector, image, featureSelector = null) {
   if (image.length > MAX_SIZE_IMAGE) {
     throw new BadParameters('Image is too big');
   }
@@ -22,7 +24,10 @@ async function setImage(selector, image) {
     throw new NotFoundError('Camera not found');
   }
   const deviceFeature = device.features.find(
-    (dF) => dF.category === DEVICE_FEATURE_CATEGORIES.CAMERA && dF.type === DEVICE_FEATURE_TYPES.CAMERA.IMAGE,
+    (dF) =>
+      dF.category === DEVICE_FEATURE_CATEGORIES.CAMERA &&
+      dF.type === DEVICE_FEATURE_TYPES.CAMERA.IMAGE &&
+      (featureSelector === null || dF.selector === featureSelector),
   );
   if (!deviceFeature) {
     throw new NotFoundError('Camera image feature not found');

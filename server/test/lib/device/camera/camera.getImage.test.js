@@ -29,6 +29,51 @@ describe('Camera.getImage', () => {
     const cameraImage = await deviceManager.camera.getImage('test-camera');
     expect(cameraImage).to.equal(RANDOM_IMAGE);
   });
+  it('should return the image of a specific image feature', async () => {
+    const stateManager = new StateManager(event);
+    const deviceManager = new Device(event, {}, stateManager, {}, {}, {}, job);
+    const PERSON_IMAGE = 'image/png;base64,person';
+    stateManager.setState('device', 'test-camera', {
+      features: [
+        {
+          id: '565d05fc-1736-4b76-99ca-581232901d96',
+          selector: 'test-camera',
+          category: 'camera',
+          type: 'image',
+          last_value_changed: new Date().toISOString(),
+          last_value_string: RANDOM_IMAGE,
+        },
+        {
+          id: '10f2f4a2-06d9-4237-b1f1-9c7a582b0060',
+          selector: 'test-camera-person-image',
+          category: 'camera',
+          type: 'image',
+          last_value_changed: new Date().toISOString(),
+          last_value_string: PERSON_IMAGE,
+        },
+      ],
+    });
+    const cameraImage = await deviceManager.camera.getImage('test-camera', 'test-camera-person-image');
+    expect(cameraImage).to.equal(PERSON_IMAGE);
+  });
+  it('should return camera image feature not found with an unknown feature selector', async () => {
+    const stateManager = new StateManager(event);
+    const deviceManager = new Device(event, {}, stateManager, {}, {}, {}, job);
+    stateManager.setState('device', 'test-camera', {
+      features: [
+        {
+          id: '565d05fc-1736-4b76-99ca-581232901d96',
+          selector: 'test-camera',
+          category: 'camera',
+          type: 'image',
+          last_value_changed: new Date().toISOString(),
+          last_value_string: RANDOM_IMAGE,
+        },
+      ],
+    });
+    const promise = deviceManager.camera.getImage('test-camera', 'unknown-feature');
+    return assert.isRejected(promise, 'Camera image feature not found');
+  });
   it('should return camera not found', async () => {
     const stateManager = new StateManager(event);
     const deviceManager = new Device(event, {}, stateManager, {}, {}, {}, job);

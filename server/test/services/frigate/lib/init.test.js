@@ -35,7 +35,10 @@ describe('frigate init', () => {
       config.frigateApiPort = 5000;
       config.frigateRtspPort = 8554;
     });
-    frigateManager.detectHardware = fake.resolves(true);
+    frigateManager.detectHardware = fake(async () => {
+      frigateManager.vaapiAvailable = true;
+      return true;
+    });
   });
 
   afterEach(() => {

@@ -4,7 +4,7 @@ const path = require('path');
 const fse = require('fs-extra');
 
 const logger = require('../../../utils/logger');
-const { DEFAULT } = require('./constants');
+const { DEFAULT, CORAL_DEVICE_TYPES } = require('./constants');
 const { computeShmSize } = require('./computeShmSize');
 
 const containerDescriptor = require('../docker/gladys-frigate-container.json');
@@ -24,18 +24,27 @@ async function installFrigateContainer(config) {
 
   const { basePathOnContainer, basePathOnHost } = await this.gladys.system.getGladysBasePath();
 
-  // Hardware-dependent settings of the container
+  // Hardware-dependent settings of the container. Detected devices are
+  // always exposed so the detector can be switched without recreation.
   const devices = await this.gladys.device.get({ service: 'frigate' });
   const desiredShmSize = computeShmSize(devices.length);
-  const desiredDevices = this.vaapiAvailable
-    ? [
-        {
-          PathOnHost: DEFAULT.RENDER_DEVICE_PATH,
-          PathInContainer: DEFAULT.RENDER_DEVICE_PATH,
-          CgroupPermissions: 'rwm',
-        },
-      ]
-    : [];
+  const desiredDevices = [];
+  if (this.vaapiAvailable) {
+    desiredDevices.push({
+      PathOnHost: DEFAULT.RENDER_DEVICE_PATH,
+      PathInContainer: DEFAULT.RENDER_DEVICE_PATH,
+      CgroupPermissions: 'rwm',
+    });
+  }
+  if (this.coralAvailable) {
+    const coralDevicePath =
+      this.coralDeviceType === CORAL_DEVICE_TYPES.PCIE ? DEFAULT.CORAL_PCIE_DEVICE_PATH : DEFAULT.CORAL_USB_DEVICE_PATH;
+    desiredDevices.push({
+      PathOnHost: coralDevicePath,
+      PathInContainer: coralDevicePath,
+      CgroupPermissions: 'rwm',
+    });
+  }
 
   // ShmSize and Devices cannot be updated on an existing container:
   // recreate it when they changed (camera added, GPU plugged...)

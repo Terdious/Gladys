@@ -1,5 +1,5 @@
 const logger = require('../../../utils/logger');
-const { CONFIGURATION } = require('./constants');
+const { CONFIGURATION, DETECTORS } = require('./constants');
 const { generate } = require('../../../utils/password');
 const { PlatformNotCompatible } = require('../../../utils/coreErrors');
 
@@ -23,6 +23,7 @@ async function init() {
   // Load stored configuration
   const configuration = await this.getConfiguration();
   this.frigateEnabled = configuration.frigateEnabled;
+  this.detector = configuration.detector || DETECTORS.AUTO;
 
   try {
     const dockerBased = await this.gladys.system.isDocker();
@@ -46,7 +47,7 @@ async function init() {
     return null;
   }
 
-  this.vaapiAvailable = await this.detectHardware();
+  await this.detectHardware();
   this.emitStatusEvent();
 
   if (!this.frigateEnabled) {

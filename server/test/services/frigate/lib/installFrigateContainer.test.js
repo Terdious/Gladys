@@ -207,6 +207,49 @@ describe('frigate installFrigateContainer', () => {
     ]);
   });
 
+  it('should expose the USB Coral to the container', async () => {
+    const config = {
+      frigateUiPort: 8971,
+      frigateApiPort: 5000,
+      frigateRtspPort: 8554,
+    };
+    frigateManager.coralAvailable = true;
+    frigateManager.coralDeviceType = 'usb';
+
+    await frigateManager.installFrigateContainer(config);
+
+    assert.calledOnce(gladys.system.removeContainer);
+    const descriptor = gladys.system.createContainer.firstCall.args[0];
+    expect(descriptor.HostConfig.Devices).to.deep.equal([
+      {
+        PathOnHost: '/dev/bus/usb',
+        PathInContainer: '/dev/bus/usb',
+        CgroupPermissions: 'rwm',
+      },
+    ]);
+  });
+
+  it('should expose the PCIe Coral to the container', async () => {
+    const config = {
+      frigateUiPort: 8971,
+      frigateApiPort: 5000,
+      frigateRtspPort: 8554,
+    };
+    frigateManager.coralAvailable = true;
+    frigateManager.coralDeviceType = 'pcie';
+
+    await frigateManager.installFrigateContainer(config);
+
+    const descriptor = gladys.system.createContainer.firstCall.args[0];
+    expect(descriptor.HostConfig.Devices).to.deep.equal([
+      {
+        PathOnHost: '/dev/apex_0',
+        PathInContainer: '/dev/apex_0',
+        CgroupPermissions: 'rwm',
+      },
+    ]);
+  });
+
   it('should recreate the container when the shm size changed', async () => {
     const config = {
       frigateUiPort: 8971,

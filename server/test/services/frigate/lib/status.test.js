@@ -19,6 +19,9 @@ describe('frigate status', () => {
       gladysConnected: false,
       frigateConnected: false,
       vaapiAvailable: false,
+      coralAvailable: false,
+      coralDeviceType: null,
+      detector: 'auto',
       mqttPort: null,
       frigateUiPort: null,
       frigateApiPort: null,
@@ -38,6 +41,9 @@ describe('frigate status', () => {
     frigateManager.gladysConnected = true;
     frigateManager.frigateConnected = true;
     frigateManager.vaapiAvailable = true;
+    frigateManager.coralAvailable = true;
+    frigateManager.coralDeviceType = 'usb';
+    frigateManager.detector = 'coral';
     frigateManager.mqttPort = 1885;
     frigateManager.frigateUiPort = 8971;
     frigateManager.frigateApiPort = 5000;
@@ -54,6 +60,9 @@ describe('frigate status', () => {
       gladysConnected: true,
       frigateConnected: true,
       vaapiAvailable: true,
+      coralAvailable: true,
+      coralDeviceType: 'usb',
+      detector: 'coral',
       mqttPort: 1885,
       frigateUiPort: 8971,
       frigateApiPort: 5000,

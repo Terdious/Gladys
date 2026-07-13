@@ -15,6 +15,7 @@ const CONFIGURATION = {
   RECORD_CONTINUOUS_DAYS_KEY: 'FRIGATE_RECORD_CONTINUOUS_DAYS',
   RECORD_ALERTS_DAYS_KEY: 'FRIGATE_RECORD_ALERTS_DAYS',
   RECORD_DETECTIONS_DAYS_KEY: 'FRIGATE_RECORD_DETECTIONS_DAYS',
+  DETECTOR_KEY: 'FRIGATE_DETECTOR',
   DOCKER_MQTT_VERSION: 'FRIGATE_DOCKER_MQTT_VERSION', // Variable to identify last version of MQTT docker file is installed
   DOCKER_FRIGATE_VERSION: 'FRIGATE_DOCKER_FRIGATE_VERSION', // Variable to identify last version of Frigate docker file is installed
 };
@@ -59,6 +60,20 @@ const TAPO_AUTH_VARIANTS = {
   SHA256: 'sha256',
 };
 
+// Object detector choices offered on the setup page
+const DETECTORS = {
+  AUTO: 'auto',
+  CORAL: 'coral',
+  OPENVINO: 'openvino',
+  CPU: 'cpu',
+};
+
+// Google Coral form factors
+const CORAL_DEVICE_TYPES = {
+  USB: 'usb',
+  PCIE: 'pcie',
+};
+
 // Subset of the COCO labelmap relevant for home video surveillance
 const TRACKABLE_LABELS = ['person', 'car', 'dog', 'cat', 'horse', 'bird', 'bicycle', 'motorcycle', 'bus', 'truck'];
 
@@ -95,6 +110,30 @@ const DEFAULT = {
   RTSP_PORT: 554,
   ONVIF_PORT: 80,
   RENDER_DEVICE_PATH: '/dev/dri/renderD128',
+  // Google Coral: PCIe/M.2 exposes an apex device, USB is identified by its
+  // vendor id (1a6e before the runtime flashes it, 18d1 after)
+  CORAL_PCIE_DEVICE_PATH: '/dev/apex_0',
+  CORAL_USB_DEVICE_PATH: '/dev/bus/usb',
+  USB_SYS_DEVICES_PATH: '/sys/bus/usb/devices',
+  CORAL_USB_VENDOR_IDS: ['1a6e', '18d1'],
+  // Frigate embeds the default EdgeTPU model: no model section needed
+  EDGETPU_DETECTORS_USB: {
+    coral: {
+      type: 'edgetpu',
+      device: 'usb',
+    },
+  },
+  EDGETPU_DETECTORS_PCIE: {
+    coral: {
+      type: 'edgetpu',
+      device: 'pci',
+    },
+  },
+  CPU_DETECTORS: {
+    cpu0: {
+      type: 'cpu',
+    },
+  },
   // Validated on Intel N5105: inference 94.6ms (CPU) -> 15.8ms (GPU)
   OPENVINO_DETECTORS: {
     ov: {
@@ -155,6 +194,8 @@ module.exports = {
   CAMERA_PARAMS,
   SOURCE_TYPES,
   TAPO_AUTH_VARIANTS,
+  DETECTORS,
+  CORAL_DEVICE_TYPES,
   TRACKABLE_LABELS,
   DEFAULT,
 };

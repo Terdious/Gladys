@@ -50,6 +50,9 @@ async function getConfiguration() {
     this.serviceId,
   );
 
+  // Load object detector choice (auto/coral/openvino/cpu)
+  const detector = await this.gladys.variable.getValue(CONFIGURATION.DETECTOR_KEY, this.serviceId);
+
   // Gladys params
   const timezone = await this.gladys.variable.getValue(SYSTEM_VARIABLE_NAMES.TIMEZONE);
 
@@ -68,6 +71,7 @@ async function getConfiguration() {
     recordContinuousDays,
     recordAlertsDays,
     recordDetectionsDays,
+    detector,
     timezone,
   };
 }

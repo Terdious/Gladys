@@ -19,6 +19,8 @@ describe('frigate status', () => {
       gladysConnected: false,
       frigateConnected: false,
       vaapiAvailable: false,
+      openvinoCapable: false,
+      renderDevicePath: null,
       coralAvailable: false,
       coralDeviceType: null,
       detector: 'auto',
@@ -41,6 +43,8 @@ describe('frigate status', () => {
     frigateManager.gladysConnected = true;
     frigateManager.frigateConnected = true;
     frigateManager.vaapiAvailable = true;
+    frigateManager.openvinoCapable = true;
+    frigateManager.renderDevicePath = '/dev/dri/renderD128';
     frigateManager.coralAvailable = true;
     frigateManager.coralDeviceType = 'usb';
     frigateManager.detector = 'coral';
@@ -60,6 +64,8 @@ describe('frigate status', () => {
       gladysConnected: true,
       frigateConnected: true,
       vaapiAvailable: true,
+      openvinoCapable: true,
+      renderDevicePath: '/dev/dri/renderD128',
       coralAvailable: true,
       coralDeviceType: 'usb',
       detector: 'coral',

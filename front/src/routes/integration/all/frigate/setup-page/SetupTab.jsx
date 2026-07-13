@@ -107,10 +107,18 @@ class SetupTab extends Component {
   getStorage = async () => {
     try {
       const frigateStats = await this.props.httpClient.get('/api/v1/service/frigate/stats');
-      // Frigate stats expose storage either under service.storage or storage
+      // Frigate stats expose storage either under service.storage or storage,
+      // keyed by mount path: 0.17 reports per sub-folder (/media/frigate/recordings...)
       const storageRoot =
         frigateStats && ((frigateStats.service && frigateStats.service.storage) || frigateStats.storage);
-      const recordingsStorage = storageRoot ? storageRoot['/media/frigate'] : null;
+      let recordingsStorage = null;
+      if (storageRoot) {
+        const storageKey = Object.keys(storageRoot).find(mountPath => mountPath.startsWith('/media/frigate'));
+        recordingsStorage =
+          storageRoot['/media/frigate/recordings'] ||
+          storageRoot['/media/frigate'] ||
+          (storageKey ? storageRoot[storageKey] : null);
+      }
       this.setState({ recordingsStorage });
     } catch (e) {
       this.setState({ recordingsStorage: null });

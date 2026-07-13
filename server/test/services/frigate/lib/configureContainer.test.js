@@ -123,6 +123,53 @@ describe('frigate configureContainer', () => {
     expect(fileContent).to.contain('- detect');
   });
 
+  it('should apply the configured recording retention', async () => {
+    gladys.device.get = sinon.fake.resolves([
+      {
+        external_id: 'frigate:c660',
+        params: [
+          { name: 'FRIGATE_SOURCE_TYPE', value: 'rtsp' },
+          { name: 'FRIGATE_SOURCE_HOST', value: '192.168.1.10' },
+        ],
+      },
+    ]);
+
+    await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, {
+      ...config,
+      recordContinuousDays: '10',
+      recordAlertsDays: '30',
+      recordDetectionsDays: '0',
+    });
+
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.contain('days: 10');
+    expect(fileContent).to.contain('days: 30');
+    expect(fileContent).to.contain('days: 0');
+  });
+
+  it('should fall back to default retention when values are invalid', async () => {
+    gladys.device.get = sinon.fake.resolves([
+      {
+        external_id: 'frigate:c660',
+        params: [
+          { name: 'FRIGATE_SOURCE_TYPE', value: 'rtsp' },
+          { name: 'FRIGATE_SOURCE_HOST', value: '192.168.1.10' },
+        ],
+      },
+    ]);
+
+    await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, {
+      ...config,
+      recordContinuousDays: 'not-a-number',
+      recordAlertsDays: '-5',
+    });
+
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    // Defaults: continuous 2 days, alerts and detections 7 days
+    expect(fileContent).to.contain('days: 2');
+    expect(fileContent).to.contain('days: 7');
+  });
+
   it('should preserve zones, masks and object filters configured through the Frigate UI', async () => {
     gladys.device.get = sinon.fake.resolves([
       {

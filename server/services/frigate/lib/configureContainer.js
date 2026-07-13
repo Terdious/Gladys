@@ -10,6 +10,22 @@ const { buildCameraConfig } = require('./buildCameraConfig');
 const YAML_CONFIG = { singleQuote: true };
 
 /**
+ * @description Parse a retention setting expressed in days.
+ * @param {string} value - The stored value.
+ * @param {number} fallback - Default number of days.
+ * @returns {number} The number of days to keep.
+ * @example
+ * toRetentionDays('10', 2);
+ */
+function toRetentionDays(value, fallback) {
+  const parsed = parseInt(value, 10);
+  if (Number.isNaN(parsed) || parsed < 0) {
+    return fallback;
+  }
+  return parsed;
+}
+
+/**
  * @description Configure Frigate container. Gladys owns the mqtt, go2rtc and
  * cameras sections of the config file; any other section added manually
  * (detectors, hardware acceleration...) is left untouched. The file is only
@@ -61,9 +77,26 @@ async function configureContainer(basePathOnContainer, config) {
   const existingCameras = loadedConfig.cameras || {};
   const go2rtcStreams = {};
   const cameras = {};
+  // Recording retention (days), configurable from the setup page
+  const recordContent = {
+    enabled: true,
+    continuous: {
+      days: toRetentionDays(config.recordContinuousDays, DEFAULT.RECORD_CONTENT.continuous.days),
+    },
+    alerts: {
+      retain: {
+        days: toRetentionDays(config.recordAlertsDays, DEFAULT.RECORD_CONTENT.alerts.retain.days),
+      },
+    },
+    detections: {
+      retain: {
+        days: toRetentionDays(config.recordDetectionsDays, DEFAULT.RECORD_CONTENT.detections.retain.days),
+      },
+    },
+  };
   devices.forEach((device) => {
     try {
-      const { cameraName, go2rtcSource, go2rtcSubSource, cameraSection } = buildCameraConfig(device);
+      const { cameraName, go2rtcSource, go2rtcSubSource, cameraSection } = buildCameraConfig(device, recordContent);
       go2rtcStreams[cameraName] = [go2rtcSource];
       if (go2rtcSubSource) {
         go2rtcStreams[`${cameraName}_sub`] = [go2rtcSubSource];

@@ -119,11 +119,12 @@ function buildGo2rtcSubSource(device) {
 /**
  * @description Build the go2rtc stream and Frigate camera sections of a device.
  * @param {object} device - Gladys camera device.
+ * @param {object} [recordContent] - Record section to apply (retention settings).
  * @returns {object} Camera name, go2rtc source and Frigate camera section.
  * @example
  * const { cameraName, go2rtcSource, cameraSection } = buildCameraConfig(device);
  */
-function buildCameraConfig(device) {
+function buildCameraConfig(device, recordContent = DEFAULT.RECORD_CONTENT) {
   const [, cameraName] = device.external_id.split(':');
   if (!cameraName) {
     throw new BadParameters(`Frigate: device ${device.external_id} has an invalid external id`);
@@ -188,7 +189,7 @@ function buildCameraConfig(device) {
     objects: {
       track: trackedLabels,
     },
-    record: DEFAULT.RECORD_CONTENT,
+    record: recordContent,
     snapshots: DEFAULT.SNAPSHOTS_CONTENT,
   };
 

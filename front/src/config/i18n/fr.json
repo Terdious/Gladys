@@ -1308,7 +1308,19 @@
         "status": "État",
         "gladys": "Gladys",
         "mqttBroker": "Broker MQTT",
-        "storageLabel": "Stockage des enregistrements : {{used}} Gio utilisés sur {{total}} Gio (rétention automatique par ancienneté, les plus vieux enregistrements sont purgés en premier)"
+        "storageTitle": "Enregistrements et stockage",
+        "storageLabel": "{{used}} Gio utilisés sur {{total}} Gio",
+        "storageFree": "{{free}} Gio libres pour les enregistrements",
+        "retentionHelp": "Frigate gère l'espace disque par durée de rétention : les enregistrements plus anciens que les durées ci-dessous sont supprimés automatiquement, et une purge d'urgence s'active si le disque est presque plein. Appliquer un changement redémarre Frigate pendant quelques secondes.",
+        "retentionContinuousLabel": "Enregistrement continu (jours)",
+        "retentionContinuousHelp": "Vidéo 24h/24, hors événements",
+        "retentionAlertsLabel": "Alertes (jours)",
+        "retentionAlertsHelp": "Événements dans une zone à alertes",
+        "retentionDetectionsLabel": "Détections (jours)",
+        "retentionDetectionsHelp": "Tous les objets détectés",
+        "retentionApply": "Appliquer la rétention",
+        "retentionSaved": "Rétention appliquée. Frigate redémarre si la configuration a changé.",
+        "retentionError": "Erreur lors de l'application de la rétention."
       },
       "device": {
         "title": "Caméras Frigate",

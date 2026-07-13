@@ -66,6 +66,7 @@ class SetupTab extends Component {
       gladysConnected: false,
       frigateConnected: false,
       vaapiAvailable: false,
+      openvinoCapable: false,
       coralAvailable: false,
       coralDeviceType: null,
       detector: 'auto',
@@ -94,6 +95,7 @@ class SetupTab extends Component {
         gladysConnected: frigateStatus.gladysConnected,
         frigateConnected: frigateStatus.frigateConnected,
         vaapiAvailable: frigateStatus.vaapiAvailable,
+        openvinoCapable: frigateStatus.openvinoCapable,
         coralAvailable: frigateStatus.coralAvailable,
         coralDeviceType: frigateStatus.coralDeviceType,
         mqttPort: frigateStatus.mqttPort,
@@ -283,6 +285,7 @@ class SetupTab extends Component {
       gladysConnected,
       frigateConnected,
       vaapiAvailable,
+      openvinoCapable,
       mqttPort,
       frigateUiPort,
       frigateApiPort,
@@ -449,8 +452,14 @@ class SetupTab extends Component {
                 </h2>
               </div>
               <div class="mb-3">
-                <span class={`tag mr-2 ${vaapiAvailable ? 'tag-success' : 'tag-warning'}`}>
-                  <Text id={`integration.frigate.setup.${vaapiAvailable ? 'hardwareGpu' : 'hardwareCpu'}`} />
+                <span
+                  class={`tag mr-2 ${openvinoCapable ? 'tag-success' : vaapiAvailable ? 'tag-info' : 'tag-warning'}`}
+                >
+                  <Text
+                    id={`integration.frigate.setup.${
+                      openvinoCapable ? 'hardwareGpu' : vaapiAvailable ? 'hardwareGpuDecodeOnly' : 'hardwareCpu'
+                    }`}
+                  />
                 </span>
                 <span class={`tag ${coralAvailable ? 'tag-success' : 'tag-secondary'}`}>
                   <Text
@@ -471,9 +480,9 @@ class SetupTab extends Component {
                     <Text id="integration.frigate.setup.detectorCoral" />
                     {!coralAvailable && <Text id="integration.frigate.setup.detectorMissing" />}
                   </option>
-                  <option value="openvino" disabled={!vaapiAvailable}>
+                  <option value="openvino" disabled={!openvinoCapable}>
                     <Text id="integration.frigate.setup.detectorOpenvino" />
-                    {!vaapiAvailable && <Text id="integration.frigate.setup.detectorMissing" />}
+                    {!openvinoCapable && <Text id="integration.frigate.setup.detectorMissing" />}
                   </option>
                   <option value="cpu">
                     <Text id="integration.frigate.setup.detectorCpu" />

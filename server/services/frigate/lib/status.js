@@ -16,6 +16,8 @@ function status() {
     gladysConnected: this.gladysConnected,
     frigateConnected: this.frigateConnected,
     vaapiAvailable: this.vaapiAvailable,
+    openvinoCapable: this.openvinoCapable,
+    renderDevicePath: this.renderDevicePath,
     coralAvailable: this.coralAvailable,
     coralDeviceType: this.coralDeviceType,
     detector: this.detector,

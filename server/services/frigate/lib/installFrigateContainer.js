@@ -29,9 +29,11 @@ async function installFrigateContainer(config) {
   const devices = await this.gladys.device.get({ service: 'frigate' });
   const desiredShmSize = computeShmSize(devices.length);
   const desiredDevices = [];
-  if (this.vaapiAvailable) {
+  if (this.vaapiAvailable && this.renderDevicePath) {
     desiredDevices.push({
-      PathOnHost: DEFAULT.RENDER_DEVICE_PATH,
+      PathOnHost: this.renderDevicePath,
+      // Always mapped to the default node path: the Frigate presets and
+      // OpenVINO expect it, whatever host node was selected (multi-GPU hosts)
       PathInContainer: DEFAULT.RENDER_DEVICE_PATH,
       CgroupPermissions: 'rwm',
     });

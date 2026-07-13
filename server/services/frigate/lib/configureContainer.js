@@ -147,7 +147,7 @@ async function configureContainer(basePathOnContainer, config) {
   let detector = config.detector || DETECTORS.AUTO;
   if (
     (detector === DETECTORS.CORAL && !this.coralAvailable) ||
-    (detector === DETECTORS.OPENVINO && !this.vaapiAvailable)
+    (detector === DETECTORS.OPENVINO && !this.openvinoCapable)
   ) {
     logger.warn(`Frigate: detector "${detector}" requires undetected hardware, falling back to auto`);
     detector = DETECTORS.AUTO;
@@ -163,10 +163,12 @@ async function configureContainer(basePathOnContainer, config) {
     removeGeneratedOpenvinoModel(loadedConfig);
   } else if (!loadedConfig.detectors) {
     // auto: only added when the section is absent, so a manual
-    // configuration (custom Coral, custom model...) is never overwritten
+    // configuration (custom Coral, custom model...) is never overwritten.
+    // The OpenVINO GPU detector only runs on Intel GPUs: an AMD render node
+    // keeps the VAAPI decoding but detection stays on CPU
     if (this.coralAvailable) {
       loadedConfig.detectors = edgetpuDetectors;
-    } else if (this.vaapiAvailable) {
+    } else if (this.openvinoCapable) {
       loadedConfig.detectors = DEFAULT.OPENVINO_DETECTORS;
       loadedConfig.model = loadedConfig.model || DEFAULT.OPENVINO_MODEL;
     }

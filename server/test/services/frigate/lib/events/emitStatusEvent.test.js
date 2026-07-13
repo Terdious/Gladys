@@ -36,6 +36,8 @@ describe('frigate emitStatusEvent', () => {
         gladysConnected: false,
         frigateConnected: false,
         vaapiAvailable: false,
+        openvinoCapable: false,
+        renderDevicePath: null,
         coralAvailable: false,
         coralDeviceType: null,
         detector: 'auto',

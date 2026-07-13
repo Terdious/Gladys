@@ -302,6 +302,7 @@ describe('frigate configureContainer', () => {
 
   it('should add OpenVINO detector and VAAPI when GPU is available', async () => {
     frigateManager.vaapiAvailable = true;
+    frigateManager.openvinoCapable = true;
 
     const { configChanged } = await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, config);
 
@@ -323,6 +324,7 @@ describe('frigate configureContainer', () => {
 
   it('should prefer the Coral over the GPU in auto mode', async () => {
     frigateManager.vaapiAvailable = true;
+    frigateManager.openvinoCapable = true;
     frigateManager.coralAvailable = true;
     frigateManager.coralDeviceType = 'usb';
 
@@ -349,6 +351,7 @@ describe('frigate configureContainer', () => {
 
   it('should apply an explicit CPU detector choice and drop the generated OpenVINO model', async () => {
     frigateManager.vaapiAvailable = true;
+    frigateManager.openvinoCapable = true;
     // First run in auto mode: OpenVINO detectors + model are generated
     await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, config);
 
@@ -368,6 +371,7 @@ describe('frigate configureContainer', () => {
 
   it('should apply an explicit OpenVINO detector choice', async () => {
     frigateManager.vaapiAvailable = true;
+    frigateManager.openvinoCapable = true;
     frigateManager.coralAvailable = true;
     frigateManager.coralDeviceType = 'usb';
 
@@ -421,6 +425,7 @@ describe('frigate configureContainer', () => {
 
   it('should preserve manual detectors and ffmpeg sections', async () => {
     frigateManager.vaapiAvailable = true;
+    frigateManager.openvinoCapable = true;
     await fs.mkdir(path.dirname(configFilePath), { recursive: true });
     const existingConfig = [
       'detectors:',

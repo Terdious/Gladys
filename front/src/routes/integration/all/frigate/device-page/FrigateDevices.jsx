@@ -62,6 +62,7 @@ const FrigateDevicesPage = props => (
                     applyCameraPreset={props.applyCameraPreset}
                     saveCamera={props.saveCamera}
                     deleteCamera={props.deleteCamera}
+                    httpClient={props.httpClient}
                   />
                 ))}
               {props.frigateCameras && props.frigateCameras.length === 0 && (

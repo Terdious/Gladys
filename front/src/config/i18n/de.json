@@ -1135,6 +1135,7 @@
       "description": "Lokale Videoüberwachung mit KI-Objekterkennung.",
       "deviceTab": "Geräte",
       "setupTab": "Einrichtung",
+      "debugTab": "MQTT-Debug",
       "documentation": "Frigate-Dokumentation",
       "status": {
         "notInstalled": "Frigate konnte nicht installiert werden.",
@@ -1288,7 +1289,22 @@
             "reolinkRtsp": "Verwenden Sie die Zugangsdaten Ihrer Reolink-Kamera. Die meisten Modelle bieten die Pfade h264Preview_01_main (HQ) und h264Preview_01_sub (leicht).",
             "reolinkUnknownModel": "Reolink-Modell nicht gelistet: Versuchen Sie \"RTSP\" mit den Pfaden h264Preview_01_main / h264Preview_01_sub. Teilen Sie Ihr Ergebnis:"
           }
-        }
+        },
+        "ptzLabel": "PTZ-Steuerung (über ONVIF)",
+        "ptzHelp": "Halten Sie eine Taste gedrückt, um die Kamera zu bewegen, loslassen zum Stoppen.",
+        "ptzError": "PTZ-Befehl abgelehnt — prüfen Sie die ONVIF-Zugangsdaten und ob die Integration verbunden ist."
+      },
+      "debug": {
+        "title": "MQTT-Debug",
+        "description": "Letzte vom Frigate-MQTT-Broker empfangene Nachrichten (im Speicher, max. 200). Nützlich zum Prüfen von Erkennungen und zur Kameradiagnose.",
+        "pause": "Pause",
+        "resume": "Fortsetzen",
+        "filterPlaceholder": "Nach Topic oder Inhalt filtern…",
+        "timeColumn": "Zeit",
+        "topicColumn": "Topic",
+        "payloadColumn": "Nachricht",
+        "emptyState": "Noch keine Nachricht empfangen. Prüfen Sie, ob die Integration aktiviert ist.",
+        "error": "Nachrichten können nicht abgerufen werden (nur für Administratoren)."
       }
     },
     "matterbridge": {

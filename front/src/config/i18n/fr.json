@@ -1268,6 +1268,7 @@
       "description": "Vidéosurveillance locale avec détection d'objets par IA.",
       "deviceTab": "Appareils",
       "setupTab": "Configuration",
+      "debugTab": "Debug MQTT",
       "documentation": "Documentation Frigate",
       "status": {
         "notInstalled": "L'installation de Frigate a échoué.",
@@ -1421,7 +1422,22 @@
             "reolinkRtsp": "Utilisez les identifiants de votre caméra Reolink. La plupart des modèles exposent les chemins h264Preview_01_main (HQ) et h264Preview_01_sub (léger).",
             "reolinkUnknownModel": "Modèle Reolink non listé : essayez « RTSP » avec les chemins h264Preview_01_main / h264Preview_01_sub. Partagez votre résultat :"
           }
-        }
+        },
+        "ptzLabel": "Contrôle PTZ (via ONVIF)",
+        "ptzHelp": "Maintenez un bouton pour bouger la caméra, relâchez pour arrêter.",
+        "ptzError": "Commande PTZ refusée — vérifiez les identifiants ONVIF et que l'intégration est connectée."
+      },
+      "debug": {
+        "title": "Debug MQTT",
+        "description": "Derniers messages reçus du broker MQTT Frigate (mémoire, 200 max). Utile pour vérifier les détections et diagnostiquer une caméra.",
+        "pause": "Pause",
+        "resume": "Reprendre",
+        "filterPlaceholder": "Filtrer par topic ou contenu…",
+        "timeColumn": "Heure",
+        "topicColumn": "Topic",
+        "payloadColumn": "Message",
+        "emptyState": "Aucun message reçu pour le moment. Vérifiez que l'intégration est activée.",
+        "error": "Impossible de récupérer les messages (réservé aux administrateurs)."
       }
     },
     "matterbridge": {

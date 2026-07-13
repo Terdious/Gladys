@@ -185,7 +185,13 @@ const DEFAULT = {
   LIVE_INPUT_ARGS: ['-fflags', '+genpts+discardcorrupt', '-rtsp_transport', 'tcp', '-use_wallclock_as_timestamps', '1'],
   LIVE_HLS_LIST_SIZE: 10,
   LIVE_AUDIO_BITRATE: '128k',
+  // MQTT debug page: in-memory ring buffer of the last received messages
+  MQTT_DEBUG_BUFFER_SIZE: 200,
+  MQTT_DEBUG_PAYLOAD_MAX_LENGTH: 2000,
 };
+
+// PTZ commands accepted on the frigate/<camera>/ptz MQTT topic
+const PTZ_COMMAND_REGEX = /^(MOVE_(UP|DOWN|LEFT|RIGHT)|ZOOM_(IN|OUT)|STOP|preset_[a-zA-Z0-9_-]+)$/;
 
 module.exports = {
   CONFIGURATION,
@@ -197,5 +203,6 @@ module.exports = {
   DETECTORS,
   CORAL_DEVICE_TYPES,
   TRACKABLE_LABELS,
+  PTZ_COMMAND_REGEX,
   DEFAULT,
 };

@@ -38,6 +38,8 @@ const frigateManager = {
   stopStreaming: fake.resolves(null),
   liveActivePing: fake.resolves(null),
   getRetentionSettings: fake.resolves({ continuous: 2, alerts: 7, detections: 7 }),
+  sendPtzCommand: fake.resolves(null),
+  mqttDebugMessages: [{ topic: 'frigate/available', payload: 'online', received_at: '2026-07-13T18:00:00.000Z' }],
 };
 
 describe('frigate API', () => {
@@ -118,6 +120,36 @@ describe('frigate API', () => {
     await controller['post /api/v1/service/frigate/config/apply'].controller(req, res);
 
     assert.calledOnce(frigateManager.init);
+    assert.calledWith(res.json, { success: true });
+  });
+
+  it('get /api/v1/service/frigate/mqtt/debug', async () => {
+    const req = {};
+    const res = {
+      json: fake.returns(null),
+    };
+
+    await controller['get /api/v1/service/frigate/mqtt/debug'].controller(req, res);
+
+    assert.calledWith(res.json, frigateManager.mqttDebugMessages);
+  });
+
+  it('post .../camera/:camera_selector/ptz', async () => {
+    const req = {
+      params: {
+        camera_selector: 'my-camera',
+      },
+      body: {
+        command: 'MOVE_LEFT',
+      },
+    };
+    const res = {
+      json: fake.returns(null),
+    };
+
+    await controller['post /api/v1/service/frigate/camera/:camera_selector/ptz'].controller(req, res);
+
+    assert.calledWith(frigateManager.sendPtzCommand, 'my-camera', 'MOVE_LEFT');
     assert.calledWith(res.json, { success: true });
   });
 

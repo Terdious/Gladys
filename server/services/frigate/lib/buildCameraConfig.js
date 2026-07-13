@@ -193,6 +193,20 @@ function buildCameraConfig(device, recordContent = DEFAULT.RECORD_CONTENT) {
     snapshots: DEFAULT.SNAPSHOTS_CONTENT,
   };
 
+  // PTZ: declare the ONVIF endpoint of the camera when its dedicated
+  // credentials are set (works with any source type)
+  const onvifHost = getDeviceParam(device, CAMERA_PARAMS.SOURCE_HOST);
+  const onvifUsername = getDeviceParam(device, CAMERA_PARAMS.ONVIF_USERNAME);
+  const onvifPassword = getDeviceParam(device, CAMERA_PARAMS.ONVIF_PASSWORD);
+  if (onvifHost && onvifUsername && onvifPassword) {
+    cameraSection.onvif = {
+      host: onvifHost,
+      port: Number(getDeviceParam(device, CAMERA_PARAMS.ONVIF_PORT)) || DEFAULT.ONVIF_PORT,
+      user: onvifUsername,
+      password: onvifPassword,
+    };
+  }
+
   return { cameraName, go2rtcSource, go2rtcSubSource, cameraSection };
 }
 

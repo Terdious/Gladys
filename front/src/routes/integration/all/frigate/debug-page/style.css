@@ -1,0 +1,12 @@
+.messagesContainer {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.nowrapCell {
+  white-space: nowrap;
+}
+
+.payloadCell {
+  word-break: break-all;
+}

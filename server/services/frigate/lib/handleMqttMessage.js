@@ -11,6 +11,7 @@ const { MQTT_TOPICS, DEVICE_EXTERNAL_ID_PREFIX } = require('./constants');
  * await handleMqttMessage('frigate/available', 'online');
  */
 async function handleMqttMessage(topic, message) {
+  this.recordMqttMessage(topic, message);
   switch (topic) {
     case MQTT_TOPICS.AVAILABLE: {
       this.frigateConnected = message === 'online';

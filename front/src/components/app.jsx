@@ -187,6 +187,7 @@ import MatterbridgePage from '../routes/integration/all/matterbridge/setup-page'
 // Frigate integration
 import FrigateDevicePage from '../routes/integration/all/frigate/device-page';
 import FrigateSetupPage from '../routes/integration/all/frigate/setup-page';
+import FrigateDebugPage from '../routes/integration/all/frigate/debug-page';
 
 // Free Mobile integration
 import FreeMobilePage from '../routes/integration/all/free-mobile';
@@ -304,6 +305,7 @@ const AppRouter = connect(
 
         <FrigateDevicePage path="/dashboard/integration/device/frigate" />
         <FrigateSetupPage path="/dashboard/integration/device/frigate/setup" />
+        <FrigateDebugPage path="/dashboard/integration/device/frigate/debug" />
 
         <FreeMobilePage path="dashboard/integration/communication/free-mobile" />
         <CallMeBotPage path="dashboard/integration/communication/callmebot" />

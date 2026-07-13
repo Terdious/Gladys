@@ -35,6 +35,17 @@ const FrigatePage = ({ children, user }) => (
                     <Text id="integration.frigate.setupTab" />
                   </Link>
 
+                  <Link
+                    href="/dashboard/integration/device/frigate/debug"
+                    activeClassName="active"
+                    class="list-group-item list-group-item-action d-flex align-items-center"
+                  >
+                    <span class="icon mr-3">
+                      <i class="fe fe-terminal" />
+                    </span>
+                    <Text id="integration.frigate.debugTab" />
+                  </Link>
+
                   <DeviceConfigurationLink
                     user={user}
                     configurationKey="integrations"

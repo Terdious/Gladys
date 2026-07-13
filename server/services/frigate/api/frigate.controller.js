@@ -81,6 +81,25 @@ module.exports = function FrigateController(gladys, frigateManager) {
   }
 
   /**
+   * @api {get} /api/v1/service/frigate/mqtt/debug Get last received MQTT messages
+   * @apiName getMqttDebugMessages
+   * @apiGroup Frigate
+   */
+  async function getMqttDebugMessages(req, res) {
+    res.json(frigateManager.mqttDebugMessages);
+  }
+
+  /**
+   * @api {post} /api/v1/service/frigate/camera/:camera_selector/ptz Send a PTZ command
+   * @apiName sendPtzCommand
+   * @apiGroup Frigate
+   */
+  async function sendPtzCommand(req, res) {
+    await frigateManager.sendPtzCommand(req.params.camera_selector, req.body.command);
+    res.json({ success: true });
+  }
+
+  /**
    * @api {post} /api/v1/service/frigate/camera/:camera_selector/streaming/start Start streaming
    * @apiName startStreaming
    * @apiGroup Frigate
@@ -164,6 +183,16 @@ module.exports = function FrigateController(gladys, frigateManager) {
     'post /api/v1/service/frigate/config/apply': {
       authenticated: true,
       controller: asyncMiddleware(applyConfig),
+    },
+    'get /api/v1/service/frigate/mqtt/debug': {
+      authenticated: true,
+      admin: true,
+      controller: asyncMiddleware(getMqttDebugMessages),
+    },
+    'post /api/v1/service/frigate/camera/:camera_selector/ptz': {
+      authenticated: true,
+      admin: false,
+      controller: asyncMiddleware(sendPtzCommand),
     },
     'post /api/v1/service/frigate/camera/:camera_selector/streaming/start': {
       authenticated: true,

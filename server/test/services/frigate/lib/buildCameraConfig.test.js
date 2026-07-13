@@ -317,4 +317,48 @@ describe('frigate buildCameraConfig', () => {
     expect(cameraSection.objects.track).to.deep.equal(['person']);
     expect(cameraSection.detect.fps).to.equal(5);
   });
+
+  it('should declare the camera onvif section when ONVIF credentials are set', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'rtsp',
+      FRIGATE_SOURCE_HOST: '192.168.1.10',
+      FRIGATE_CAMERA_ONVIF_PORT: '2020',
+      FRIGATE_ONVIF_USERNAME: 'onvif-user',
+      FRIGATE_ONVIF_PASSWORD: 'onvif-password',
+    });
+
+    const { cameraSection } = buildCameraConfig(device);
+
+    expect(cameraSection.onvif).to.deep.equal({
+      host: '192.168.1.10',
+      port: 2020,
+      user: 'onvif-user',
+      password: 'onvif-password',
+    });
+  });
+
+  it('should declare the camera onvif section on the default port', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'rtsp',
+      FRIGATE_SOURCE_HOST: '192.168.1.10',
+      FRIGATE_ONVIF_USERNAME: 'onvif-user',
+      FRIGATE_ONVIF_PASSWORD: 'onvif-password',
+    });
+
+    const { cameraSection } = buildCameraConfig(device);
+
+    expect(cameraSection.onvif.port).to.equal(80);
+  });
+
+  it('should not declare the camera onvif section without credentials', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'rtsp',
+      FRIGATE_SOURCE_HOST: '192.168.1.10',
+      FRIGATE_ONVIF_USERNAME: 'onvif-user',
+    });
+
+    const { cameraSection } = buildCameraConfig(device);
+
+    expect(cameraSection.onvif).to.equal(undefined);
+  });
 });

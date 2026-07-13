@@ -1030,6 +1030,7 @@
       "description": "Local AI video surveillance with object detection.",
       "deviceTab": "Devices",
       "setupTab": "Setup",
+      "debugTab": "MQTT debug",
       "documentation": "Frigate documentation",
       "status": {
         "notInstalled": "Frigate failed to install.",
@@ -1183,7 +1184,22 @@
             "reolinkRtsp": "Use your Reolink camera credentials. Most models expose the h264Preview_01_main (HQ) and h264Preview_01_sub (light) paths.",
             "reolinkUnknownModel": "Reolink model not listed: try \"RTSP\" with the h264Preview_01_main / h264Preview_01_sub paths. Share your result:"
           }
-        }
+        },
+        "ptzLabel": "PTZ control (through ONVIF)",
+        "ptzHelp": "Hold a button to move the camera, release to stop.",
+        "ptzError": "PTZ command rejected — check the ONVIF credentials and that the integration is connected."
+      },
+      "debug": {
+        "title": "MQTT debug",
+        "description": "Last messages received from the Frigate MQTT broker (in-memory, 200 max). Useful to check detections and diagnose a camera.",
+        "pause": "Pause",
+        "resume": "Resume",
+        "filterPlaceholder": "Filter by topic or content…",
+        "timeColumn": "Time",
+        "topicColumn": "Topic",
+        "payloadColumn": "Message",
+        "emptyState": "No message received yet. Check that the integration is enabled.",
+        "error": "Unable to fetch messages (administrators only)."
       }
     },
     "matterbridge": {

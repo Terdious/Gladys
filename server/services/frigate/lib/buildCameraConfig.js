@@ -1,7 +1,14 @@
 const crypto = require('crypto');
 
 const { BadParameters } = require('../../../utils/coreErrors');
-const { CAMERA_PARAMS, SOURCE_TYPES, TAPO_AUTH_VARIANTS, TRACKABLE_LABELS, DEFAULT } = require('./constants');
+const {
+  CAMERA_PARAMS,
+  SOURCE_TYPES,
+  CONTROL_PROTOCOLS,
+  TAPO_AUTH_VARIANTS,
+  TRACKABLE_LABELS,
+  DEFAULT,
+} = require('./constants');
 
 /**
  * @description Get a device param value.
@@ -82,6 +89,19 @@ function buildGo2rtcSource(device) {
       const port = Number(getDeviceParam(device, CAMERA_PARAMS.ONVIF_PORT)) || DEFAULT.ONVIF_PORT;
       const credentials = username ? `${encodeURIComponent(username)}:${encodeURIComponent(onvifPassword || '')}@` : '';
       return `onvif://${credentials}${host}:${port}`;
+    }
+    case SOURCE_TYPES.MJPEG: {
+      if (!host) {
+        throw new BadParameters(`Frigate: camera ${device.external_id} has no host configured`);
+      }
+      // Old cameras without RTSP (D-Link mydlink Lite...): go2rtc reads the
+      // HTTP MJPEG stream and re-encodes it to H264 (light at VGA resolutions)
+      const username = getDeviceParam(device, CAMERA_PARAMS.SOURCE_USERNAME);
+      const port = Number(getDeviceParam(device, CAMERA_PARAMS.SOURCE_HTTP_PORT)) || DEFAULT.HTTP_PORT;
+      const path = getDeviceParam(device, CAMERA_PARAMS.SOURCE_PATH) || DEFAULT.MJPEG_PATH;
+      const credentials = username ? `${encodeURIComponent(username)}:${encodeURIComponent(password || '')}@` : '';
+      const cleanPath = `/${path.replace(/^\//, '')}`;
+      return `ffmpeg:http://${credentials}${host}:${port}${cleanPath}#video=h264`;
     }
     case SOURCE_TYPES.CUSTOM: {
       const customSource = getDeviceParam(device, CAMERA_PARAMS.CUSTOM_SOURCE);
@@ -195,11 +215,13 @@ function buildCameraConfig(device, recordContent = DEFAULT.RECORD_CONTENT) {
   };
 
   // PTZ: declare the ONVIF endpoint of the camera when its dedicated
-  // credentials are set (works with any source type)
+  // credentials are set (works with any source type). Cameras controlled
+  // through a proprietary protocol (D-Link HTTP) have no ONVIF endpoint.
+  const ptzProtocol = getDeviceParam(device, CAMERA_PARAMS.PTZ_PROTOCOL);
   const onvifHost = getDeviceParam(device, CAMERA_PARAMS.SOURCE_HOST);
   const onvifUsername = getDeviceParam(device, CAMERA_PARAMS.ONVIF_USERNAME);
   const onvifPassword = getDeviceParam(device, CAMERA_PARAMS.ONVIF_PASSWORD);
-  if (onvifHost && onvifUsername && onvifPassword) {
+  if (onvifHost && onvifUsername && onvifPassword && ptzProtocol !== CONTROL_PROTOCOLS.DLINK_HTTP) {
     cameraSection.onvif = {
       host: onvifHost,
       port: Number(getDeviceParam(device, CAMERA_PARAMS.ONVIF_PORT)) || DEFAULT.ONVIF_PORT,

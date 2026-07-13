@@ -1,4 +1,4 @@
-const { SOURCE_TYPES, DEFAULT } = require('./constants');
+const { SOURCE_TYPES, CONTROL_PROTOCOLS, DEFAULT } = require('./constants');
 
 // Community-maintained camera catalog. Each model provides form presets and
 // an i18n note key (integration.frigate.device.catalog.notes.<noteKey>)
@@ -63,14 +63,17 @@ const CAMERA_CATALOG = [
     unknownModelNoteKey: 'dlinkUnknownModel',
     models: [
       {
-        // Native RTSP with the camera web interface account
+        // No RTSP on firmware 1.16 (mydlink Lite): local HTTP MJPEG stream,
+        // proprietary HTTP control for pan/tilt and night mode
         name: 'DCS-5020L',
-        noteKey: 'dlinkPlaySdp',
-        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.CUSTOM],
+        noteKey: 'dlinkMjpeg',
+        allowedSourceTypes: [SOURCE_TYPES.MJPEG, SOURCE_TYPES.CUSTOM],
         preset: {
-          sourceType: SOURCE_TYPES.RTSP,
-          path: 'play1.sdp',
-          rtspPort: 554,
+          sourceType: SOURCE_TYPES.MJPEG,
+          path: 'video.cgi',
+          httpPort: 80,
+          ptzProtocol: CONTROL_PROTOCOLS.DLINK_HTTP,
+          nightModeProtocol: CONTROL_PROTOCOLS.DLINK_HTTP,
         },
       },
       // mydlink cameras (DCS-8xxxLH): the factory firmware locks the streams to

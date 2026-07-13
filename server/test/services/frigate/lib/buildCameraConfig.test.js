@@ -327,6 +327,64 @@ describe('frigate buildCameraConfig', () => {
     expect(cameraSection.detect.fps).to.equal(5);
   });
 
+  it('should build a mjpeg source re-encoded to h264', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'mjpeg',
+      FRIGATE_SOURCE_HOST: '10.6.0.1',
+      FRIGATE_SOURCE_USERNAME: 'user@home',
+      FRIGATE_SOURCE_PASSWORD: 'p#ss',
+    });
+
+    const { go2rtcSource, go2rtcSubSource } = buildCameraConfig(device);
+
+    expect(go2rtcSource).to.equal('ffmpeg:http://user%40home:p%23ss@10.6.0.1:80/video.cgi#video=h264');
+    expect(go2rtcSubSource).to.equal(null);
+  });
+
+  it('should build a mjpeg source with a custom port and path', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'mjpeg',
+      FRIGATE_SOURCE_HOST: '10.6.0.1',
+      FRIGATE_CAMERA_HTTP_PORT: '8080',
+      FRIGATE_SOURCE_PATH: '/mjpeg.cgi',
+    });
+
+    const { go2rtcSource } = buildCameraConfig(device);
+
+    expect(go2rtcSource).to.equal('ffmpeg:http://10.6.0.1:8080/mjpeg.cgi#video=h264');
+  });
+
+  it('should build a mjpeg source with username but no password', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'mjpeg',
+      FRIGATE_SOURCE_HOST: '10.6.0.1',
+      FRIGATE_SOURCE_USERNAME: 'admin',
+    });
+
+    const { go2rtcSource } = buildCameraConfig(device);
+
+    expect(go2rtcSource).to.equal('ffmpeg:http://admin:@10.6.0.1:80/video.cgi#video=h264');
+  });
+
+  it('should throw when mjpeg host is missing', () => {
+    const device = buildDevice({ FRIGATE_SOURCE_TYPE: 'mjpeg' });
+    expect(() => buildCameraConfig(device)).to.throw('has no host configured');
+  });
+
+  it('should not declare the onvif section for a proprietary control protocol', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'mjpeg',
+      FRIGATE_SOURCE_HOST: '10.6.0.1',
+      FRIGATE_PTZ_PROTOCOL: 'dlink-http',
+      FRIGATE_ONVIF_USERNAME: 'admin',
+      FRIGATE_ONVIF_PASSWORD: 'admin-password',
+    });
+
+    const { cameraSection } = buildCameraConfig(device);
+
+    expect(cameraSection.onvif).to.equal(undefined);
+  });
+
   it('should declare the camera onvif section when ONVIF credentials are set', () => {
     const device = buildDevice({
       FRIGATE_SOURCE_TYPE: 'rtsp',

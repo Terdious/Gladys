@@ -86,6 +86,9 @@ class FrigateCameraBox extends Component {
   updateRtspPort = e => {
     this.props.updateCameraField(this.props.cameraIndex, 'rtspPort', e.target.value);
   };
+  updateHttpPort = e => {
+    this.props.updateCameraField(this.props.cameraIndex, 'httpPort', e.target.value);
+  };
   updateOnvifPort = e => {
     this.props.updateCameraField(this.props.cameraIndex, 'onvifPort', e.target.value);
   };
@@ -239,28 +242,30 @@ class FrigateCameraBox extends Component {
                           <i class="fe fe-arrow-right" />
                         </button>
                       </div>
-                      <div class="btn-group" role="group">
-                        <button
-                          class="btn btn-secondary btn-sm"
-                          onMouseDown={this.startPtz('ZOOM_IN')}
-                          onMouseUp={this.stopPtz}
-                          onMouseLeave={this.stopPtz}
-                          onTouchStart={this.startPtz('ZOOM_IN')}
-                          onTouchEnd={this.stopPtz}
-                        >
-                          <i class="fe fe-zoom-in" />
-                        </button>
-                        <button
-                          class="btn btn-secondary btn-sm"
-                          onMouseDown={this.startPtz('ZOOM_OUT')}
-                          onMouseUp={this.stopPtz}
-                          onMouseLeave={this.stopPtz}
-                          onTouchStart={this.startPtz('ZOOM_OUT')}
-                          onTouchEnd={this.stopPtz}
-                        >
-                          <i class="fe fe-zoom-out" />
-                        </button>
-                      </div>
+                      {camera.ptzProtocol !== 'dlink-http' && (
+                        <div class="btn-group" role="group">
+                          <button
+                            class="btn btn-secondary btn-sm"
+                            onMouseDown={this.startPtz('ZOOM_IN')}
+                            onMouseUp={this.stopPtz}
+                            onMouseLeave={this.stopPtz}
+                            onTouchStart={this.startPtz('ZOOM_IN')}
+                            onTouchEnd={this.stopPtz}
+                          >
+                            <i class="fe fe-zoom-in" />
+                          </button>
+                          <button
+                            class="btn btn-secondary btn-sm"
+                            onMouseDown={this.startPtz('ZOOM_OUT')}
+                            onMouseUp={this.stopPtz}
+                            onMouseLeave={this.stopPtz}
+                            onTouchStart={this.startPtz('ZOOM_OUT')}
+                            onTouchEnd={this.stopPtz}
+                          >
+                            <i class="fe fe-zoom-out" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                     <small class="text-muted">
                       <Text id="integration.frigate.device.ptzHelp" />
@@ -440,7 +445,24 @@ class FrigateCameraBox extends Component {
                     </div>
                   </div>
                 )}
-                {camera.sourceType === SOURCE_TYPES.RTSP && (
+                {camera.sourceType === SOURCE_TYPES.MJPEG && (
+                  <div class="form-group">
+                    <label>
+                      <Text id="integration.frigate.device.httpPortLabel" />
+                    </label>
+                    <input
+                      type="number"
+                      value={camera.httpPort}
+                      onInput={this.updateHttpPort}
+                      class="form-control"
+                      placeholder="80"
+                    />
+                    <div class="help-block">
+                      <Text id="integration.frigate.device.portHelp" />
+                    </div>
+                  </div>
+                )}
+                {(camera.sourceType === SOURCE_TYPES.RTSP || camera.sourceType === SOURCE_TYPES.MJPEG) && (
                   <div class="form-group">
                     <label>
                       <Text id="integration.frigate.device.usernameLabel" />
@@ -461,7 +483,9 @@ class FrigateCameraBox extends Component {
                     />
                   </div>
                 )}
-                {(camera.sourceType === SOURCE_TYPES.RTSP || camera.sourceType === SOURCE_TYPES.TAPO) && (
+                {(camera.sourceType === SOURCE_TYPES.RTSP ||
+                  camera.sourceType === SOURCE_TYPES.TAPO ||
+                  camera.sourceType === SOURCE_TYPES.MJPEG) && (
                   <div class="form-group">
                     <label>
                       <Text id="integration.frigate.device.passwordLabel" />
@@ -569,6 +593,23 @@ class FrigateCameraBox extends Component {
                     </Localizer>
                     <div class="help-block">
                       <Text id="integration.frigate.device.subPathHelp" />
+                    </div>
+                  </div>
+                )}
+                {camera.sourceType === SOURCE_TYPES.MJPEG && (
+                  <div class="form-group">
+                    <label>
+                      <Text id="integration.frigate.device.pathLabel" />
+                    </label>
+                    <input
+                      type="text"
+                      value={camera.path}
+                      onInput={this.updatePath}
+                      class="form-control"
+                      placeholder="video.cgi"
+                    />
+                    <div class="help-block">
+                      <Text id="integration.frigate.device.mjpegPathHelp" />
                     </div>
                   </div>
                 )}

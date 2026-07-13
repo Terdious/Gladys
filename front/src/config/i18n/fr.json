@@ -1357,7 +1357,8 @@
           "rtsp": "Caméra RTSP (générique)",
           "tapo": "TP-Link Tapo (sans RTSP)",
           "custom": "Source go2rtc personnalisée",
-          "onvif": "ONVIF (découverte automatique des flux)"
+          "onvif": "ONVIF (découverte automatique des flux)",
+          "mjpeg": "Flux HTTP MJPEG (anciennes caméras)"
         },
         "tapoHelp": "Pour les caméras Tapo batterie/solaire sans RTSP : utilise le protocole TP-Link sur le port 8800 via go2rtc.",
         "onvifHelp": "Alternative de source vidéo quand les chemins RTSP sont inconnus : go2rtc demande ses flux à la caméra via ONVIF. Ajoutez le port ONVIF à l'adresse si nécessaire (Tapo : port 2020, ex. 192.168.1.20:2020) et utilisez les identifiants du compte caméra, pas votre compte cloud. Ne se combine pas avec le type RTSP. (Le contrôle PTZ sera une fonction séparée, sur la même caméra.)",
@@ -1423,14 +1424,16 @@
             "tapoUnknownModel": "Modèle Tapo non listé : s'il est filaire, essayez d'abord « RTSP » avec un compte caméra (chemins stream1/stream2). S'il est sur batterie/solaire, essayez le type « TP-Link Tapo (sans RTSP) » avec votre mot de passe cloud. Partagez votre résultat :",
             "reolinkRtsp": "Utilisez les identifiants de votre caméra Reolink. La plupart des modèles exposent les chemins h264Preview_01_main (HQ) et h264Preview_01_sub (léger).",
             "reolinkUnknownModel": "Modèle Reolink non listé : essayez « RTSP » avec les chemins h264Preview_01_main / h264Preview_01_sub. Partagez votre résultat :",
-            "dlinkPlaySdp": "Utilisez les identifiants de l'interface web de la caméra (admin + mot de passe). Le flux principal est play1.sdp ; un second profil play2.sdp existe selon la configuration.",
             "dlinkDefogger": "Le firmware mydlink verrouille les flux : activez une fois le RTSP avec l'outil « defogger » (via Bluetooth, voir github.com/bmork/defogger). Ensuite : utilisateur admin, mot de passe = code PIN de l'étiquette, chemin live/profile.0.",
-            "dlinkUnknownModel": "Modèle D-Link non listé : les anciens modèles utilisent play1.sdp en RTSP, les mydlink (DCS-8xxxLH) nécessitent l'outil defogger. Partagez votre résultat :"
+            "dlinkUnknownModel": "Modèle D-Link non listé : les anciens modèles utilisent play1.sdp en RTSP, les mydlink (DCS-8xxxLH) nécessitent l'outil defogger. Partagez votre résultat :",
+            "dlinkMjpeg": "Ce firmware n'a pas de RTSP : Gladys utilise le flux MJPEG local (léger réencodage). Flux : un compte utilisateur de la caméra suffit. Pan/tilt et mode nuit : renseignez le compte ADMIN de la caméra dans les identifiants de contrôle — un interrupteur « mode nuit » est créé sur l'appareil (activé = infrarouge forcé, désactivé = automatique). Pas de zoom motorisé."
           }
         },
         "ptzLabel": "Contrôle PTZ (via ONVIF)",
         "ptzHelp": "Maintenez un bouton pour bouger la caméra, relâchez pour arrêter.",
-        "ptzError": "Commande PTZ refusée — vérifiez les identifiants ONVIF et que l'intégration est connectée."
+        "ptzError": "Commande PTZ refusée — vérifiez les identifiants ONVIF et que l'intégration est connectée.",
+        "httpPortLabel": "Port HTTP de la caméra",
+        "mjpegPathHelp": "Chemin du flux MJPEG (video.cgi pour les D-Link). Le flux est réencodé en H.264 par go2rtc, très léger en VGA."
       },
       "debug": {
         "title": "Debug MQTT",

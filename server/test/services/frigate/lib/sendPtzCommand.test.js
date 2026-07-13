@@ -41,6 +41,23 @@ describe('frigate sendPtzCommand', () => {
     fakeAssert.calledWith(frigateManager.mqttClient.publish, 'frigate/my_camera/ptz', 'preset_garden');
   });
 
+  it('should route the command to the D-Link driver when the catalog declares it', async () => {
+    const dlinkDevice = {
+      selector: 'my-camera',
+      external_id: 'frigate:my_camera',
+      params: [{ name: 'FRIGATE_PTZ_PROTOCOL', value: 'dlink-http' }],
+    };
+    frigateManager.gladys.device.getBySelector = fake.resolves(dlinkDevice);
+    frigateManager.sendDlinkPtzCommand = fake.resolves(null);
+    // The D-Link driver works without the MQTT connection
+    frigateManager.mqttClient = null;
+    frigateManager.gladysConnected = false;
+
+    await frigateManager.sendPtzCommand('my-camera', 'MOVE_LEFT');
+
+    fakeAssert.calledOnceWithExactly(frigateManager.sendDlinkPtzCommand, dlinkDevice, 'MOVE_LEFT');
+  });
+
   it('should reject an invalid command', async () => {
     const promise = frigateManager.sendPtzCommand('my-camera', 'rm -rf /');
 

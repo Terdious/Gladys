@@ -41,9 +41,12 @@ const CAMERA_PARAMS = {
   CUSTOM_SUB_SOURCE: 'FRIGATE_CUSTOM_SUB_SOURCE',
   TAPO_AUTH_VARIANT: 'FRIGATE_TAPO_AUTH_VARIANT',
   SOURCE_RTSP_PORT: 'FRIGATE_CAMERA_RTSP_PORT',
+  SOURCE_HTTP_PORT: 'FRIGATE_CAMERA_HTTP_PORT',
   ONVIF_PORT: 'FRIGATE_CAMERA_ONVIF_PORT',
   ONVIF_USERNAME: 'FRIGATE_ONVIF_USERNAME',
   ONVIF_PASSWORD: 'FRIGATE_ONVIF_PASSWORD',
+  PTZ_PROTOCOL: 'FRIGATE_PTZ_PROTOCOL',
+  NIGHT_MODE_PROTOCOL: 'FRIGATE_NIGHT_MODE_PROTOCOL',
   TRACKED_LABELS: 'FRIGATE_TRACKED_LABELS',
   DETECT_FPS: 'FRIGATE_DETECT_FPS',
 };
@@ -52,7 +55,15 @@ const SOURCE_TYPES = {
   RTSP: 'rtsp',
   TAPO: 'tapo',
   ONVIF: 'onvif',
+  // HTTP MJPEG stream (old cameras without RTSP), re-encoded to H264 by go2rtc
+  MJPEG: 'mjpeg',
   CUSTOM: 'custom',
+};
+
+// Camera control protocols (PTZ, night mode), declared by the catalog
+const CONTROL_PROTOCOLS = {
+  ONVIF: 'onvif',
+  DLINK_HTTP: 'dlink-http',
 };
 
 const TAPO_AUTH_VARIANTS = {
@@ -109,6 +120,21 @@ const DEFAULT = {
   TAPO_DETECT_HEIGHT: 360,
   RTSP_PORT: 554,
   ONVIF_PORT: 80,
+  HTTP_PORT: 80,
+  MJPEG_PATH: 'video.cgi',
+  // D-Link proprietary HTTP control (validated on DCS-5020L firmware 1.16):
+  // pan/tilt single-step matrix and day/night mode
+  DLINK_PANTILT_PATH: '/pantiltcontrol.cgi',
+  DLINK_DAYNIGHT_PATH: '/daynight.cgi',
+  DLINK_PTZ_STEP_DEGREES: 5,
+  DLINK_PTZ_MOVES: {
+    MOVE_UP: 1,
+    MOVE_LEFT: 3,
+    MOVE_RIGHT: 5,
+    MOVE_DOWN: 7,
+  },
+  DLINK_NIGHT_MODE_ON: 3,
+  DLINK_NIGHT_MODE_AUTO: 0,
   RENDER_DEVICE_PATH: '/dev/dri/renderD128',
   // Google Coral: PCIe/M.2 exposes an apex device, USB is identified by its
   // vendor id (1a6e before the runtime flashes it, 18d1 after)
@@ -209,6 +235,7 @@ module.exports = {
   DEVICE_EXTERNAL_ID_PREFIX,
   CAMERA_PARAMS,
   SOURCE_TYPES,
+  CONTROL_PROTOCOLS,
   TAPO_AUTH_VARIANTS,
   DETECTORS,
   CORAL_DEVICE_TYPES,

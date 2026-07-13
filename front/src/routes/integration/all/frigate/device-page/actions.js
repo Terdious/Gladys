@@ -44,9 +44,12 @@ function createActions(store) {
       camera.customSubSource = getParamValue(camera, CAMERA_PARAMS.CUSTOM_SUB_SOURCE);
       camera.tapoAuthVariant = getParamValue(camera, CAMERA_PARAMS.TAPO_AUTH_VARIANT);
       camera.rtspPort = getParamValue(camera, CAMERA_PARAMS.SOURCE_RTSP_PORT);
+      camera.httpPort = getParamValue(camera, CAMERA_PARAMS.SOURCE_HTTP_PORT);
       camera.onvifPort = getParamValue(camera, CAMERA_PARAMS.ONVIF_PORT);
       camera.onvifUsername = getParamValue(camera, CAMERA_PARAMS.ONVIF_USERNAME);
       camera.onvifPassword = getParamValue(camera, CAMERA_PARAMS.ONVIF_PASSWORD);
+      camera.ptzProtocol = getParamValue(camera, CAMERA_PARAMS.PTZ_PROTOCOL);
+      camera.nightModeProtocol = getParamValue(camera, CAMERA_PARAMS.NIGHT_MODE_PROTOCOL);
       const labels = getParamValue(camera, CAMERA_PARAMS.TRACKED_LABELS);
       camera.labels = labels ? labels.split(',').filter(label => label.length > 0) : ['person'];
       return camera;
@@ -143,9 +146,12 @@ function createActions(store) {
             customSubSource: null,
             tapoAuthVariant: null,
             rtspPort: null,
+            httpPort: null,
             onvifPort: null,
             onvifUsername: null,
             onvifPassword: null,
+            ptzProtocol: null,
+            nightModeProtocol: null,
             labels: ['person'],
             features: [],
             params: []
@@ -179,7 +185,10 @@ function createActions(store) {
         cameraUpdate.subPath = { $set: preset.subPath || null };
         cameraUpdate.extra = { $set: preset.extra || null };
         cameraUpdate.rtspPort = { $set: preset.rtspPort ? `${preset.rtspPort}` : null };
+        cameraUpdate.httpPort = { $set: preset.httpPort ? `${preset.httpPort}` : null };
         cameraUpdate.onvifPort = { $set: preset.onvifPort ? `${preset.onvifPort}` : null };
+        cameraUpdate.ptzProtocol = { $set: preset.ptzProtocol || null };
+        cameraUpdate.nightModeProtocol = { $set: preset.nightModeProtocol || null };
         cameraUpdate.customSource = { $set: null };
         cameraUpdate.customSubSource = { $set: null };
       }
@@ -216,9 +225,12 @@ function createActions(store) {
         { name: CAMERA_PARAMS.CUSTOM_SUB_SOURCE, value: camera.customSubSource && camera.customSubSource.trim() },
         { name: CAMERA_PARAMS.TAPO_AUTH_VARIANT, value: camera.tapoAuthVariant },
         { name: CAMERA_PARAMS.SOURCE_RTSP_PORT, value: camera.rtspPort },
+        { name: CAMERA_PARAMS.SOURCE_HTTP_PORT, value: camera.httpPort },
         { name: CAMERA_PARAMS.ONVIF_PORT, value: camera.onvifPort },
         { name: CAMERA_PARAMS.ONVIF_USERNAME, value: camera.onvifUsername },
         { name: CAMERA_PARAMS.ONVIF_PASSWORD, value: camera.onvifPassword },
+        { name: CAMERA_PARAMS.PTZ_PROTOCOL, value: camera.ptzProtocol },
+        { name: CAMERA_PARAMS.NIGHT_MODE_PROTOCOL, value: camera.nightModeProtocol },
         { name: CAMERA_PARAMS.TRACKED_LABELS, value: camera.labels.join(',') }
       ].filter(param => param.value !== null && param.value !== undefined && param.value !== '');
 
@@ -287,6 +299,28 @@ function createActions(store) {
           });
         }
       });
+
+      // Night mode switch, for cameras with a controllable IR (D-Link)
+      if (camera.nightModeProtocol) {
+        const nightModeExternalId = `${externalId}:nightmode`;
+        const existingNightMode = (camera.features || []).find(
+          feature => feature.external_id === nightModeExternalId
+        );
+        features.push(
+          existingNightMode || {
+            name: `${camera.name} - Night mode (IR)`,
+            external_id: nightModeExternalId,
+            selector: nightModeExternalId,
+            category: DEVICE_FEATURE_CATEGORIES.SWITCH,
+            type: DEVICE_FEATURE_TYPES.SWITCH.BINARY,
+            read_only: false,
+            keep_history: true,
+            has_feedback: false,
+            min: 0,
+            max: 1
+          }
+        );
+      }
 
       const deviceToSave = {
         id: camera.id,

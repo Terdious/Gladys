@@ -1092,7 +1092,7 @@
           "onvif": "ONVIF (automatic stream discovery)"
         },
         "tapoHelp": "For Tapo battery/solar cameras without RTSP: uses the TP-Link protocol on port 8800 through go2rtc.",
-        "onvifHelp": "Video source alternative when RTSP paths are unknown: go2rtc asks the camera for its streams through ONVIF. Do not combine with the RTSP type — pick one. (PTZ control is a separate upcoming feature, on the same camera.)",
+        "onvifHelp": "Video source alternative when RTSP paths are unknown: go2rtc asks the camera for its streams through ONVIF. Add the ONVIF port to the address if needed (Tapo: port 2020, e.g. 192.168.1.20:2020) and use the camera account credentials, not your cloud account. Do not combine with the RTSP type. (PTZ control is a separate upcoming feature, on the same camera.)",
         "hostLabel": "IP address or hostname",
         "hostPlaceholder": "192.168.1.20",
         "hostHelp": "You can find the IP address in the camera app (e.g. Tapo: camera settings → Device info) or in your router/box interface. Tip: assign it a static IP.",

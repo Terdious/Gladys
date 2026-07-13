@@ -1156,6 +1156,8 @@
         "confirmDisableCancelButton": "Abbrechen",
         "urlLabel": "Frigate-Oberfläche: <a href=\"{{frigateUrl}}\" target=\"_blank\" rel=\"noopener noreferrer\">{{frigateUrl}}</a> (Nicht über Gladys Plus erreichbar)",
         "urlHelp": "Frigate verwendet ein selbstsigniertes HTTPS-Zertifikat: Ihr Browser zeigt beim ersten Zugriff eine Sicherheitswarnung an. Melden Sie sich mit den unten stehenden, von Gladys verwalteten Zugangsdaten an.",
+        "hardwareGpu": "Hardwarebeschleunigung: Intel-GPU erkannt (OpenVINO-Detektor + VAAPI-Dekodierung)",
+        "hardwareCpu": "Keine GPU erkannt: Die Erkennung läuft auf der CPU (aufwendiger). Prüfen Sie, ob /dev im Gladys-Container gemountet ist.",
         "usernameLabel": "Benutzername",
         "passwordLabel": "Passwort",
         "portsTitle": "Zugewiesene Ports",

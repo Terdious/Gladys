@@ -18,6 +18,7 @@ describe('frigate status', () => {
       frigateRunning: false,
       gladysConnected: false,
       frigateConnected: false,
+      vaapiAvailable: false,
       mqttPort: null,
       frigateUiPort: null,
       frigateApiPort: null,
@@ -36,6 +37,7 @@ describe('frigate status', () => {
     frigateManager.frigateRunning = true;
     frigateManager.gladysConnected = true;
     frigateManager.frigateConnected = true;
+    frigateManager.vaapiAvailable = true;
     frigateManager.mqttPort = 1885;
     frigateManager.frigateUiPort = 8971;
     frigateManager.frigateApiPort = 5000;
@@ -51,6 +53,7 @@ describe('frigate status', () => {
       frigateRunning: true,
       gladysConnected: true,
       frigateConnected: true,
+      vaapiAvailable: true,
       mqttPort: 1885,
       frigateUiPort: 8971,
       frigateApiPort: 5000,

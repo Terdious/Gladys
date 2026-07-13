@@ -4,6 +4,8 @@ const path = require('path');
 const fse = require('fs-extra');
 
 const logger = require('../../../utils/logger');
+const { DEFAULT } = require('./constants');
+const { computeShmSize } = require('./computeShmSize');
 
 const containerDescriptor = require('../docker/gladys-frigate-container.json');
 
@@ -18,10 +20,38 @@ const sleep = promisify(setTimeout);
 async function installFrigateContainer(config) {
   let dockerContainers = await this.getDockerContainer(containerDescriptor.name);
   let [container] = dockerContainers;
+  let creationNeeded = dockerContainers.length === 0;
 
   const { basePathOnContainer, basePathOnHost } = await this.gladys.system.getGladysBasePath();
 
-  if (dockerContainers.length === 0) {
+  // Hardware-dependent settings of the container
+  const devices = await this.gladys.device.get({ service: 'frigate' });
+  const desiredShmSize = computeShmSize(devices.length);
+  const desiredDevices = this.vaapiAvailable
+    ? [
+        {
+          PathOnHost: DEFAULT.RENDER_DEVICE_PATH,
+          PathInContainer: DEFAULT.RENDER_DEVICE_PATH,
+          CgroupPermissions: 'rwm',
+        },
+      ]
+    : [];
+
+  // ShmSize and Devices cannot be updated on an existing container:
+  // recreate it when they changed (camera added, GPU plugged...)
+  if (!creationNeeded) {
+    const containerDescription = await this.gladys.system.inspectContainer(container.id);
+    const currentDevices = containerDescription.HostConfig.Devices || [];
+    const currentShmSize = containerDescription.HostConfig.ShmSize;
+    if (JSON.stringify(currentDevices) !== JSON.stringify(desiredDevices) || currentShmSize !== desiredShmSize) {
+      logger.info('Frigate container hardware settings changed, recreating container...');
+      await this.gladys.system.stopContainer(container.id);
+      await this.gladys.system.removeContainer(container.id);
+      creationNeeded = true;
+    }
+  }
+
+  if (creationNeeded) {
     try {
       logger.info('Frigate is being installed as Docker container...');
       logger.info(`Pulling ${containerDescriptor.Image} image...`);
@@ -30,6 +60,8 @@ async function installFrigateContainer(config) {
       const containerDescriptorToMutate = cloneDeep(containerDescriptor);
       containerDescriptorToMutate.HostConfig.Binds.push(`${basePathOnHost}/frigate/config:/config`);
       containerDescriptorToMutate.HostConfig.Binds.push(`${basePathOnHost}/frigate/media:/media/frigate`);
+      containerDescriptorToMutate.HostConfig.ShmSize = desiredShmSize;
+      containerDescriptorToMutate.HostConfig.Devices = desiredDevices;
       // Frigate runs in UTC by default: align it with the Gladys timezone
       // so recordings and events are timestamped correctly
       if (config.timezone) {

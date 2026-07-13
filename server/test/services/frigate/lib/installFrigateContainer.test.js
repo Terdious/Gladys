@@ -29,12 +29,22 @@ describe('frigate installFrigateContainer', () => {
       event: {
         emit: fake.resolves(null),
       },
+      device: {
+        get: fake.resolves([]),
+      },
       system: {
         getContainers: fake.resolves([container]),
         stopContainer: fake.resolves(true),
+        removeContainer: fake.resolves(true),
         pull: fake.resolves(true),
         restartContainer: fake.resolves(true),
         createContainer: fake.resolves(container),
+        inspectContainer: fake.resolves({
+          HostConfig: {
+            Devices: [],
+            ShmSize: 268435456,
+          },
+        }),
         getGladysBasePath: fake.resolves({
           basePathOnHost: '/var/lib/gladysassistant',
           basePathOnContainer: TEMP_GLADYS_FOLDER,
@@ -172,5 +182,66 @@ describe('frigate installFrigateContainer', () => {
     }
     expect(frigateManager.frigateRunning).to.equal(false);
     expect(frigateManager.frigateExist).to.equal(true);
+  });
+
+  it('should recreate the container when the GPU becomes available', async () => {
+    const config = {
+      frigateUiPort: 8971,
+      frigateApiPort: 5000,
+      frigateRtspPort: 8554,
+    };
+    frigateManager.vaapiAvailable = true;
+
+    await frigateManager.installFrigateContainer(config);
+
+    assert.calledOnce(gladys.system.stopContainer);
+    assert.calledOnce(gladys.system.removeContainer);
+    assert.calledOnce(gladys.system.createContainer);
+    const descriptor = gladys.system.createContainer.firstCall.args[0];
+    expect(descriptor.HostConfig.Devices).to.deep.equal([
+      {
+        PathOnHost: '/dev/dri/renderD128',
+        PathInContainer: '/dev/dri/renderD128',
+        CgroupPermissions: 'rwm',
+      },
+    ]);
+  });
+
+  it('should recreate the container when the shm size changed', async () => {
+    const config = {
+      frigateUiPort: 8971,
+      frigateApiPort: 5000,
+      frigateRtspPort: 8554,
+    };
+    // 2 cameras: shm must grow beyond the base size
+    gladys.device.get = fake.resolves([{ external_id: 'frigate:a' }, { external_id: 'frigate:b' }]);
+
+    await frigateManager.installFrigateContainer(config);
+
+    assert.calledOnce(gladys.system.removeContainer);
+    const descriptor = gladys.system.createContainer.firstCall.args[0];
+    expect(descriptor.HostConfig.ShmSize).to.equal(268435456 + 67108864);
+  });
+
+  it('should not recreate the container when hardware settings are unchanged', async () => {
+    const config = {};
+
+    await frigateManager.installFrigateContainer(config);
+
+    assert.notCalled(gladys.system.removeContainer);
+    assert.notCalled(gladys.system.createContainer);
+  });
+
+  it('should treat missing inspected devices as an empty list', async () => {
+    const config = {};
+    gladys.system.inspectContainer = fake.resolves({
+      HostConfig: {
+        ShmSize: 268435456,
+      },
+    });
+
+    await frigateManager.installFrigateContainer(config);
+
+    assert.notCalled(gladys.system.removeContainer);
   });
 });

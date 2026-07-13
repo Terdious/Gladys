@@ -46,6 +46,7 @@ async function init() {
     return null;
   }
 
+  this.vaapiAvailable = await this.detectHardware();
   this.emitStatusEvent();
 
   if (!this.frigateEnabled) {

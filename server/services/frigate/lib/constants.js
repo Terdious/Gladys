@@ -80,6 +80,28 @@ const DEFAULT = {
   TAPO_DETECT_HEIGHT: 360,
   RTSP_PORT: 554,
   // Frigate 0.16+ record schema (continuous/alerts/detections)
+  RENDER_DEVICE_PATH: '/dev/dri/renderD128',
+  // Validated on Intel N5105: inference 94.6ms (CPU) -> 15.8ms (GPU)
+  OPENVINO_DETECTORS: {
+    ov: {
+      type: 'openvino',
+      device: 'GPU',
+    },
+  },
+  OPENVINO_MODEL: {
+    width: 300,
+    height: 300,
+    input_tensor: 'nhwc',
+    input_pixel_format: 'bgr',
+    path: '/openvino-model/ssdlite_mobilenet_v2.xml',
+    labelmap_path: '/openvino-model/coco_91cl_bkgr.txt',
+  },
+  VAAPI_FFMPEG: {
+    hwaccel_args: 'preset-vaapi',
+  },
+  // 256MB validated for 1 camera, add headroom per extra camera
+  SHM_BASE_BYTES: 268435456,
+  SHM_PER_EXTRA_CAMERA_BYTES: 67108864,
   RECORD_CONTENT: {
     enabled: true,
     continuous: {

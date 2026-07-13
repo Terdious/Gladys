@@ -35,6 +35,7 @@ describe('frigate emitStatusEvent', () => {
         frigateRunning: false,
         gladysConnected: false,
         frigateConnected: false,
+        vaapiAvailable: false,
         mqttPort: null,
         frigateUiPort: null,
         frigateApiPort: null,

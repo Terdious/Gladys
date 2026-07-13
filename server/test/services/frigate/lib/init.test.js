@@ -35,6 +35,7 @@ describe('frigate init', () => {
       config.frigateApiPort = 5000;
       config.frigateRtspPort = 8554;
     });
+    frigateManager.detectHardware = fake.resolves(true);
   });
 
   afterEach(() => {
@@ -85,6 +86,8 @@ describe('frigate init', () => {
     expect(result).to.equal(null);
     expect(frigateManager.dockerBased).to.equal(true);
     expect(frigateManager.networkModeValid).to.equal(true);
+    expect(frigateManager.vaapiAvailable).to.equal(true);
+    assert.calledOnce(frigateManager.detectHardware);
     assert.notCalled(frigateManager.checkForContainerUpdates);
     assert.notCalled(frigateManager.installMqttContainer);
     assert.notCalled(frigateManager.installFrigateContainer);

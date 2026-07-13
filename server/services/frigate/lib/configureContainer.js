@@ -78,6 +78,18 @@ async function configureContainer(basePathOnContainer, config) {
   // Frigate refuses to start without a cameras section
   loadedConfig.cameras = cameras;
 
+  // Hardware acceleration: only added when the sections are absent, so a
+  // manual configuration (Coral, custom model...) is never overwritten
+  if (this.vaapiAvailable) {
+    if (!loadedConfig.detectors) {
+      loadedConfig.detectors = DEFAULT.OPENVINO_DETECTORS;
+      loadedConfig.model = loadedConfig.model || DEFAULT.OPENVINO_MODEL;
+    }
+    if (!loadedConfig.ffmpeg) {
+      loadedConfig.ffmpeg = DEFAULT.VAAPI_FFMPEG;
+    }
+  }
+
   const newContent = yaml.stringify(loadedConfig, YAML_CONFIG);
   const configChanged = newContent !== fileContent;
   if (configChanged) {

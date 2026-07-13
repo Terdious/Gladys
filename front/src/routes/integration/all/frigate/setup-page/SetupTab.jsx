@@ -65,6 +65,7 @@ class SetupTab extends Component {
       frigateRunning: false,
       gladysConnected: false,
       frigateConnected: false,
+      vaapiAvailable: false,
       mqttPort: null,
       frigateUiPort: null,
       frigateApiPort: null,
@@ -89,6 +90,7 @@ class SetupTab extends Component {
         frigateRunning: frigateStatus.frigateRunning,
         gladysConnected: frigateStatus.gladysConnected,
         frigateConnected: frigateStatus.frigateConnected,
+        vaapiAvailable: frigateStatus.vaapiAvailable,
         mqttPort: frigateStatus.mqttPort,
         frigateUiPort: frigateStatus.frigateUiPort,
         frigateApiPort: frigateStatus.frigateApiPort,
@@ -171,6 +173,7 @@ class SetupTab extends Component {
       frigateRunning,
       gladysConnected,
       frigateConnected,
+      vaapiAvailable,
       mqttPort,
       frigateUiPort,
       frigateApiPort,
@@ -310,6 +313,14 @@ class SetupTab extends Component {
                   </span>
                 </div>
               </div>
+            </div>
+          )}
+
+          {frigateEnabled && (
+            <div class="mt-3">
+              <span class={vaapiAvailable ? 'tag tag-success' : 'tag tag-warning'}>
+                <Text id={`integration.frigate.setup.${vaapiAvailable ? 'hardwareGpu' : 'hardwareCpu'}`} />
+              </span>
             </div>
           )}
 

@@ -144,6 +144,48 @@ describe('frigate configureContainer', () => {
     expect(fileContent).to.contain('cameras: {}');
   });
 
+  it('should add OpenVINO detector and VAAPI when GPU is available', async () => {
+    frigateManager.vaapiAvailable = true;
+
+    const { configChanged } = await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, config);
+
+    expect(configChanged).to.equal(true);
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.contain('openvino');
+    expect(fileContent).to.contain('device: GPU');
+    expect(fileContent).to.contain('/openvino-model/ssdlite_mobilenet_v2.xml');
+    expect(fileContent).to.contain('preset-vaapi');
+  });
+
+  it('should not add hardware acceleration when GPU is unavailable', async () => {
+    await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, config);
+
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.not.contain('openvino');
+    expect(fileContent).to.not.contain('preset-vaapi');
+  });
+
+  it('should preserve manual detectors and ffmpeg sections', async () => {
+    frigateManager.vaapiAvailable = true;
+    await fs.mkdir(path.dirname(configFilePath), { recursive: true });
+    const existingConfig = [
+      'detectors:',
+      '  coral:',
+      '    type: edgetpu',
+      'ffmpeg:',
+      '  hwaccel_args: custom',
+      '',
+    ].join('\n');
+    await fs.writeFile(configFilePath, existingConfig);
+
+    await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, config);
+
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.contain('edgetpu');
+    expect(fileContent).to.contain('hwaccel_args: custom');
+    expect(fileContent).to.not.contain('openvino');
+  });
+
   it('should handle an empty existing configuration file', async () => {
     await fs.mkdir(path.dirname(configFilePath), { recursive: true });
     await fs.writeFile(configFilePath, '');

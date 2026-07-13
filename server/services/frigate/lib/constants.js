@@ -137,6 +137,12 @@ const DEFAULT = {
     },
   },
   IMAGE_HEIGHT: 360,
+  // Live HLS: the go2rtc restream outputs a clean H264 stream, so the video is
+  // stream-copied without transcoding. Wallclock re-timestamping is still needed
+  // for cameras with non-monotonic DTS (tapo://)
+  LIVE_INPUT_ARGS: ['-fflags', '+genpts+discardcorrupt', '-rtsp_transport', 'tcp', '-use_wallclock_as_timestamps', '1'],
+  LIVE_HLS_LIST_SIZE: 10,
+  LIVE_AUDIO_BITRATE: '128k',
 };
 
 module.exports = {

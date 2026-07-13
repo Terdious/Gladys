@@ -20,6 +20,16 @@ const { installMqttContainer } = require('./installMqttContainer');
 const { installFrigateContainer } = require('./installFrigateContainer');
 const { configureContainer } = require('./configureContainer');
 
+// LIVE STREAMING
+const { startStreaming } = require('./startStreaming');
+const { startStreamingIfNotStarted } = require('./startStreamingIfNotStarted');
+const { stopStreaming } = require('./stopStreaming');
+const { liveActivePing } = require('./liveActivePing');
+const { checkIfLiveActive } = require('./checkIfLiveActive');
+const { onNewCameraFile } = require('./onNewCameraFile');
+const { sendCameraFileToGateway, sendCameraFileToGatewayLimited } = require('./sendCameraFileToGateway');
+const { convertLocalStreamToGateway } = require('./convertLocalStreamToGateway');
+
 // EVENTS
 const { emitStatusEvent } = require('./events/emitStatusEvent');
 
@@ -28,13 +38,15 @@ const { emitStatusEvent } = require('./events/emitStatusEvent');
  * @param {object} gladys - Gladys instance.
  * @param {object} mqttLibrary - MQTT lib.
  * @param {string} serviceId - UUID of the service in DB.
+ * @param {object} childProcess - ChildProcess library, used for live streaming.
  * @example
- * const frigateManager = new FrigateManager(gladys, mqttLibrary, serviceId);
+ * const frigateManager = new FrigateManager(gladys, mqttLibrary, serviceId, childProcess);
  */
-const FrigateManager = function FrigateManager(gladys, mqttLibrary, serviceId) {
+const FrigateManager = function FrigateManager(gladys, mqttLibrary, serviceId, childProcess) {
   this.gladys = gladys;
   this.mqttLibrary = mqttLibrary;
   this.serviceId = serviceId;
+  this.childProcess = childProcess;
   this.mqttClient = null;
 
   this.topicBinds = {};
@@ -57,6 +69,12 @@ const FrigateManager = function FrigateManager(gladys, mqttLibrary, serviceId) {
   this.frigateRtspPort = null;
 
   this.containerRestartWaitTimeInMs = 5 * 1000;
+
+  // Live streaming state
+  this.checkIfLiveActiveFrequencyInSeconds = 10;
+  this.liveStreams = new Map();
+  this.liveStreamsStarting = new Map();
+  this.checkIfLiveActiveInterval = null;
 };
 
 FrigateManager.prototype.init = init;
@@ -80,6 +98,17 @@ FrigateManager.prototype.getDockerContainer = getDockerContainer;
 FrigateManager.prototype.installMqttContainer = installMqttContainer;
 FrigateManager.prototype.installFrigateContainer = installFrigateContainer;
 FrigateManager.prototype.configureContainer = configureContainer;
+
+// LIVE STREAMING
+FrigateManager.prototype.startStreaming = startStreaming;
+FrigateManager.prototype.startStreamingIfNotStarted = startStreamingIfNotStarted;
+FrigateManager.prototype.stopStreaming = stopStreaming;
+FrigateManager.prototype.liveActivePing = liveActivePing;
+FrigateManager.prototype.checkIfLiveActive = checkIfLiveActive;
+FrigateManager.prototype.onNewCameraFile = onNewCameraFile;
+FrigateManager.prototype.sendCameraFileToGateway = sendCameraFileToGateway;
+FrigateManager.prototype.sendCameraFileToGatewayLimited = sendCameraFileToGatewayLimited;
+FrigateManager.prototype.convertLocalStreamToGateway = convertLocalStreamToGateway;
 
 // EVENTS
 FrigateManager.prototype.emitStatusEvent = emitStatusEvent;

@@ -4,7 +4,8 @@ const FrigateController = require('./api/frigate.controller');
 
 module.exports = function FrigateService(gladys, serviceId) {
   const mqtt = require('mqtt');
-  const frigateManager = new FrigateManager(gladys, mqtt, serviceId);
+  const childProcess = require('child_process');
+  const frigateManager = new FrigateManager(gladys, mqtt, serviceId, childProcess);
 
   /**
    * @public

@@ -1,5 +1,10 @@
+const fs = require('fs');
+const path = require('path');
+
 const asyncMiddleware = require('../../../api/middlewares/asyncMiddleware');
 const logger = require('../../../utils/logger');
+const { Error404, Error400 } = require('../../../utils/httpErrors');
+const { validateFilename, validateSessionId } = require('../utils/validateStreamParams');
 
 module.exports = function FrigateController(gladys, frigateManager) {
   /**
@@ -64,6 +69,64 @@ module.exports = function FrigateController(gladys, frigateManager) {
     });
   }
 
+  /**
+   * @api {post} /api/v1/service/frigate/camera/:camera_selector/streaming/start Start streaming
+   * @apiName startStreaming
+   * @apiGroup Frigate
+   */
+  async function startStreaming(req, res) {
+    const response = await frigateManager.startStreamingIfNotStarted(
+      req.params.camera_selector,
+      req.body.is_gladys_gateway,
+      req.body.segment_duration,
+    );
+    res.send(response);
+  }
+
+  /**
+   * @api {post} /api/v1/service/frigate/camera/:camera_selector/streaming/stop Stop streaming
+   * @apiName stopStreaming
+   * @apiGroup Frigate
+   */
+  async function stopStreaming(req, res) {
+    await frigateManager.stopStreaming(req.params.camera_selector);
+    res.send({ success: true });
+  }
+
+  /**
+   * @api {post} /api/v1/service/frigate/camera/:camera_selector/streaming/ping Live still active ping
+   * @apiName streamingPing
+   * @apiGroup Frigate
+   */
+  async function streamingPing(req, res) {
+    await frigateManager.liveActivePing(req.params.camera_selector);
+    res.send({ success: true });
+  }
+
+  /**
+   * @api {get} /api/v1/service/frigate/camera/streaming/:folder/:file Get streaming file
+   * @apiName getStreamingFile
+   * @apiGroup Frigate
+   */
+  async function getStreamingFile(req, res) {
+    try {
+      validateSessionId(req.params.folder);
+      validateFilename(req.params.file);
+      const filePath = path.join(gladys.config.tempFolder, req.params.folder, req.params.file);
+      const filestream = fs.createReadStream(filePath);
+      filestream.on('error', (err) => {
+        res.status(404).end();
+      });
+      filestream.pipe(res);
+    } catch (e) {
+      if (e instanceof Error400) {
+        throw e;
+      }
+      logger.warn(e);
+      throw new Error404('FILE_NOT_FOUND');
+    }
+  }
+
   return {
     'get /api/v1/service/frigate/status': {
       authenticated: true,
@@ -86,6 +149,26 @@ module.exports = function FrigateController(gladys, frigateManager) {
     'post /api/v1/service/frigate/config/apply': {
       authenticated: true,
       controller: asyncMiddleware(applyConfig),
+    },
+    'post /api/v1/service/frigate/camera/:camera_selector/streaming/start': {
+      authenticated: true,
+      admin: false,
+      controller: asyncMiddleware(startStreaming),
+    },
+    'post /api/v1/service/frigate/camera/:camera_selector/streaming/stop': {
+      authenticated: true,
+      admin: false,
+      controller: asyncMiddleware(stopStreaming),
+    },
+    'post /api/v1/service/frigate/camera/:camera_selector/streaming/ping': {
+      authenticated: true,
+      admin: false,
+      controller: asyncMiddleware(streamingPing),
+    },
+    'get /api/v1/service/frigate/camera/streaming/:folder/:file': {
+      authenticated: true,
+      admin: false,
+      controller: asyncMiddleware(getStreamingFile),
     },
   };
 };

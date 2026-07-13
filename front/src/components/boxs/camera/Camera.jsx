@@ -17,6 +17,10 @@ const SEGMENT_DURATIONS_PER_LATENCY = {
   standard: 6
 };
 
+// Cameras from services created before the streaming API was
+// generalized don't expose their service: keep the historical route
+const DEFAULT_STREAMING_SERVICE = 'rtsp-camera';
+
 class CameraBoxComponent extends Component {
   videoRef = createRef();
   state = {
@@ -52,6 +56,24 @@ class CameraBoxComponent extends Component {
     }
   };
 
+  getStreamingServiceName = async () => {
+    // The streaming routes are exposed by the service owning the camera
+    // (rtsp-camera, frigate...), so we resolve the device's service name once
+    if (this.streamingServiceName && this.streamingServiceNameSelector === this.props.box.camera) {
+      return this.streamingServiceName;
+    }
+    let serviceName = DEFAULT_STREAMING_SERVICE;
+    try {
+      const device = await this.props.httpClient.get(`/api/v1/device/${this.props.box.camera}`);
+      serviceName = get(device, 'service.name') || DEFAULT_STREAMING_SERVICE;
+    } catch (e) {
+      console.error(e);
+    }
+    this.streamingServiceName = serviceName;
+    this.streamingServiceNameSelector = this.props.box.camera;
+    return serviceName;
+  };
+
   newNetworkError = () => {
     this.setState(prevState => {
       const { cameraStreamingErrorCount } = prevState;
@@ -80,8 +102,10 @@ class CameraBoxComponent extends Component {
         ? SEGMENT_DURATIONS_PER_LATENCY[this.props.box.camera_latency]
         : SEGMENT_DURATIONS_PER_LATENCY.low;
 
+      const serviceName = await this.getStreamingServiceName();
+
       const [streamingParams, gatewayStreaming] = await Promise.all([
-        this.props.httpClient.post(`/api/v1/service/rtsp-camera/camera/${this.props.box.camera}/streaming/start`, {
+        this.props.httpClient.post(`/api/v1/service/${serviceName}/camera/${this.props.box.camera}/streaming/start`, {
           origin: isGladysPlus ? config.gladysGatewayApiUrl : config.localApiUrl,
           is_gladys_gateway: isGladysPlus,
           segment_duration: segmentationDuration
@@ -172,7 +196,7 @@ class CameraBoxComponent extends Component {
         );
       } else {
         this.hls.loadSource(
-          `${config.localApiUrl}/api/v1/service/rtsp-camera/camera/streaming/${streamingParams.camera_folder}/index.m3u8`
+          `${config.localApiUrl}/api/v1/service/${serviceName}/camera/streaming/${streamingParams.camera_folder}/index.m3u8`
         );
       }
 
@@ -221,7 +245,8 @@ class CameraBoxComponent extends Component {
 
   liveActivePing = async () => {
     try {
-      await this.props.httpClient.post(`/api/v1/service/rtsp-camera/camera/${this.props.box.camera}/streaming/ping`);
+      const serviceName = await this.getStreamingServiceName();
+      await this.props.httpClient.post(`/api/v1/service/${serviceName}/camera/${this.props.box.camera}/streaming/ping`);
     } catch (e) {
       console.error(e);
       // If the ping fails, it means the stream ended. We stop the stream.

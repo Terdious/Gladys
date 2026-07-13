@@ -36,8 +36,10 @@ function createActions(store) {
       camera.username = getParamValue(camera, CAMERA_PARAMS.SOURCE_USERNAME);
       camera.password = getParamValue(camera, CAMERA_PARAMS.SOURCE_PASSWORD);
       camera.path = getParamValue(camera, CAMERA_PARAMS.SOURCE_PATH);
+      camera.subPath = getParamValue(camera, CAMERA_PARAMS.SOURCE_SUB_PATH);
       camera.extra = getParamValue(camera, CAMERA_PARAMS.SOURCE_EXTRA);
       camera.customSource = getParamValue(camera, CAMERA_PARAMS.CUSTOM_SOURCE);
+      camera.customSubSource = getParamValue(camera, CAMERA_PARAMS.CUSTOM_SUB_SOURCE);
       const labels = getParamValue(camera, CAMERA_PARAMS.TRACKED_LABELS);
       camera.labels = labels ? labels.split(',').filter(label => label.length > 0) : ['person'];
       return camera;
@@ -114,8 +116,10 @@ function createActions(store) {
             username: null,
             password: null,
             path: null,
+            subPath: null,
             extra: null,
             customSource: null,
+            customSubSource: null,
             labels: ['person'],
             features: [],
             params: []
@@ -156,8 +160,10 @@ function createActions(store) {
         { name: CAMERA_PARAMS.SOURCE_USERNAME, value: camera.username },
         { name: CAMERA_PARAMS.SOURCE_PASSWORD, value: camera.password },
         { name: CAMERA_PARAMS.SOURCE_PATH, value: camera.path },
+        { name: CAMERA_PARAMS.SOURCE_SUB_PATH, value: camera.subPath },
         { name: CAMERA_PARAMS.SOURCE_EXTRA, value: camera.extra },
         { name: CAMERA_PARAMS.CUSTOM_SOURCE, value: camera.customSource && camera.customSource.trim() },
+        { name: CAMERA_PARAMS.CUSTOM_SUB_SOURCE, value: camera.customSubSource && camera.customSubSource.trim() },
         { name: CAMERA_PARAMS.TRACKED_LABELS, value: camera.labels.join(',') }
       ].filter(param => param.value !== null && param.value !== undefined && param.value !== '');
 

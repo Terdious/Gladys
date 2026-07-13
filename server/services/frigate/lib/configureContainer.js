@@ -59,8 +59,11 @@ async function configureContainer(basePathOnContainer, config) {
   const cameras = {};
   devices.forEach((device) => {
     try {
-      const { cameraName, go2rtcSource, cameraSection } = buildCameraConfig(device);
+      const { cameraName, go2rtcSource, go2rtcSubSource, cameraSection } = buildCameraConfig(device);
       go2rtcStreams[cameraName] = [go2rtcSource];
+      if (go2rtcSubSource) {
+        go2rtcStreams[`${cameraName}_sub`] = [go2rtcSubSource];
+      }
       cameras[cameraName] = cameraSection;
     } catch (e) {
       logger.warn(`Frigate: skipping camera ${device.external_id} - ${e}`);

@@ -155,6 +155,71 @@ describe('frigate buildCameraConfig', () => {
     expect(() => buildCameraConfig(device)).to.throw('invalid external id');
   });
 
+  it('should split record and detect roles when a rtsp sub stream is set', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'rtsp',
+      FRIGATE_SOURCE_HOST: '192.168.1.10',
+      FRIGATE_SOURCE_USERNAME: 'camera',
+      FRIGATE_SOURCE_PASSWORD: 'password',
+      FRIGATE_SOURCE_PATH: 'stream1',
+      FRIGATE_SOURCE_SUB_PATH: 'stream2',
+    });
+
+    const { go2rtcSource, go2rtcSubSource, cameraSection } = buildCameraConfig(device);
+
+    expect(go2rtcSource).to.equal('rtsp://camera:password@192.168.1.10:554/stream1');
+    expect(go2rtcSubSource).to.equal('rtsp://camera:password@192.168.1.10:554/stream2');
+    expect(cameraSection.ffmpeg.inputs).to.deep.equal([
+      {
+        path: 'rtsp://127.0.0.1:8554/c660',
+        roles: ['record'],
+      },
+      {
+        path: 'rtsp://127.0.0.1:8554/c660_sub',
+        roles: ['detect'],
+      },
+    ]);
+  });
+
+  it('should return no sub source for rtsp without sub path', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'rtsp',
+      FRIGATE_SOURCE_HOST: '192.168.1.10',
+    });
+
+    const { go2rtcSubSource } = buildCameraConfig(device);
+
+    expect(go2rtcSubSource).to.equal(null);
+  });
+
+  it('should use the custom secondary source for detection', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'custom',
+      FRIGATE_CUSTOM_SOURCE: 'ffmpeg:http://192.168.1.20/flv?stream=main#video=copy',
+      FRIGATE_CUSTOM_SUB_SOURCE: 'ffmpeg:http://192.168.1.20/flv?stream=ext',
+    });
+
+    const { go2rtcSubSource, cameraSection } = buildCameraConfig(device);
+
+    expect(go2rtcSubSource).to.equal('ffmpeg:http://192.168.1.20/flv?stream=ext');
+    expect(cameraSection.ffmpeg.inputs[1]).to.deep.equal({
+      path: 'rtsp://127.0.0.1:8554/c660_sub',
+      roles: ['detect'],
+    });
+  });
+
+  it('should never return a sub source for tapo', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'tapo',
+      FRIGATE_SOURCE_HOST: '10.6.0.222',
+      FRIGATE_SOURCE_PASSWORD: 'password',
+    });
+
+    const { go2rtcSubSource } = buildCameraConfig(device);
+
+    expect(go2rtcSubSource).to.equal(null);
+  });
+
   it('should default to person label and default fps when values are invalid', () => {
     const device = buildDevice({
       FRIGATE_SOURCE_TYPE: 'rtsp',

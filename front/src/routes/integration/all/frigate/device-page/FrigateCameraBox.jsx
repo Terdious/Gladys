@@ -64,6 +64,12 @@ class FrigateCameraBox extends Component {
   updatePath = e => {
     this.props.updateCameraField(this.props.cameraIndex, 'path', e.target.value);
   };
+  updateSubPath = e => {
+    this.props.updateCameraField(this.props.cameraIndex, 'subPath', e.target.value);
+  };
+  updateCustomSubSource = e => {
+    this.props.updateCameraField(this.props.cameraIndex, 'customSubSource', e.target.value);
+  };
   updateExtra = e => {
     this.props.updateCameraField(this.props.cameraIndex, 'extra', e.target.value);
   };
@@ -224,6 +230,25 @@ class FrigateCameraBox extends Component {
                     </div>
                   </div>
                 )}
+                {camera.sourceType === SOURCE_TYPES.RTSP && (
+                  <div class="form-group">
+                    <label>
+                      <Text id="integration.frigate.device.subPathLabel" />
+                    </label>
+                    <Localizer>
+                      <input
+                        type="text"
+                        value={camera.subPath}
+                        onInput={this.updateSubPath}
+                        class="form-control"
+                        placeholder={<Text id="integration.frigate.device.subPathPlaceholder" />}
+                      />
+                    </Localizer>
+                    <div class="help-block">
+                      <Text id="integration.frigate.device.subPathHelp" />
+                    </div>
+                  </div>
+                )}
                 {camera.sourceType === SOURCE_TYPES.TAPO && (
                   <div class="form-group">
                     <label>
@@ -262,6 +287,25 @@ class FrigateCameraBox extends Component {
                     </Localizer>
                     <div class="help-block">
                       <Text id="integration.frigate.device.customSourceHelp" />
+                    </div>
+                  </div>
+                )}
+                {camera.sourceType === SOURCE_TYPES.CUSTOM && (
+                  <div class="form-group">
+                    <label>
+                      <Text id="integration.frigate.device.customSubSourceLabel" />
+                    </label>
+                    <Localizer>
+                      <input
+                        type="text"
+                        value={camera.customSubSource}
+                        onInput={this.updateCustomSubSource}
+                        class="form-control"
+                        placeholder={<Text id="integration.frigate.device.customSourcePlaceholder" />}
+                      />
+                    </Localizer>
+                    <div class="help-block">
+                      <Text id="integration.frigate.device.customSubSourceHelp" />
                     </div>
                   </div>
                 )}

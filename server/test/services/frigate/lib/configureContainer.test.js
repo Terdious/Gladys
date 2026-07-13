@@ -100,6 +100,29 @@ describe('frigate configureContainer', () => {
     expect(secondRun.configChanged).to.equal(false);
   });
 
+  it('should generate a secondary go2rtc stream when a sub path is set', async () => {
+    gladys.device.get = sinon.fake.resolves([
+      {
+        external_id: 'frigate:c520',
+        params: [
+          { name: 'FRIGATE_SOURCE_TYPE', value: 'rtsp' },
+          { name: 'FRIGATE_SOURCE_HOST', value: '192.168.1.10' },
+          { name: 'FRIGATE_SOURCE_PATH', value: 'stream1' },
+          { name: 'FRIGATE_SOURCE_SUB_PATH', value: 'stream2' },
+        ],
+      },
+    ]);
+
+    const { configChanged } = await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, config);
+
+    expect(configChanged).to.equal(true);
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.contain('c520_sub');
+    expect(fileContent).to.contain('rtsp://192.168.1.10:554/stream2');
+    expect(fileContent).to.contain('- record');
+    expect(fileContent).to.contain('- detect');
+  });
+
   it('should remove go2rtc and cameras when devices are deleted', async () => {
     gladys.device.get = sinon.fake.resolves([
       {

@@ -318,7 +318,8 @@
         "substractButton": "-",
         "motionDetected": "Bewegung erkannt",
         "pushButton": "Schieben",
-        "vacuumDock": "Zurück zur Ladestation"
+        "vacuumDock": "Zurück zur Ladestation",
+        "cameraDetectionInProgress": "Erkennung läuft"
       },
       "devices": {
         "editDeviceFeaturesLabel": "Wähle die Geräte aus, die du anzeigen möchtest:",

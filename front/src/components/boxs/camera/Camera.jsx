@@ -23,6 +23,7 @@ const SEGMENT_DURATIONS_PER_LATENCY = {
 
 class CameraBoxComponent extends Component {
   videoRef = createRef();
+  mediaContainerRef = createRef();
   state = {
     cameraStreamingErrorCount: 0
   };
@@ -94,6 +95,16 @@ class CameraBoxComponent extends Component {
 
   togglePtzPanel = () => {
     this.setState(prevState => ({ ptzPanelOpened: !prevState.ptzPanelOpened }));
+  };
+
+  toggleFullscreen = () => {
+    // Fullscreen on the media container (not the video element) so the PTZ
+    // overlay and the detection badges stay visible
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else if (this.mediaContainerRef.current && this.mediaContainerRef.current.requestFullscreen) {
+      this.mediaContainerRef.current.requestFullscreen();
+    }
   };
 
   startPtzMove = (feature, direction) => () => {
@@ -456,7 +467,7 @@ class CameraBoxComponent extends Component {
     );
   }
 
-  renderControlButtons() {
+  renderControlButtons(streaming) {
     const { panFeature, tiltFeature, nightModeFeature, nightModeValue } = this.state;
     return (
       <span>
@@ -471,9 +482,14 @@ class CameraBoxComponent extends Component {
             <i class="fe fe-moon" />
           </button>
         )}
-        {(panFeature || tiltFeature) && (
+        {streaming && (panFeature || tiltFeature) && (
           <button class="btn btn-secondary btn-sm mr-2" onClick={this.togglePtzPanel}>
             <i class="fe fe-move" />
+          </button>
+        )}
+        {streaming && (
+          <button class="btn btn-secondary btn-sm mr-2" onClick={this.toggleFullscreen}>
+            <i class="fe fe-maximize" />
           </button>
         )}
       </span>
@@ -504,8 +520,8 @@ class CameraBoxComponent extends Component {
           >
             <div class="loader" />
             <div class="dimmer-content">
-              <div class={style.cameraMediaContainer}>
-                <video class="w-100" ref={this.videoRef} controls autoPlay muted />
+              <div class={style.cameraMediaContainer} ref={this.mediaContainerRef}>
+                <video class="w-100" ref={this.videoRef} controls controlsList="nofullscreen" autoPlay muted />
                 {this.renderDetectionBadges()}
                 {ptzPanelOpened && this.renderPtzOverlay()}
               </div>
@@ -514,7 +530,7 @@ class CameraBoxComponent extends Component {
           <div class="card-header">
             <h3 class="card-title">{props.box && props.box.name}</h3>
             <div class="card-options">
-              {this.renderControlButtons()}
+              {this.renderControlButtons(true)}
               <button class="btn btn-primary btn-sm" onClick={this.stopStreaming}>
                 <i class="fe fe-pause" />
               </button>
@@ -528,7 +544,6 @@ class CameraBoxComponent extends Component {
         <div class={style.cameraMediaContainer}>
           {image && <img class="card-img-top" src={`data:${image}`} alt={props.roomName} />}
           {this.renderDetectionBadges()}
-          {ptzPanelOpened && this.renderPtzOverlay()}
         </div>
         {error && (
           <div>
@@ -589,7 +604,7 @@ class CameraBoxComponent extends Component {
         <div class="card-header">
           <h3 class="card-title">{props.box && props.box.name}</h3>
           <div class="card-options">
-            {this.renderControlButtons()}
+            {this.renderControlButtons(false)}
             <button class="btn btn-secondary btn-sm" onClick={this.startStreaming}>
               <i class="fe fe-airplay" />
             </button>

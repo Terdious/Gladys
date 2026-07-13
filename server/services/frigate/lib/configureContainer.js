@@ -53,15 +53,27 @@ async function configureContainer(basePathOnContainer, config) {
   loadedConfig.mqtt = mqtt;
 
   // Build go2rtc streams and cameras sections from Gladys devices
-  // (the Gladys DB is the source of truth for these two sections)
+  // (the Gladys DB is the source of truth for these two sections).
+  // Within a camera, Gladys only owns ffmpeg/detect/objects.track/record/
+  // snapshots: everything configured through the Frigate UI (zones, motion
+  // masks, object filters, audio...) is preserved.
   const devices = await this.gladys.device.get({ service: 'frigate' });
+  const existingCameras = loadedConfig.cameras || {};
   const go2rtcStreams = {};
   const cameras = {};
   devices.forEach((device) => {
     try {
       const { cameraName, go2rtcSource, cameraSection } = buildCameraConfig(device);
       go2rtcStreams[cameraName] = [go2rtcSource];
-      cameras[cameraName] = cameraSection;
+      const existingCamera = existingCameras[cameraName] || {};
+      cameras[cameraName] = {
+        ...existingCamera,
+        ...cameraSection,
+        objects: {
+          ...existingCamera.objects,
+          ...cameraSection.objects,
+        },
+      };
     } catch (e) {
       logger.warn(`Frigate: skipping camera ${device.external_id} - ${e}`);
     }

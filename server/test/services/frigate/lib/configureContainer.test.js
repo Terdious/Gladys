@@ -100,6 +100,46 @@ describe('frigate configureContainer', () => {
     expect(secondRun.configChanged).to.equal(false);
   });
 
+  it('should preserve zones, masks and object filters configured through the Frigate UI', async () => {
+    gladys.device.get = sinon.fake.resolves([
+      {
+        external_id: 'frigate:c660',
+        params: [
+          { name: 'FRIGATE_SOURCE_TYPE', value: 'rtsp' },
+          { name: 'FRIGATE_SOURCE_HOST', value: '192.168.1.10' },
+          { name: 'FRIGATE_TRACKED_LABELS', value: 'person' },
+        ],
+      },
+    ]);
+    // Simulate zones/masks/filters previously added through the Frigate UI
+    await fs.mkdir(path.dirname(configFilePath), { recursive: true });
+    const existingConfig = [
+      'cameras:',
+      '  c660:',
+      '    zones:',
+      '      zone_chatiere:',
+      "        coordinates: '0.296,0.144,0.835,0.156'",
+      '    motion:',
+      "      mask: '0,0,0.5,0.5'",
+      '    objects:',
+      '      filters:',
+      '        person:',
+      '          threshold: 0.8',
+      '',
+    ].join('\n');
+    await fs.writeFile(configFilePath, existingConfig);
+
+    const { configChanged } = await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, config);
+
+    expect(configChanged).to.equal(true);
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.contain('zone_chatiere');
+    expect(fileContent).to.contain("mask: '0,0,0.5,0.5'");
+    expect(fileContent).to.contain('threshold: 0.8');
+    expect(fileContent).to.contain('- person');
+    expect(fileContent).to.contain('rtsp://127.0.0.1:8554/c660');
+  });
+
   it('should remove go2rtc and cameras when devices are deleted', async () => {
     gladys.device.get = sinon.fake.resolves([
       {

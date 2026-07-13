@@ -18,6 +18,7 @@ const CAMERA_CATALOG = [
       ...TAPO_WIRED_MODELS.map((name) => ({
         name,
         noteKey: 'tapoCameraAccount',
+        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.ONVIF, SOURCE_TYPES.CUSTOM],
         preset: {
           sourceType: SOURCE_TYPES.RTSP,
           path: 'stream1',
@@ -29,6 +30,7 @@ const CAMERA_CATALOG = [
       ...TAPO_BATTERY_MODELS.map((name) => ({
         name,
         noteKey: 'tapoCloudPassword',
+        allowedSourceTypes: [SOURCE_TYPES.TAPO, SOURCE_TYPES.CUSTOM],
         preset: {
           sourceType: SOURCE_TYPES.TAPO,
           extra: DEFAULT.TAPO_SOURCE_EXTRA,
@@ -44,6 +46,7 @@ const CAMERA_CATALOG = [
       {
         name: 'RLC / E1 / Duo (RTSP)',
         noteKey: 'reolinkRtsp',
+        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.ONVIF, SOURCE_TYPES.CUSTOM],
         preset: {
           sourceType: SOURCE_TYPES.RTSP,
           path: 'h264Preview_01_main',

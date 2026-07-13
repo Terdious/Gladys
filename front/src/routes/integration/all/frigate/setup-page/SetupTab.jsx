@@ -107,10 +107,10 @@ class SetupTab extends Component {
   getStorage = async () => {
     try {
       const frigateStats = await this.props.httpClient.get('/api/v1/service/frigate/stats');
-      const recordingsStorage =
-        frigateStats && frigateStats.service && frigateStats.service.storage
-          ? frigateStats.service.storage['/media/frigate']
-          : null;
+      // Frigate stats expose storage either under service.storage or storage
+      const storageRoot =
+        frigateStats && ((frigateStats.service && frigateStats.service.storage) || frigateStats.storage);
+      const recordingsStorage = storageRoot ? storageRoot['/media/frigate'] : null;
       this.setState({ recordingsStorage });
     } catch (e) {
       this.setState({ recordingsStorage: null });

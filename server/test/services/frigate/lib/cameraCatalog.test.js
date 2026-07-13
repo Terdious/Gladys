@@ -25,6 +25,11 @@ describe('frigate cameraCatalog', () => {
         expect(model.name).to.be.a('string');
         expect(model.noteKey).to.be.a('string');
         expect(Object.values(SOURCE_TYPES)).to.include(model.preset.sourceType);
+        expect(model.allowedSourceTypes).to.be.an('array');
+        expect(model.allowedSourceTypes).to.include(model.preset.sourceType);
+        model.allowedSourceTypes.forEach((sourceType) => {
+          expect(Object.values(SOURCE_TYPES)).to.include(sourceType);
+        });
       });
     });
   });

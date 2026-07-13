@@ -1231,7 +1231,24 @@
         "every30Seconds": "Alle 30 Sekunden",
         "every10Seconds": "Alle 10 Sekunden",
         "saveButton": "Speichern",
-        "deleteButton": "Löschen"
+        "deleteButton": "Löschen",
+        "catalog": {
+          "brandLabel": "Kameramarke",
+          "brandPlaceholder": "Marke suchen...",
+          "modelLabel": "Kameramodell",
+          "modelPlaceholder": "Modell suchen...",
+          "otherBrand": "Andere Marke / nicht gelistet",
+          "otherModel": "Anderes Modell / unbekannt",
+          "unknownBrandNote": "Diese Marke ist noch nicht im Katalog. Die meisten Kameras bieten einen RTSP-Stream: Versuchen Sie den Quellentyp \"RTSP-Kamera (generisch)\" oder eine benutzerdefinierte go2rtc-Quelle. Helfen Sie der Community, indem Sie Ihre funktionierende Konfiguration teilen:",
+          "openIssue": "Diese Kamera für den Katalog vorschlagen (GitHub-Issue)",
+          "notes": {
+            "tapoCameraAccount": "Erstellen Sie ein \"Kamerakonto\" in der Tapo-App (Kameraeinstellungen → Erweiterte Einstellungen → Kamerakonto): Geben Sie diese Zugangsdaten unten ein, NICHT Ihr TP-Link-Cloud-Konto.",
+            "tapoCloudPassword": "Akku-/Solarmodell ohne RTSP: Geben Sie das Passwort Ihres TP-Link-Cloud-Kontos ein. Der leichte 640×360-Stream wird verwendet (der Hauptstream ist auf diesen Modellen nicht nutzbar).",
+            "tapoUnknownModel": "Tapo-Modell nicht gelistet: Wenn es kabelgebunden ist, versuchen Sie zuerst \"RTSP\" mit einem Kamerakonto (Pfade stream1/stream2). Bei Akku/Solar versuchen Sie den Typ \"TP-Link Tapo (ohne RTSP)\" mit Ihrem Cloud-Passwort. Teilen Sie Ihr Ergebnis:",
+            "reolinkRtsp": "Verwenden Sie die Zugangsdaten Ihrer Reolink-Kamera. Die meisten Modelle bieten die Pfade h264Preview_01_main (HQ) und h264Preview_01_sub (leicht).",
+            "reolinkUnknownModel": "Reolink-Modell nicht gelistet: Versuchen Sie \"RTSP\" mit den Pfaden h264Preview_01_main / h264Preview_01_sub. Teilen Sie Ihr Ergebnis:"
+          }
+        }
       }
     },
     "matterbridge": {

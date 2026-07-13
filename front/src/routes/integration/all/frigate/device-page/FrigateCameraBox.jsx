@@ -1,9 +1,16 @@
-import { Text, Localizer } from 'preact-i18n';
+import { Text, Localizer, withText } from 'preact-i18n';
 import { Component } from 'preact';
 import cx from 'classnames';
+import Select from 'react-select';
 import { RequestStatus } from '../../../../../utils/consts';
 import { DEVICE_POLL_FREQUENCIES } from '../../../../../../../server/utils/constants';
 import { SOURCE_TYPES, TRACKABLE_LABELS } from '../../../../../../../server/services/frigate/lib/constants';
+import { CAMERA_CATALOG } from '../../../../../../../server/services/frigate/lib/cameraCatalog';
+
+const OTHER_VALUE = 'other';
+const GITHUB_ISSUE_URL = `https://github.com/GladysAssistant/Gladys/issues/new?title=${encodeURIComponent(
+  'Frigate camera catalog: [brand] [model]'
+)}`;
 
 class FrigateCameraBox extends Component {
   saveCamera = async () => {
@@ -82,9 +89,35 @@ class FrigateCameraBox extends Component {
   togglePassword = () => {
     this.setState({ showPassword: !this.state.showPassword });
   };
+  onBrandChange = option => {
+    this.props.applyCameraPreset(this.props.cameraIndex, option.value, null, null);
+  };
+  onModelChange = option => {
+    const brand = CAMERA_CATALOG.find(catalogBrand => catalogBrand.key === this.props.camera.catalogBrand);
+    const model = brand && brand.models.find(catalogModel => catalogModel.name === option.value);
+    this.props.applyCameraPreset(
+      this.props.cameraIndex,
+      this.props.camera.catalogBrand,
+      option.value,
+      model ? model.preset : null
+    );
+  };
 
   render(props, { loading, saveError, showPassword }) {
     const { camera } = props;
+    const selectedBrand = CAMERA_CATALOG.find(catalogBrand => catalogBrand.key === camera.catalogBrand);
+    const selectedModel =
+      selectedBrand && selectedBrand.models.find(catalogModel => catalogModel.name === camera.catalogModel);
+    const brandOptions = [
+      ...CAMERA_CATALOG.map(catalogBrand => ({ value: catalogBrand.key, label: catalogBrand.brand })),
+      { value: OTHER_VALUE, label: props.otherBrandText }
+    ];
+    const modelOptions = selectedBrand
+      ? [
+          ...selectedBrand.models.map(catalogModel => ({ value: catalogModel.name, label: catalogModel.name })),
+          { value: OTHER_VALUE, label: props.otherModelText }
+        ]
+      : [];
     return (
       <div class="col-lg-6">
         <div class="card">
@@ -135,6 +168,65 @@ class FrigateCameraBox extends Component {
                       ))}
                   </select>
                 </div>
+                <div class="form-group">
+                  <label>
+                    <Text id="integration.frigate.device.catalog.brandLabel" />
+                  </label>
+                  <Select
+                    options={brandOptions}
+                    value={brandOptions.find(option => option.value === camera.catalogBrand) || null}
+                    onChange={this.onBrandChange}
+                    placeholder={props.brandPlaceholderText}
+                  />
+                </div>
+                {camera.catalogBrand && camera.catalogBrand !== OTHER_VALUE && (
+                  <div class="form-group">
+                    <label>
+                      <Text id="integration.frigate.device.catalog.modelLabel" />
+                    </label>
+                    <Select
+                      options={modelOptions}
+                      value={modelOptions.find(option => option.value === camera.catalogModel) || null}
+                      onChange={this.onModelChange}
+                      placeholder={props.modelPlaceholderText}
+                    />
+                  </div>
+                )}
+                {selectedModel && (
+                  <div class="alert alert-secondary">
+                    <Text id={`integration.frigate.device.catalog.notes.${selectedModel.noteKey}`} />
+                  </div>
+                )}
+                {selectedBrand && camera.catalogModel === OTHER_VALUE && (
+                  <div class="alert alert-secondary">
+                    <Text id={`integration.frigate.device.catalog.notes.${selectedBrand.unknownModelNoteKey}`} />
+                    <div class="mt-2">
+                      <a
+                        href={GITHUB_ISSUE_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn btn-sm btn-outline-primary"
+                      >
+                        <Text id="integration.frigate.device.catalog.openIssue" />
+                      </a>
+                    </div>
+                  </div>
+                )}
+                {camera.catalogBrand === OTHER_VALUE && (
+                  <div class="alert alert-secondary">
+                    <Text id="integration.frigate.device.catalog.unknownBrandNote" />
+                    <div class="mt-2">
+                      <a
+                        href={GITHUB_ISSUE_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn btn-sm btn-outline-primary"
+                      >
+                        <Text id="integration.frigate.device.catalog.openIssue" />
+                      </a>
+                    </div>
+                  </div>
+                )}
                 <div class="form-group">
                   <label>
                     <Text id="integration.frigate.device.sourceTypeLabel" />
@@ -364,4 +456,9 @@ class FrigateCameraBox extends Component {
     );
   }
 }
-export default FrigateCameraBox;
+export default withText({
+  brandPlaceholderText: 'integration.frigate.device.catalog.brandPlaceholder',
+  modelPlaceholderText: 'integration.frigate.device.catalog.modelPlaceholder',
+  otherBrandText: 'integration.frigate.device.catalog.otherBrand',
+  otherModelText: 'integration.frigate.device.catalog.otherModel'
+})(FrigateCameraBox);

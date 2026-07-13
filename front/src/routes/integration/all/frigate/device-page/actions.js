@@ -31,6 +31,8 @@ function createActions(store) {
   const integrationActions = createActionsIntegration(store);
   const actions = {
     complete(camera) {
+      camera.catalogBrand = getParamValue(camera, CAMERA_PARAMS.CAMERA_BRAND);
+      camera.catalogModel = getParamValue(camera, CAMERA_PARAMS.CAMERA_MODEL);
       camera.sourceType = getParamValue(camera, CAMERA_PARAMS.SOURCE_TYPE) || SOURCE_TYPES.RTSP;
       camera.host = getParamValue(camera, CAMERA_PARAMS.SOURCE_HOST);
       camera.username = getParamValue(camera, CAMERA_PARAMS.SOURCE_USERNAME);
@@ -111,6 +113,8 @@ function createActions(store) {
             poll_frequency: DEVICE_POLL_FREQUENCIES.EVERY_MINUTES,
             external_id: null,
             service_id: store.getState().currentIntegration.id,
+            catalogBrand: null,
+            catalogModel: null,
             sourceType: SOURCE_TYPES.RTSP,
             host: null,
             username: null,
@@ -142,6 +146,26 @@ function createActions(store) {
         frigateCameras
       });
     },
+    applyCameraPreset(state, index, brandKey, modelName, preset) {
+      const cameraUpdate = {
+        catalogBrand: { $set: brandKey },
+        catalogModel: { $set: modelName }
+      };
+      if (preset) {
+        cameraUpdate.sourceType = { $set: preset.sourceType };
+        cameraUpdate.path = { $set: preset.path || null };
+        cameraUpdate.subPath = { $set: preset.subPath || null };
+        cameraUpdate.extra = { $set: preset.extra || null };
+        cameraUpdate.customSource = { $set: null };
+        cameraUpdate.customSubSource = { $set: null };
+      }
+      const frigateCameras = update(state.frigateCameras, {
+        [index]: cameraUpdate
+      });
+      store.setState({
+        frigateCameras
+      });
+    },
     toggleCameraLabel(state, index, label) {
       const camera = state.frigateCameras[index];
       const labels = camera.labels.includes(label)
@@ -155,6 +179,8 @@ function createActions(store) {
       const externalId = camera.created_at ? camera.external_id : `frigate:${cameraName}`;
 
       const params = [
+        { name: CAMERA_PARAMS.CAMERA_BRAND, value: camera.catalogBrand },
+        { name: CAMERA_PARAMS.CAMERA_MODEL, value: camera.catalogModel },
         { name: CAMERA_PARAMS.SOURCE_TYPE, value: camera.sourceType },
         { name: CAMERA_PARAMS.SOURCE_HOST, value: camera.host && camera.host.trim() },
         { name: CAMERA_PARAMS.SOURCE_USERNAME, value: camera.username },

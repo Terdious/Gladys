@@ -1333,7 +1333,8 @@
         "retentionDetectionsHelp": "Tous les objets détectés",
         "retentionApply": "Appliquer la rétention",
         "retentionSaved": "Rétention appliquée. Frigate redémarre si la configuration a changé.",
-        "retentionError": "Erreur lors de l'application de la rétention."
+        "retentionError": "Erreur lors de l'application de la rétention.",
+        "frigateOwnershipNote": "Gladys gère et réécrit à chaque application : les sources des caméras, les objets suivis, la rétention ci-dessus et l'activation des enregistrements/instantanés — modifiez-les depuis Gladys. Les réglages faits dans l'interface Frigate (zones, masques, filtres d'objets, détecteurs personnalisés) sont préservés, et une rétention modifiée côté Frigate est conservée tant que vous ne l'appliquez pas depuis Gladys."
       },
       "device": {
         "title": "Caméras Frigate",

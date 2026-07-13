@@ -1200,7 +1200,8 @@
         "retentionDetectionsHelp": "Alle erkannten Objekte",
         "retentionApply": "Aufbewahrung anwenden",
         "retentionSaved": "Aufbewahrung angewendet. Frigate startet neu, wenn sich die Konfiguration geändert hat.",
-        "retentionError": "Fehler beim Anwenden der Aufbewahrung."
+        "retentionError": "Fehler beim Anwenden der Aufbewahrung.",
+        "frigateOwnershipNote": "Gladys verwaltet und überschreibt bei jedem Anwenden: Kameraquellen, verfolgte Objekte, die obige Aufbewahrung und die Aktivierung von Aufzeichnungen/Schnappschüssen — ändern Sie diese über Gladys. In der Frigate-Oberfläche vorgenommene Einstellungen (Zonen, Masken, Objektfilter, benutzerdefinierte Detektoren) bleiben erhalten, und eine auf Frigate-Seite geänderte Aufbewahrung bleibt bestehen, solange Sie sie nicht über Gladys anwenden."
       },
       "device": {
         "title": "Frigate-Kameras",

@@ -15,6 +15,7 @@ const frigateManager = {
   setEnabled: fake.resolves(null),
   init: fake.resolves(null),
   disconnect: fake.resolves(null),
+  getRetentionSettings: fake.resolves({ continuous: 2, alerts: 7, detections: 7 }),
 };
 
 describe('frigate API', () => {
@@ -72,6 +73,18 @@ describe('frigate API', () => {
     assert.calledOnceWithExactly(frigateManager.setEnabled, false);
     assert.calledOnce(frigateManager.disconnect);
     assert.calledWith(res.json, { success: true });
+  });
+
+  it('get /api/v1/service/frigate/config/retention', async () => {
+    const req = {};
+    const res = {
+      json: fake.returns(null),
+    };
+
+    await controller['get /api/v1/service/frigate/config/retention'].controller(req, res);
+
+    assert.calledOnce(frigateManager.getRetentionSettings);
+    assert.calledWith(res.json, { continuous: 2, alerts: 7, detections: 7 });
   });
 
   it('post /api/v1/service/frigate/config/apply', async () => {

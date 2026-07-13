@@ -147,6 +147,75 @@ describe('frigate configureContainer', () => {
     expect(fileContent).to.contain('days: 0');
   });
 
+  it('should preserve a retention set through the Frigate UI when Gladys has no explicit setting', async () => {
+    gladys.device.get = sinon.fake.resolves([
+      {
+        external_id: 'frigate:c660',
+        params: [
+          { name: 'FRIGATE_SOURCE_TYPE', value: 'rtsp' },
+          { name: 'FRIGATE_SOURCE_HOST', value: '192.168.1.10' },
+        ],
+      },
+    ]);
+    await fs.mkdir(path.dirname(configFilePath), { recursive: true });
+    const existingConfig = [
+      'cameras:',
+      '  c660:',
+      '    record:',
+      '      enabled: true',
+      '      continuous:',
+      '        days: 30',
+      '      alerts:',
+      '        retain:',
+      '          days: 60',
+      '      detections:',
+      '        retain:',
+      '          days: 45',
+      '',
+    ].join('\n');
+    await fs.writeFile(configFilePath, existingConfig);
+
+    // No record* values in the Gladys configuration
+    await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, config);
+
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.contain('days: 30');
+    expect(fileContent).to.contain('days: 60');
+    expect(fileContent).to.contain('days: 45');
+  });
+
+  it('should override the file retention with an explicit Gladys setting', async () => {
+    gladys.device.get = sinon.fake.resolves([
+      {
+        external_id: 'frigate:c660',
+        params: [
+          { name: 'FRIGATE_SOURCE_TYPE', value: 'rtsp' },
+          { name: 'FRIGATE_SOURCE_HOST', value: '192.168.1.10' },
+        ],
+      },
+    ]);
+    await fs.mkdir(path.dirname(configFilePath), { recursive: true });
+    const existingConfig = [
+      'cameras:',
+      '  c660:',
+      '    record:',
+      '      enabled: true',
+      '      continuous:',
+      '        days: 30',
+      '',
+    ].join('\n');
+    await fs.writeFile(configFilePath, existingConfig);
+
+    await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, {
+      ...config,
+      recordContinuousDays: '5',
+    });
+
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.contain('days: 5');
+    expect(fileContent).to.not.contain('days: 30');
+  });
+
   it('should fall back to default retention when values are invalid', async () => {
     gladys.device.get = sinon.fake.resolves([
       {

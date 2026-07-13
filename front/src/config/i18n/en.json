@@ -1095,7 +1095,8 @@
         "retentionDetectionsHelp": "All detected objects",
         "retentionApply": "Apply retention",
         "retentionSaved": "Retention applied. Frigate restarts if the configuration changed.",
-        "retentionError": "Error while applying retention."
+        "retentionError": "Error while applying retention.",
+        "frigateOwnershipNote": "Gladys manages and rewrites on every apply: camera sources, tracked objects, the retention above and recordings/snapshots activation — change them from Gladys. Settings made in the Frigate UI (zones, masks, object filters, custom detectors) are preserved, and a retention changed on the Frigate side is kept as long as you do not apply it from Gladys."
       },
       "device": {
         "title": "Frigate cameras",

@@ -145,24 +145,24 @@ class SetupTab extends Component {
     if (this.state.retentionLoaded) {
       return;
     }
-    const loadDays = async (key, fallback) => {
-      try {
-        const variable = await this.props.httpClient.get(`/api/v1/service/frigate/variable/${key}`);
-        const parsed = parseInt(variable.value, 10);
-        return Number.isNaN(parsed) || parsed < 0 ? fallback : parsed;
-      } catch (e) {
-        return fallback;
-      }
-    };
-    const recordContinuousDays = await loadDays('FRIGATE_RECORD_CONTINUOUS_DAYS', 2);
-    const recordAlertsDays = await loadDays('FRIGATE_RECORD_ALERTS_DAYS', 7);
-    const recordDetectionsDays = await loadDays('FRIGATE_RECORD_DETECTIONS_DAYS', 7);
-    this.setState({
-      recordContinuousDays,
-      recordAlertsDays,
-      recordDetectionsDays,
-      retentionLoaded: true
-    });
+    try {
+      // Effective retention, read from the real Frigate configuration file:
+      // a change made through the Frigate UI is reported here
+      const retention = await this.props.httpClient.get('/api/v1/service/frigate/config/retention');
+      this.setState({
+        recordContinuousDays: retention.continuous,
+        recordAlertsDays: retention.alerts,
+        recordDetectionsDays: retention.detections,
+        retentionLoaded: true
+      });
+    } catch (e) {
+      this.setState({
+        recordContinuousDays: 2,
+        recordAlertsDays: 7,
+        recordDetectionsDays: 7,
+        retentionLoaded: true
+      });
+    }
   };
 
   updateRetention = field => e => {
@@ -694,6 +694,9 @@ class SetupTab extends Component {
                   <Text id="integration.frigate.setup.retentionError" />
                 </div>
               )}
+              <p class="text-muted small mt-3 mb-0">
+                <Text id="integration.frigate.setup.frigateOwnershipNote" />
+              </p>
             </div>
           )}
 

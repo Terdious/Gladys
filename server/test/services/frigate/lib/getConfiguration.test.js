@@ -25,6 +25,9 @@ describe('frigate getConfiguration', () => {
       FRIGATE_RTSP_PORT: '8554',
       FRIGATE_DOCKER_MQTT_VERSION: '1',
       FRIGATE_DOCKER_FRIGATE_VERSION: '1',
+      FRIGATE_RECORD_CONTINUOUS_DAYS: '10',
+      FRIGATE_RECORD_ALERTS_DAYS: '30',
+      FRIGATE_RECORD_DETECTIONS_DAYS: '14',
       TIMEZONE: 'Europe/Paris',
     };
     const gladys = {
@@ -48,6 +51,9 @@ describe('frigate getConfiguration', () => {
       frigateRtspPort: '8554',
       dockerMqttVersion: '1',
       dockerFrigateVersion: '1',
+      recordContinuousDays: '10',
+      recordAlertsDays: '30',
+      recordDetectionsDays: '14',
       timezone: 'Europe/Paris',
     });
   });
@@ -74,6 +80,9 @@ describe('frigate getConfiguration', () => {
       frigateRtspPort: null,
       dockerMqttVersion: null,
       dockerFrigateVersion: null,
+      recordContinuousDays: null,
+      recordAlertsDays: null,
+      recordDetectionsDays: null,
       timezone: null,
     });
   });

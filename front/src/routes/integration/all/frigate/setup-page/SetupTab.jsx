@@ -97,6 +97,9 @@ class SetupTab extends Component {
         frigateRtspPort: frigateStatus.frigateRtspPort,
         frigateUrl
       });
+      if (frigateStatus.frigateEnabled) {
+        await this.getRetentionSettings();
+      }
       if (frigateStatus.frigateConnected) {
         await this.getAdminCredentials();
         await this.getStorage();
@@ -122,6 +125,58 @@ class SetupTab extends Component {
       this.setState({ recordingsStorage });
     } catch (e) {
       this.setState({ recordingsStorage: null });
+    }
+  };
+
+  getRetentionSettings = async () => {
+    // Never overwrite a value the user is editing
+    if (this.state.retentionLoaded) {
+      return;
+    }
+    const loadDays = async (key, fallback) => {
+      try {
+        const variable = await this.props.httpClient.get(`/api/v1/service/frigate/variable/${key}`);
+        const parsed = parseInt(variable.value, 10);
+        return Number.isNaN(parsed) || parsed < 0 ? fallback : parsed;
+      } catch (e) {
+        return fallback;
+      }
+    };
+    const recordContinuousDays = await loadDays('FRIGATE_RECORD_CONTINUOUS_DAYS', 2);
+    const recordAlertsDays = await loadDays('FRIGATE_RECORD_ALERTS_DAYS', 7);
+    const recordDetectionsDays = await loadDays('FRIGATE_RECORD_DETECTIONS_DAYS', 7);
+    this.setState({
+      recordContinuousDays,
+      recordAlertsDays,
+      recordDetectionsDays,
+      retentionLoaded: true
+    });
+  };
+
+  updateRetention = field => e => {
+    this.setState({ [field]: e.target.value, retentionStatus: null });
+  };
+
+  saveRetention = async () => {
+    this.setState({ retentionStatus: RequestStatus.Getting });
+    try {
+      const { recordContinuousDays, recordAlertsDays, recordDetectionsDays } = this.state;
+      await this.props.httpClient.post('/api/v1/service/frigate/variable/FRIGATE_RECORD_CONTINUOUS_DAYS', {
+        value: recordContinuousDays
+      });
+      await this.props.httpClient.post('/api/v1/service/frigate/variable/FRIGATE_RECORD_ALERTS_DAYS', {
+        value: recordAlertsDays
+      });
+      await this.props.httpClient.post('/api/v1/service/frigate/variable/FRIGATE_RECORD_DETECTIONS_DAYS', {
+        value: recordDetectionsDays
+      });
+      // Regenerate the Frigate configuration (only restarts Frigate when it changed)
+      await this.props.httpClient.post('/api/v1/service/frigate/config/apply');
+      this.setState({ retentionStatus: RequestStatus.Success });
+      await this.getStorage();
+    } catch (e) {
+      console.error(e);
+      this.setState({ retentionStatus: RequestStatus.Error });
     }
   };
 
@@ -206,9 +261,19 @@ class SetupTab extends Component {
       showConfirmDisable,
       frigateAdminPassword,
       showPassword,
-      recordingsStorage
+      recordingsStorage,
+      recordContinuousDays,
+      recordAlertsDays,
+      recordDetectionsDays,
+      retentionStatus
     }
   ) {
+    const usedPercent = recordingsStorage
+      ? Math.min(100, Math.round((recordingsStorage.used / recordingsStorage.total) * 100))
+      : 0;
+    const retentionValid = [recordContinuousDays, recordAlertsDays, recordDetectionsDays].every(
+      days => days !== '' && days !== null && days !== undefined && Number(days) >= 0
+    );
     return (
       <div class="card">
         <div class="card-header">
@@ -418,15 +483,126 @@ class SetupTab extends Component {
             </div>
           )}
 
-          {frigateEnabled && recordingsStorage && (
-            <div class="mt-3">
-              <Text
-                id="integration.frigate.setup.storageLabel"
-                fields={{
-                  used: (recordingsStorage.used / 1024).toFixed(1),
-                  total: (recordingsStorage.total / 1024).toFixed(1)
-                }}
-              />
+          {frigateEnabled && (
+            <div class="mt-4">
+              <div class="card-header d-none d-sm-block pl-0">
+                <h2 class="card-title">
+                  <Text id="integration.frigate.setup.storageTitle" />
+                </h2>
+              </div>
+              {recordingsStorage && (
+                <div class="mb-4">
+                  <div class="d-flex justify-content-between">
+                    <span>
+                      <Text
+                        id="integration.frigate.setup.storageLabel"
+                        fields={{
+                          used: (recordingsStorage.used / 1024).toFixed(1),
+                          total: (recordingsStorage.total / 1024).toFixed(1)
+                        }}
+                      />
+                    </span>
+                    <span class="font-weight-bold">{usedPercent}%</span>
+                  </div>
+                  <div class="progress mb-2">
+                    <div
+                      class={`progress-bar ${usedPercent >= 85 ? 'bg-danger' : 'bg-primary'}`}
+                      style={{
+                        width: `${usedPercent}%`
+                      }}
+                      role="progressbar"
+                      aria-valuenow={usedPercent}
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                      aria-label={usedPercent}
+                    />
+                  </div>
+                  <div class="text-muted small">
+                    <Text
+                      id="integration.frigate.setup.storageFree"
+                      fields={{
+                        free: (recordingsStorage.free / 1024).toFixed(1)
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+              <p>
+                <Text id="integration.frigate.setup.retentionHelp" />
+              </p>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="form-label">
+                      <Text id="integration.frigate.setup.retentionContinuousLabel" />
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="365"
+                      class="form-control"
+                      value={recordContinuousDays}
+                      onInput={this.updateRetention('recordContinuousDays')}
+                    />
+                    <small class="text-muted">
+                      <Text id="integration.frigate.setup.retentionContinuousHelp" />
+                    </small>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="form-label">
+                      <Text id="integration.frigate.setup.retentionAlertsLabel" />
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="365"
+                      class="form-control"
+                      value={recordAlertsDays}
+                      onInput={this.updateRetention('recordAlertsDays')}
+                    />
+                    <small class="text-muted">
+                      <Text id="integration.frigate.setup.retentionAlertsHelp" />
+                    </small>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="form-label">
+                      <Text id="integration.frigate.setup.retentionDetectionsLabel" />
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="365"
+                      class="form-control"
+                      value={recordDetectionsDays}
+                      onInput={this.updateRetention('recordDetectionsDays')}
+                    />
+                    <small class="text-muted">
+                      <Text id="integration.frigate.setup.retentionDetectionsHelp" />
+                    </small>
+                  </div>
+                </div>
+              </div>
+              <button
+                class="btn btn-primary"
+                onClick={this.saveRetention}
+                disabled={!retentionValid || retentionStatus === RequestStatus.Getting}
+              >
+                <Text id="integration.frigate.setup.retentionApply" />
+              </button>
+              {retentionStatus === RequestStatus.Success && (
+                <div class="alert alert-success mt-2">
+                  <Text id="integration.frigate.setup.retentionSaved" />
+                </div>
+              )}
+              {retentionStatus === RequestStatus.Error && (
+                <div class="alert alert-danger mt-2">
+                  <Text id="integration.frigate.setup.retentionError" />
+                </div>
+              )}
             </div>
           )}
 

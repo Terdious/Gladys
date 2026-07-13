@@ -39,6 +39,17 @@ async function getConfiguration() {
     this.serviceId,
   );
 
+  // Load recording retention settings (in days)
+  const recordContinuousDays = await this.gladys.variable.getValue(
+    CONFIGURATION.RECORD_CONTINUOUS_DAYS_KEY,
+    this.serviceId,
+  );
+  const recordAlertsDays = await this.gladys.variable.getValue(CONFIGURATION.RECORD_ALERTS_DAYS_KEY, this.serviceId);
+  const recordDetectionsDays = await this.gladys.variable.getValue(
+    CONFIGURATION.RECORD_DETECTIONS_DAYS_KEY,
+    this.serviceId,
+  );
+
   // Gladys params
   const timezone = await this.gladys.variable.getValue(SYSTEM_VARIABLE_NAMES.TIMEZONE);
 
@@ -54,6 +65,9 @@ async function getConfiguration() {
     frigateRtspPort,
     dockerMqttVersion,
     dockerFrigateVersion,
+    recordContinuousDays,
+    recordAlertsDays,
+    recordDetectionsDays,
     timezone,
   };
 }

@@ -1175,7 +1175,19 @@
         "status": "Status",
         "gladys": "Gladys",
         "mqttBroker": "MQTT-Broker",
-        "storageLabel": "Aufnahmespeicher: {{used}} GiB von {{total}} GiB belegt (automatische Aufbewahrung nach Alter, älteste Aufnahmen werden zuerst gelöscht)"
+        "storageTitle": "Aufzeichnungen und Speicher",
+        "storageLabel": "{{used}} GiB von {{total}} GiB belegt",
+        "storageFree": "{{free}} GiB frei für Aufzeichnungen",
+        "retentionHelp": "Frigate verwaltet den Speicherplatz über Aufbewahrungsdauern: Aufzeichnungen, die älter als die unten stehenden Dauern sind, werden automatisch gelöscht, und eine Notbereinigung greift, wenn die Festplatte fast voll ist. Das Anwenden einer Änderung startet Frigate für einige Sekunden neu.",
+        "retentionContinuousLabel": "Daueraufzeichnung (Tage)",
+        "retentionContinuousHelp": "24/7-Video, außerhalb von Ereignissen",
+        "retentionAlertsLabel": "Alarme (Tage)",
+        "retentionAlertsHelp": "Ereignisse in einer Alarmzone",
+        "retentionDetectionsLabel": "Erkennungen (Tage)",
+        "retentionDetectionsHelp": "Alle erkannten Objekte",
+        "retentionApply": "Aufbewahrung anwenden",
+        "retentionSaved": "Aufbewahrung angewendet. Frigate startet neu, wenn sich die Konfiguration geändert hat.",
+        "retentionError": "Fehler beim Anwenden der Aufbewahrung."
       },
       "device": {
         "title": "Frigate-Kameras",

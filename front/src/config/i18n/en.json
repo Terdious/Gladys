@@ -1070,7 +1070,19 @@
         "status": "Status",
         "gladys": "Gladys",
         "mqttBroker": "MQTT broker",
-        "storageLabel": "Recordings storage: {{used}} GiB used of {{total}} GiB (automatic retention by age, oldest recordings are purged first)"
+        "storageTitle": "Recordings and storage",
+        "storageLabel": "{{used}} GiB used of {{total}} GiB",
+        "storageFree": "{{free}} GiB free for recordings",
+        "retentionHelp": "Frigate manages disk space with retention durations: recordings older than the durations below are automatically deleted, and an emergency cleanup kicks in when the disk is almost full. Applying a change restarts Frigate for a few seconds.",
+        "retentionContinuousLabel": "Continuous recording (days)",
+        "retentionContinuousHelp": "24/7 video, outside of events",
+        "retentionAlertsLabel": "Alerts (days)",
+        "retentionAlertsHelp": "Events in an alert zone",
+        "retentionDetectionsLabel": "Detections (days)",
+        "retentionDetectionsHelp": "All detected objects",
+        "retentionApply": "Apply retention",
+        "retentionSaved": "Retention applied. Frigate restarts if the configuration changed.",
+        "retentionError": "Error while applying retention."
       },
       "device": {
         "title": "Frigate cameras",

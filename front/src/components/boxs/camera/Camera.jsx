@@ -5,7 +5,11 @@ import { Text } from 'preact-i18n';
 import Hls from 'hls.js';
 
 import config from '../../../config';
-import { WEBSOCKET_MESSAGE_TYPES } from '../../../../../server/utils/constants';
+import {
+  WEBSOCKET_MESSAGE_TYPES,
+  DEVICE_FEATURE_CATEGORIES,
+  DEVICE_FEATURE_TYPES
+} from '../../../../../server/utils/constants';
 import get from 'get-value';
 import style from './style.css';
 import GladysPlusUpsellCard from '../../gateway/GladysPlusUpsellCard';
@@ -37,6 +41,80 @@ class CameraBoxComponent extends Component {
       console.error(e);
       this.setState({ error: true });
     }
+  };
+
+  getControlFeatures = async () => {
+    // Discover the camera control features (PTZ, night mode, detections)
+    // so the widget only displays the controls this camera supports
+    try {
+      const device = await this.props.httpClient.get(`/api/v1/device/${this.props.box.camera}`);
+      const cameraFeatures = (device.features || []).filter(
+        feature => feature.category === DEVICE_FEATURE_CATEGORIES.CAMERA
+      );
+      const panFeature = cameraFeatures.find(feature => feature.type === DEVICE_FEATURE_TYPES.CAMERA.PAN);
+      const tiltFeature = cameraFeatures.find(feature => feature.type === DEVICE_FEATURE_TYPES.CAMERA.TILT);
+      const zoomFeature = cameraFeatures.find(feature => feature.type === DEVICE_FEATURE_TYPES.CAMERA.ZOOM);
+      const nightModeFeature = cameraFeatures.find(feature => feature.type === DEVICE_FEATURE_TYPES.CAMERA.NIGHT_MODE);
+      const detectionFeatures = cameraFeatures.filter(feature => feature.type.endsWith('-detection'));
+      const activeDetections = {};
+      detectionFeatures.forEach(feature => {
+        activeDetections[feature.selector] = feature.last_value === 1;
+      });
+      this.setState({
+        panFeature,
+        tiltFeature,
+        zoomFeature,
+        nightModeFeature,
+        nightModeValue: nightModeFeature ? nightModeFeature.last_value : 0,
+        detectionFeatures,
+        activeDetections
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  updateDeviceBinaryStateWebsocket = payload => {
+    const { nightModeFeature, detectionFeatures } = this.state;
+    if (nightModeFeature && payload.device_feature_selector === nightModeFeature.selector) {
+      this.setState({ nightModeValue: payload.last_value });
+      return;
+    }
+    if (detectionFeatures && detectionFeatures.some(feature => feature.selector === payload.device_feature_selector)) {
+      this.setState(prevState => ({
+        activeDetections: {
+          ...prevState.activeDetections,
+          [payload.device_feature_selector]: payload.last_value === 1
+        }
+      }));
+    }
+  };
+
+  setFeatureValue = async (feature, value) => {
+    try {
+      await this.props.httpClient.post(`/api/v1/device_feature/${feature.selector}/value`, { value });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  togglePtzPanel = () => {
+    this.setState(prevState => ({ ptzPanelOpened: !prevState.ptzPanelOpened }));
+  };
+
+  startPtzMove = (feature, direction) => () => {
+    this.setFeatureValue(feature, direction);
+  };
+
+  stopPtzMove = feature => () => {
+    this.setFeatureValue(feature, 0);
+  };
+
+  toggleNightMode = async () => {
+    const { nightModeFeature, nightModeValue } = this.state;
+    const newValue = nightModeValue ? 0 : 1;
+    this.setState({ nightModeValue: newValue });
+    await this.setFeatureValue(nightModeFeature, newValue);
   };
 
   handleWebsocketConnected = ({ connected }) => {
@@ -261,12 +339,17 @@ class CameraBoxComponent extends Component {
 
   componentDidMount() {
     this.refreshData();
+    this.getControlFeatures();
     if (this.props.box.camera_live_auto_start === true) {
       this.startStreaming();
     }
     this.props.session.dispatcher.addListener(
       WEBSOCKET_MESSAGE_TYPES.DEVICE.NEW_STRING_STATE,
       this.updateDeviceStateWebsocket
+    );
+    this.props.session.dispatcher.addListener(
+      WEBSOCKET_MESSAGE_TYPES.DEVICE.NEW_STATE,
+      this.updateDeviceBinaryStateWebsocket
     );
     this.props.session.dispatcher.addListener('websocket.connected', this.handleWebsocketConnected);
   }
@@ -277,6 +360,7 @@ class CameraBoxComponent extends Component {
     const nameChanged = get(previousProps, 'box.name') !== get(this.props, 'box.name');
     if (cameraChanged || cameraFeatureChanged || nameChanged) {
       this.refreshData();
+      this.getControlFeatures();
     }
   }
 
@@ -285,10 +369,146 @@ class CameraBoxComponent extends Component {
       WEBSOCKET_MESSAGE_TYPES.DEVICE.NEW_STRING_STATE,
       this.updateDeviceStateWebsocket
     );
+    this.props.session.dispatcher.removeListener(
+      WEBSOCKET_MESSAGE_TYPES.DEVICE.NEW_STATE,
+      this.updateDeviceBinaryStateWebsocket
+    );
     if (this.state.streaming) {
       this.stopStreaming();
     }
     this.props.session.dispatcher.removeListener('websocket.connected', this.handleWebsocketConnected);
+  }
+
+  renderDetectionBadges() {
+    const { detectionFeatures, activeDetections } = this.state;
+    const activeFeatures = (detectionFeatures || []).filter(feature => activeDetections[feature.selector]);
+    if (activeFeatures.length === 0) {
+      return null;
+    }
+    return (
+      <div class={style.detectionBadges}>
+        {activeFeatures.map(feature => (
+          <span class="tag tag-danger">
+            <Text id={`deviceFeatureCategory.camera.${feature.type}`} />
+          </span>
+        ))}
+      </div>
+    );
+  }
+
+  renderPtzOverlay() {
+    const { panFeature, tiltFeature, zoomFeature } = this.state;
+    return (
+      <div class={style.ptzOverlay}>
+        <div class={style.ptzPad}>
+          {tiltFeature && (
+            <div class={style.ptzRow}>
+              <button
+                class="btn btn-secondary btn-sm"
+                onMouseDown={this.startPtzMove(tiltFeature, 1)}
+                onMouseUp={this.stopPtzMove(tiltFeature)}
+                onMouseLeave={this.stopPtzMove(tiltFeature)}
+                onTouchStart={this.startPtzMove(tiltFeature, 1)}
+                onTouchEnd={this.stopPtzMove(tiltFeature)}
+              >
+                <i class="fe fe-arrow-up" />
+              </button>
+            </div>
+          )}
+          <div class={style.ptzRow}>
+            {panFeature && (
+              <button
+                class="btn btn-secondary btn-sm"
+                onMouseDown={this.startPtzMove(panFeature, -1)}
+                onMouseUp={this.stopPtzMove(panFeature)}
+                onMouseLeave={this.stopPtzMove(panFeature)}
+                onTouchStart={this.startPtzMove(panFeature, -1)}
+                onTouchEnd={this.stopPtzMove(panFeature)}
+              >
+                <i class="fe fe-arrow-left" />
+              </button>
+            )}
+            <button class="btn btn-secondary btn-sm" onClick={this.togglePtzPanel}>
+              <i class="fe fe-x" />
+            </button>
+            {panFeature && (
+              <button
+                class="btn btn-secondary btn-sm"
+                onMouseDown={this.startPtzMove(panFeature, 1)}
+                onMouseUp={this.stopPtzMove(panFeature)}
+                onMouseLeave={this.stopPtzMove(panFeature)}
+                onTouchStart={this.startPtzMove(panFeature, 1)}
+                onTouchEnd={this.stopPtzMove(panFeature)}
+              >
+                <i class="fe fe-arrow-right" />
+              </button>
+            )}
+          </div>
+          {tiltFeature && (
+            <div class={style.ptzRow}>
+              <button
+                class="btn btn-secondary btn-sm"
+                onMouseDown={this.startPtzMove(tiltFeature, -1)}
+                onMouseUp={this.stopPtzMove(tiltFeature)}
+                onMouseLeave={this.stopPtzMove(tiltFeature)}
+                onTouchStart={this.startPtzMove(tiltFeature, -1)}
+                onTouchEnd={this.stopPtzMove(tiltFeature)}
+              >
+                <i class="fe fe-arrow-down" />
+              </button>
+            </div>
+          )}
+          {zoomFeature && (
+            <div class={style.ptzRow}>
+              <button
+                class="btn btn-secondary btn-sm"
+                onMouseDown={this.startPtzMove(zoomFeature, -1)}
+                onMouseUp={this.stopPtzMove(zoomFeature)}
+                onMouseLeave={this.stopPtzMove(zoomFeature)}
+                onTouchStart={this.startPtzMove(zoomFeature, -1)}
+                onTouchEnd={this.stopPtzMove(zoomFeature)}
+              >
+                <i class="fe fe-zoom-out" />
+              </button>
+              <button
+                class="btn btn-secondary btn-sm"
+                onMouseDown={this.startPtzMove(zoomFeature, 1)}
+                onMouseUp={this.stopPtzMove(zoomFeature)}
+                onMouseLeave={this.stopPtzMove(zoomFeature)}
+                onTouchStart={this.startPtzMove(zoomFeature, 1)}
+                onTouchEnd={this.stopPtzMove(zoomFeature)}
+              >
+                <i class="fe fe-zoom-in" />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  renderControlButtons() {
+    const { panFeature, tiltFeature, nightModeFeature, nightModeValue } = this.state;
+    return (
+      <span>
+        {nightModeFeature && (
+          <button
+            class={cx('btn btn-sm mr-2', {
+              'btn-dark': nightModeValue,
+              'btn-secondary': !nightModeValue
+            })}
+            onClick={this.toggleNightMode}
+          >
+            <i class="fe fe-moon" />
+          </button>
+        )}
+        {(panFeature || tiltFeature) && (
+          <button class="btn btn-secondary btn-sm mr-2" onClick={this.togglePtzPanel}>
+            <i class="fe fe-move" />
+          </button>
+        )}
+      </span>
+    );
   }
 
   render(
@@ -301,7 +521,8 @@ class CameraBoxComponent extends Component {
       liveStartError,
       liveNotSupportedBrowser,
       liveTooManyRequestsError,
-      upgradeGladysPlusPlanRequired
+      upgradeGladysPlusPlanRequired,
+      ptzPanelOpened
     }
   ) {
     if (streaming) {
@@ -314,12 +535,17 @@ class CameraBoxComponent extends Component {
           >
             <div class="loader" />
             <div class="dimmer-content">
-              <video class="w-100" ref={this.videoRef} controls autoPlay muted />
+              <div class={style.cameraMediaContainer}>
+                <video class="w-100" ref={this.videoRef} controls autoPlay muted />
+                {this.renderDetectionBadges()}
+                {ptzPanelOpened && this.renderPtzOverlay()}
+              </div>
             </div>
           </div>
           <div class="card-header">
             <h3 class="card-title">{props.box && props.box.name}</h3>
             <div class="card-options">
+              {this.renderControlButtons()}
               <button class="btn btn-primary btn-sm" onClick={this.stopStreaming}>
                 <i class="fe fe-pause" />
               </button>
@@ -330,7 +556,11 @@ class CameraBoxComponent extends Component {
     }
     return (
       <div class="card">
-        {image && <img class="card-img-top" src={`data:${image}`} alt={props.roomName} />}
+        <div class={style.cameraMediaContainer}>
+          {image && <img class="card-img-top" src={`data:${image}`} alt={props.roomName} />}
+          {this.renderDetectionBadges()}
+          {ptzPanelOpened && this.renderPtzOverlay()}
+        </div>
         {error && (
           <div>
             <p class={style.noImageToShowError}>
@@ -390,6 +620,7 @@ class CameraBoxComponent extends Component {
         <div class="card-header">
           <h3 class="card-title">{props.box && props.box.name}</h3>
           <div class="card-options">
+            {this.renderControlButtons()}
             <button class="btn btn-secondary btn-sm" onClick={this.startStreaming}>
               <i class="fe fe-airplay" />
             </button>

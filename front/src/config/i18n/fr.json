@@ -4445,7 +4445,21 @@
     },
     "camera": {
       "shortCategoryName": "Caméra",
-      "image": "Caméra (Image)"
+      "image": "Caméra (Image)",
+      "pan": "Caméra (panoramique gauche/droite)",
+      "tilt": "Caméra (inclinaison haut/bas)",
+      "zoom": "Caméra (zoom)",
+      "night-mode": "Caméra (mode nuit / infrarouge)",
+      "person-detection": "Détection de personne",
+      "car-detection": "Détection de voiture",
+      "dog-detection": "Détection de chien",
+      "cat-detection": "Détection de chat",
+      "horse-detection": "Détection de cheval",
+      "bird-detection": "Détection d'oiseau",
+      "bicycle-detection": "Détection de vélo",
+      "motorcycle-detection": "Détection de moto",
+      "bus-detection": "Détection de bus",
+      "truck-detection": "Détection de camion"
     },
     "counter-sensor": {
       "shortCategoryName": "Compteur",

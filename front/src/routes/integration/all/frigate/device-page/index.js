@@ -7,6 +7,7 @@ class FrigateDeviceIntegration extends Component {
   componentWillMount() {
     this.props.getFrigateDevices();
     this.props.getFrigateStatus();
+    this.props.getFrigateStats();
     this.props.getHouses();
     this.props.getIntegrationByName('frigate');
   }
@@ -17,6 +18,6 @@ class FrigateDeviceIntegration extends Component {
 }
 
 export default connect(
-  'user,session,httpClient,frigateCameras,frigateStatus,housesWithRooms,getFrigateCamerasStatus,frigateCameraSearch,getFrigateCamerasOrderDir',
+  'user,session,httpClient,frigateCameras,frigateStatus,frigateStats,housesWithRooms,getFrigateCamerasStatus,frigateCameraSearch,getFrigateCamerasOrderDir',
   actions
 )(FrigateDeviceIntegration);

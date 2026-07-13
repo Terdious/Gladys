@@ -42,6 +42,7 @@ function createActions(store) {
       camera.extra = getParamValue(camera, CAMERA_PARAMS.SOURCE_EXTRA);
       camera.customSource = getParamValue(camera, CAMERA_PARAMS.CUSTOM_SOURCE);
       camera.customSubSource = getParamValue(camera, CAMERA_PARAMS.CUSTOM_SUB_SOURCE);
+      camera.tapoAuthVariant = getParamValue(camera, CAMERA_PARAMS.TAPO_AUTH_VARIANT);
       const labels = getParamValue(camera, CAMERA_PARAMS.TRACKED_LABELS);
       camera.labels = labels ? labels.split(',').filter(label => label.length > 0) : ['person'];
       return camera;
@@ -80,6 +81,18 @@ function createActions(store) {
       } catch (e) {
         store.setState({
           frigateStatus: null
+        });
+      }
+    },
+    async getFrigateStats(state) {
+      try {
+        const frigateStats = await state.httpClient.get('/api/v1/service/frigate/stats');
+        store.setState({
+          frigateStats
+        });
+      } catch (e) {
+        store.setState({
+          frigateStats: null
         });
       }
     },
@@ -124,6 +137,7 @@ function createActions(store) {
             extra: null,
             customSource: null,
             customSubSource: null,
+            tapoAuthVariant: null,
             labels: ['person'],
             features: [],
             params: []
@@ -190,6 +204,7 @@ function createActions(store) {
         { name: CAMERA_PARAMS.SOURCE_EXTRA, value: camera.extra },
         { name: CAMERA_PARAMS.CUSTOM_SOURCE, value: camera.customSource && camera.customSource.trim() },
         { name: CAMERA_PARAMS.CUSTOM_SUB_SOURCE, value: camera.customSubSource && camera.customSubSource.trim() },
+        { name: CAMERA_PARAMS.TAPO_AUTH_VARIANT, value: camera.tapoAuthVariant },
         { name: CAMERA_PARAMS.TRACKED_LABELS, value: camera.labels.join(',') }
       ].filter(param => param.value !== null && param.value !== undefined && param.value !== '');
 

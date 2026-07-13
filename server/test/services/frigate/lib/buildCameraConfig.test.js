@@ -128,6 +128,76 @@ describe('frigate buildCameraConfig', () => {
     expect(() => buildCameraConfig(device)).to.throw('has no host configured');
   });
 
+  it('should build a tapo source with the admin sha256 variant', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'tapo',
+      FRIGATE_SOURCE_HOST: '10.6.0.222',
+      FRIGATE_SOURCE_PASSWORD: 'password',
+      FRIGATE_TAPO_AUTH_VARIANT: 'sha256',
+    });
+
+    const { go2rtcSource } = buildCameraConfig(device);
+
+    expect(go2rtcSource).to.equal(
+      'tapo://admin:5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8@10.6.0.222?channel=0&subtype=1',
+    );
+  });
+
+  it('should build an onvif source with encoded credentials', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'onvif',
+      FRIGATE_SOURCE_HOST: '192.168.1.30:8000',
+      FRIGATE_SOURCE_USERNAME: 'admin',
+      FRIGATE_SOURCE_PASSWORD: 'p#ss',
+    });
+
+    const { go2rtcSource, go2rtcSubSource, cameraSection } = buildCameraConfig(device);
+
+    expect(go2rtcSource).to.equal('onvif://admin:p%23ss@192.168.1.30:8000');
+    expect(go2rtcSubSource).to.equal(null);
+    expect(cameraSection.ffmpeg.inputs[0].input_args).to.equal(undefined);
+  });
+
+  it('should build a tapo sha256 source without password', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'tapo',
+      FRIGATE_SOURCE_HOST: '10.6.0.222',
+      FRIGATE_TAPO_AUTH_VARIANT: 'sha256',
+    });
+
+    const { go2rtcSource } = buildCameraConfig(device);
+
+    expect(go2rtcSource).to.contain('tapo://admin:E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855');
+  });
+
+  it('should build an onvif source with username but no password', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'onvif',
+      FRIGATE_SOURCE_HOST: '192.168.1.30',
+      FRIGATE_SOURCE_USERNAME: 'admin',
+    });
+
+    const { go2rtcSource } = buildCameraConfig(device);
+
+    expect(go2rtcSource).to.equal('onvif://admin:@192.168.1.30');
+  });
+
+  it('should build an onvif source without credentials', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'onvif',
+      FRIGATE_SOURCE_HOST: '192.168.1.30',
+    });
+
+    const { go2rtcSource } = buildCameraConfig(device);
+
+    expect(go2rtcSource).to.equal('onvif://192.168.1.30');
+  });
+
+  it('should throw when onvif host is missing', () => {
+    const device = buildDevice({ FRIGATE_SOURCE_TYPE: 'onvif' });
+    expect(() => buildCameraConfig(device)).to.throw('has no host configured');
+  });
+
   it('should build a custom go2rtc source', () => {
     const device = buildDevice({
       FRIGATE_SOURCE_TYPE: 'custom',
@@ -146,7 +216,7 @@ describe('frigate buildCameraConfig', () => {
   });
 
   it('should throw on invalid source type', () => {
-    const device = buildDevice({ FRIGATE_SOURCE_TYPE: 'onvif' });
+    const device = buildDevice({ FRIGATE_SOURCE_TYPE: 'webcam' });
     expect(() => buildCameraConfig(device)).to.throw('invalid source type');
   });
 

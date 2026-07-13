@@ -35,6 +35,7 @@ const CAMERA_PARAMS = {
   SOURCE_EXTRA: 'FRIGATE_SOURCE_EXTRA',
   CUSTOM_SOURCE: 'FRIGATE_CUSTOM_SOURCE',
   CUSTOM_SUB_SOURCE: 'FRIGATE_CUSTOM_SUB_SOURCE',
+  TAPO_AUTH_VARIANT: 'FRIGATE_TAPO_AUTH_VARIANT',
   TRACKED_LABELS: 'FRIGATE_TRACKED_LABELS',
   DETECT_FPS: 'FRIGATE_DETECT_FPS',
 };
@@ -42,7 +43,13 @@ const CAMERA_PARAMS = {
 const SOURCE_TYPES = {
   RTSP: 'rtsp',
   TAPO: 'tapo',
+  ONVIF: 'onvif',
   CUSTOM: 'custom',
+};
+
+const TAPO_AUTH_VARIANTS = {
+  CLOUD: 'cloud',
+  SHA256: 'sha256',
 };
 
 // Subset of the COCO labelmap relevant for home video surveillance
@@ -133,6 +140,7 @@ module.exports = {
   DEVICE_EXTERNAL_ID_PREFIX,
   CAMERA_PARAMS,
   SOURCE_TYPES,
+  TAPO_AUTH_VARIANTS,
   TRACKABLE_LABELS,
   DEFAULT,
 };

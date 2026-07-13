@@ -56,6 +56,7 @@ const FrigateDevicesPage = props => (
                     camera={camera}
                     cameraIndex={index}
                     housesWithRooms={props.housesWithRooms}
+                    frigateStats={props.frigateStats}
                     updateCameraField={props.updateCameraField}
                     toggleCameraLabel={props.toggleCameraLabel}
                     applyCameraPreset={props.applyCameraPreset}

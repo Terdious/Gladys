@@ -318,7 +318,8 @@
         "substractButton": "-",
         "motionDetected": "Mouvement détecté",
         "pushButton": "Appuyer",
-        "vacuumDock": "Retour à la base"
+        "vacuumDock": "Retour à la base",
+        "cameraDetectionInProgress": "Détection en cours"
       },
       "devices": {
         "editDeviceFeaturesLabel": "Vous pouvez modifier le nom affiché ici :",

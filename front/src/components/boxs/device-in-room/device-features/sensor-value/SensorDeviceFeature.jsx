@@ -20,6 +20,7 @@ import LevelSensorDeviceValue from './LevelSensorDeviceValue';
 import PressureSensorDeviceValue from './PressureSensorDeviceValue';
 import FanSensorDeviceValue from './FanSensorDeviceValue';
 import VacuumCleanerStateDeviceValue from './VacuumCleanerStateDeviceValue';
+import CameraDetectionDeviceValue from './CameraDetectionDeviceValue';
 
 const DISPLAY_BY_FEATURE_CATEGORY = {
   [DEVICE_FEATURE_CATEGORIES.MOTION_SENSOR]: MotionSensorDeviceValue,
@@ -54,7 +55,17 @@ const DISPLAY_BY_FEATURE_TYPE = {
   [DEVICE_FEATURE_TYPES.ELECTRICAL_VEHICLE_BATTERY.BATTERY_RANGE_ESTIMATE]: DistanceSensorDeviceValue,
   [DEVICE_FEATURE_TYPES.ELECTRICAL_VEHICLE_STATE.ODOMETER]: DistanceSensorDeviceValue,
   [DEVICE_FEATURE_TYPES.ELECTRICAL_VEHICLE_STATE.TIRE_PRESSURE]: PressureSensorDeviceValue,
-  [DEVICE_FEATURE_TYPES.VACUUM_CLEANER.STATE]: VacuumCleanerStateDeviceValue
+  [DEVICE_FEATURE_TYPES.VACUUM_CLEANER.STATE]: VacuumCleanerStateDeviceValue,
+  [DEVICE_FEATURE_TYPES.CAMERA.PERSON_DETECTION]: CameraDetectionDeviceValue,
+  [DEVICE_FEATURE_TYPES.CAMERA.CAR_DETECTION]: CameraDetectionDeviceValue,
+  [DEVICE_FEATURE_TYPES.CAMERA.DOG_DETECTION]: CameraDetectionDeviceValue,
+  [DEVICE_FEATURE_TYPES.CAMERA.CAT_DETECTION]: CameraDetectionDeviceValue,
+  [DEVICE_FEATURE_TYPES.CAMERA.HORSE_DETECTION]: CameraDetectionDeviceValue,
+  [DEVICE_FEATURE_TYPES.CAMERA.BIRD_DETECTION]: CameraDetectionDeviceValue,
+  [DEVICE_FEATURE_TYPES.CAMERA.BICYCLE_DETECTION]: CameraDetectionDeviceValue,
+  [DEVICE_FEATURE_TYPES.CAMERA.MOTORCYCLE_DETECTION]: CameraDetectionDeviceValue,
+  [DEVICE_FEATURE_TYPES.CAMERA.BUS_DETECTION]: CameraDetectionDeviceValue,
+  [DEVICE_FEATURE_TYPES.CAMERA.TRUCK_DETECTION]: CameraDetectionDeviceValue
 };
 
 const DEVICE_FEATURES_WITHOUT_EXPIRATION = [

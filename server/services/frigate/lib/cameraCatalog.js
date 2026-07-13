@@ -57,6 +57,46 @@ const CAMERA_CATALOG = [
       },
     ],
   },
+  {
+    key: 'dlink',
+    brand: 'D-Link',
+    unknownModelNoteKey: 'dlinkUnknownModel',
+    models: [
+      {
+        // Native RTSP with the camera web interface account
+        name: 'DCS-5020L',
+        noteKey: 'dlinkPlaySdp',
+        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.CUSTOM],
+        preset: {
+          sourceType: SOURCE_TYPES.RTSP,
+          path: 'play1.sdp',
+          rtspPort: 554,
+        },
+      },
+      // mydlink cameras (DCS-8xxxLH): the factory firmware locks the streams to
+      // the cloud app, RTSP must be enabled once with the defogger tool
+      {
+        name: 'DCS-8302LH',
+        noteKey: 'dlinkDefogger',
+        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.CUSTOM],
+        preset: {
+          sourceType: SOURCE_TYPES.RTSP,
+          path: 'live/profile.0',
+          rtspPort: 554,
+        },
+      },
+      {
+        name: 'DCS-8365LH',
+        noteKey: 'dlinkDefogger',
+        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.CUSTOM],
+        preset: {
+          sourceType: SOURCE_TYPES.RTSP,
+          path: 'live/profile.0',
+          rtspPort: 554,
+        },
+      },
+    ],
+  },
 ];
 
 module.exports = {

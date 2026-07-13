@@ -74,6 +74,13 @@ const CORAL_DEVICE_TYPES = {
   PCIE: 'pcie',
 };
 
+// PCI vendor ids of the render nodes, read from sysfs
+const GPU_VENDORS = {
+  INTEL: '0x8086',
+  AMD: '0x1002',
+  NVIDIA: '0x10de',
+};
+
 // Subset of the COCO labelmap relevant for home video surveillance
 const TRACKABLE_LABELS = ['person', 'car', 'dog', 'cat', 'horse', 'bird', 'bicycle', 'motorcycle', 'bus', 'truck'];
 
@@ -109,7 +116,12 @@ const DEFAULT = {
   TAPO_DETECT_HEIGHT: 360,
   RTSP_PORT: 554,
   ONVIF_PORT: 80,
+  // Path of the render node INSIDE the Frigate container: whatever host node
+  // is selected, it is always mapped there because the Frigate presets and
+  // OpenVINO expect the default node path
   RENDER_DEVICE_PATH: '/dev/dri/renderD128',
+  DRM_DEVICES_PATH: '/dev/dri',
+  DRM_SYS_CLASS_PATH: '/sys/class/drm',
   // Google Coral: PCIe/M.2 exposes an apex device, USB is identified by its
   // vendor id (1a6e before the runtime flashes it, 18d1 after)
   CORAL_PCIE_DEVICE_PATH: '/dev/apex_0',
@@ -212,6 +224,7 @@ module.exports = {
   TAPO_AUTH_VARIANTS,
   DETECTORS,
   CORAL_DEVICE_TYPES,
+  GPU_VENDORS,
   TRACKABLE_LABELS,
   PTZ_COMMAND_REGEX,
   DEFAULT,

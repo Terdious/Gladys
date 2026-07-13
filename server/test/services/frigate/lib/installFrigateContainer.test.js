@@ -191,6 +191,7 @@ describe('frigate installFrigateContainer', () => {
       frigateRtspPort: 8554,
     };
     frigateManager.vaapiAvailable = true;
+    frigateManager.renderDevicePath = '/dev/dri/renderD128';
 
     await frigateManager.installFrigateContainer(config);
 
@@ -245,6 +246,28 @@ describe('frigate installFrigateContainer', () => {
       {
         PathOnHost: '/dev/apex_0',
         PathInContainer: '/dev/apex_0',
+        CgroupPermissions: 'rwm',
+      },
+    ]);
+  });
+
+  it('should map the selected host render node to the default container path', async () => {
+    const config = {
+      frigateUiPort: 8971,
+      frigateApiPort: 5000,
+      frigateRtspPort: 8554,
+    };
+    // Multi-GPU host: the Intel node is renderD129
+    frigateManager.vaapiAvailable = true;
+    frigateManager.renderDevicePath = '/dev/dri/renderD129';
+
+    await frigateManager.installFrigateContainer(config);
+
+    const descriptor = gladys.system.createContainer.firstCall.args[0];
+    expect(descriptor.HostConfig.Devices).to.deep.equal([
+      {
+        PathOnHost: '/dev/dri/renderD129',
+        PathInContainer: '/dev/dri/renderD128',
         CgroupPermissions: 'rwm',
       },
     ]);

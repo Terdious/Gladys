@@ -4260,7 +4260,21 @@
     },
     "camera": {
       "shortCategoryName": "Camera",
-      "image": "Camera"
+      "image": "Camera",
+      "pan": "Camera (pan left/right)",
+      "tilt": "Camera (tilt up/down)",
+      "zoom": "Camera (zoom)",
+      "night-mode": "Camera (night mode / infrared)",
+      "person-detection": "Person detection",
+      "car-detection": "Car detection",
+      "dog-detection": "Dog detection",
+      "cat-detection": "Cat detection",
+      "horse-detection": "Horse detection",
+      "bird-detection": "Bird detection",
+      "bicycle-detection": "Bicycle detection",
+      "motorcycle-detection": "Motorcycle detection",
+      "bus-detection": "Bus detection",
+      "truck-detection": "Truck detection"
     },
     "counter-sensor": {
       "shortCategoryName": "Counter",

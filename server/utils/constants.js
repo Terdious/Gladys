@@ -727,6 +727,25 @@ const DEVICE_FEATURE_TYPES = {
   },
   CAMERA: {
     IMAGE: 'image',
+    // PTZ controls, value -1 / 0 / +1 per axis:
+    // pan: -1 left, +1 right — tilt: -1 down, +1 up — zoom: -1 out, +1 in — 0 always means stop
+    PAN: 'pan',
+    TILT: 'tilt',
+    ZOOM: 'zoom',
+    // Infrared night mode: 1 = forced night, 0 = automatic
+    NIGHT_MODE: 'night-mode',
+    // Object detections (binary), one type per detectable object so the
+    // camera widget can display dedicated live indicators
+    PERSON_DETECTION: 'person-detection',
+    CAR_DETECTION: 'car-detection',
+    DOG_DETECTION: 'dog-detection',
+    CAT_DETECTION: 'cat-detection',
+    HORSE_DETECTION: 'horse-detection',
+    BIRD_DETECTION: 'bird-detection',
+    BICYCLE_DETECTION: 'bicycle-detection',
+    MOTORCYCLE_DETECTION: 'motorcycle-detection',
+    BUS_DETECTION: 'bus-detection',
+    TRUCK_DETECTION: 'truck-detection',
   },
   SIREN: {
     BINARY: 'binary',

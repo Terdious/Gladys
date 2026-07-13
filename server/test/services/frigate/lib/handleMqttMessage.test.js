@@ -23,6 +23,7 @@ describe('frigate handleMqttMessage', () => {
     frigateManager = new FrigateManager(gladys, null, serviceId);
     frigateManager.configureAdminUser = fake.resolves(null);
     frigateManager.updateCameraImage = fake.resolves(null);
+    frigateManager.updateLabelImage = fake.resolves(null);
   });
 
   afterEach(() => {
@@ -110,6 +111,21 @@ describe('frigate handleMqttMessage', () => {
 
     await frigateManager.handleMqttMessage('frigate/c660/person', 'not-a-number');
 
+    assert.notCalled(gladys.event.emit);
+  });
+
+  it('should handle binary payloads without breaking the string topics', async () => {
+    await frigateManager.handleMqttMessage('frigate/available', Buffer.from('online'));
+
+    expect(frigateManager.frigateConnected).to.equal(true);
+  });
+
+  it('should store the label snapshot in its image feature', async () => {
+    const imageBuffer = Buffer.from('jpeg-data');
+
+    await frigateManager.handleMqttMessage('frigate/c660/person/snapshot', imageBuffer);
+
+    assert.calledOnceWithExactly(frigateManager.updateLabelImage, 'c660', 'person', imageBuffer);
     assert.notCalled(gladys.event.emit);
   });
 

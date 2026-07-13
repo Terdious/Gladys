@@ -41,6 +41,15 @@ describe('frigate buildCameraConfig', () => {
     expect(cameraSection.record.enabled).to.equal(true);
     expect(cameraSection.record.continuous.days).to.equal(2);
     expect(cameraSection.snapshots.enabled).to.equal(true);
+    // Per-label MQTT snapshots: cropped and small enough for the Gladys image limit
+    expect(cameraSection.mqtt).to.deep.equal({
+      enabled: true,
+      timestamp: false,
+      bounding_box: true,
+      crop: true,
+      height: 270,
+      quality: 70,
+    });
   });
 
   it('should build a rtsp source without credentials nor path', () => {

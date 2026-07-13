@@ -223,8 +223,10 @@ function createActions(store) {
       ].filter(param => param.value !== null && param.value !== undefined && param.value !== '');
 
       const features = [];
+      // The device now holds several image features: the main one is
+      // identified by its exact external id
       const existingImageFeature = (camera.features || []).find(
-        feature => feature.category === DEVICE_FEATURE_CATEGORIES.CAMERA
+        feature => feature.external_id === `${externalId}:image`
       );
       if (existingImageFeature) {
         const imageFeature = { ...existingImageFeature, name: camera.name };
@@ -261,6 +263,29 @@ function createActions(store) {
             max: 1
           }
         );
+        // Last image of this label, fed by the Frigate MQTT snapshots
+        const imageFeatureExternalId = `${externalId}:${label}:image`;
+        const existingLabelImageFeature = (camera.features || []).find(
+          feature => feature.external_id === imageFeatureExternalId
+        );
+        if (existingLabelImageFeature) {
+          const labelImageFeature = { ...existingLabelImageFeature };
+          delete labelImageFeature.last_value_string;
+          features.push(labelImageFeature);
+        } else {
+          features.push({
+            name: `${camera.name} - ${label} (image)`,
+            external_id: imageFeatureExternalId,
+            selector: imageFeatureExternalId,
+            category: DEVICE_FEATURE_CATEGORIES.CAMERA,
+            type: DEVICE_FEATURE_TYPES.CAMERA.IMAGE,
+            read_only: true,
+            keep_history: false,
+            has_feedback: false,
+            min: 0,
+            max: 0
+          });
+        }
       });
 
       const deviceToSave = {

@@ -59,7 +59,8 @@ async function connect({ mqttUrl, mqttUsername, mqttPassword }) {
   });
 
   this.mqttClient.on('message', (topic, message) => {
-    this.handleMqttMessage(topic, message.toString());
+    // The raw buffer is passed: some topics carry binary payloads (snapshots)
+    this.handleMqttMessage(topic, message);
   });
 }
 

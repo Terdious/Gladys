@@ -191,6 +191,7 @@ function buildCameraConfig(device, recordContent = DEFAULT.RECORD_CONTENT) {
     },
     record: recordContent,
     snapshots: DEFAULT.SNAPSHOTS_CONTENT,
+    mqtt: DEFAULT.CAMERA_MQTT_CONTENT,
   };
 
   // PTZ: declare the ONVIF endpoint of the camera when its dedicated

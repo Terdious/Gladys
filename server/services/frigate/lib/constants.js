@@ -178,6 +178,16 @@ const DEFAULT = {
       default: 14,
     },
   },
+  // Per-label snapshots published on MQTT (frigate/<cam>/<label>/snapshot):
+  // cropped on the object and small enough for the 150KB Gladys image limit
+  CAMERA_MQTT_CONTENT: {
+    enabled: true,
+    timestamp: false,
+    bounding_box: true,
+    crop: true,
+    height: 270,
+    quality: 70,
+  },
   IMAGE_HEIGHT: 360,
   // Live HLS: the go2rtc restream outputs a clean H264 stream, so the video is
   // stream-copied without transcoding. Wallclock re-timestamping is still needed

@@ -1200,7 +1200,8 @@
         "retentionDetectionsHelp": "Alle erkannten Objekte",
         "retentionApply": "Aufbewahrung anwenden",
         "retentionSaved": "Aufbewahrung angewendet. Frigate startet neu, wenn sich die Konfiguration geändert hat.",
-        "retentionError": "Fehler beim Anwenden der Aufbewahrung."
+        "retentionError": "Fehler beim Anwenden der Aufbewahrung.",
+        "frigateOwnershipNote": "Gladys verwaltet und überschreibt bei jedem Anwenden: Kameraquellen, verfolgte Objekte, die obige Aufbewahrung und die Aktivierung von Aufzeichnungen/Schnappschüssen — ändern Sie diese über Gladys. In der Frigate-Oberfläche vorgenommene Einstellungen (Zonen, Masken, Objektfilter, benutzerdefinierte Detektoren) bleiben erhalten, und eine auf Frigate-Seite geänderte Aufbewahrung bleibt bestehen, solange Sie sie nicht über Gladys anwenden."
       },
       "device": {
         "title": "Frigate-Kameras",
@@ -3375,6 +3376,7 @@
       "service-zigbee2mqtt-backup": "Zigbee2MQTT-Backup",
       "migrate-sqlite-to-duckdb": "DuckDB migration",
       "device-state-purge-all-sqlite-states": "Bereinigung aller SQLite-Berichte",
+      "device-state-purge-orphaned-duckdb-states": "Löschen verwaister DuckDB-Zustände",
       "service-matter-backup": "Matter backup",
       "energy-monitoring-cost-calculation-thirty-minutes": "Energiekostenberechnung (30 Minuten)",
       "energy-monitoring-cost-calculation-yesterday": "Energiekostenberechnung (von gestern)",
@@ -4890,7 +4892,10 @@
     "backToLive": "Zurück zu Live",
     "allRooms": "Alle Räume",
     "searchPlaceholder": "Gerät suchen",
+    "scrollLeft": "Filter nach links scrollen",
+    "scrollRight": "Filter nach rechts scrollen",
     "loadMore": "Mehr laden",
+    "searchingOlder": "Suche nach Aktivitäten — {{date}}…",
     "newEvents": {
       "one": "1 neues Ereignis",
       "other": "{{count}} neue Ereignisse"

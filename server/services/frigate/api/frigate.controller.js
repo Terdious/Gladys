@@ -57,6 +57,17 @@ module.exports = function FrigateController(gladys, frigateManager) {
   }
 
   /**
+   * @api {get} /api/v1/service/frigate/config/retention Get effective recording retention
+   * @apiName getRetention
+   * @apiGroup Frigate
+   */
+  async function getRetention(req, res) {
+    logger.debug('Get Frigate effective retention');
+    const retention = await frigateManager.getRetentionSettings();
+    res.json(retention);
+  }
+
+  /**
    * @api {post} /api/v1/service/frigate/config/apply Regenerate Frigate config from Gladys devices
    * @apiName applyConfig
    * @apiGroup Frigate
@@ -145,6 +156,10 @@ module.exports = function FrigateController(gladys, frigateManager) {
       authenticated: true,
       admin: true,
       controller: asyncMiddleware(disconnect),
+    },
+    'get /api/v1/service/frigate/config/retention': {
+      authenticated: true,
+      controller: asyncMiddleware(getRetention),
     },
     'post /api/v1/service/frigate/config/apply': {
       authenticated: true,

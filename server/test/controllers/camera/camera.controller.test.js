@@ -55,4 +55,28 @@ describe('GET /api/v1/camera/:camera_selector/image', () => {
         expect(res.text).to.equal(RANDOM_IMAGE);
       });
   });
+  it('should get image of a specific image feature', async () => {
+    await authenticatedRequest
+      .post('/api/v1/camera/test-camera/image')
+      .send({
+        image: RANDOM_IMAGE,
+        feature: 'test-camera-image',
+      })
+      .expect('Content-Type', /json/)
+      .expect(201);
+    await authenticatedRequest
+      .get('/api/v1/camera/test-camera/image')
+      .query({ feature: 'test-camera-image' })
+      .expect('Content-Type', 'text/html; charset=utf-8')
+      .expect(200)
+      .then((res) => {
+        expect(res.text).to.equal(RANDOM_IMAGE);
+      });
+  });
+  it('should return 404 with an unknown image feature', async () => {
+    await authenticatedRequest
+      .get('/api/v1/camera/test-camera/image')
+      .query({ feature: 'unknown-feature' })
+      .expect(404);
+  });
 });

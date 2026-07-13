@@ -346,6 +346,8 @@
       },
       "camera": {
         "editCameraLabel": "Sélectionnez la caméra que vous souhaitez afficher ici.",
+        "editImageFeatureLabel": "Image à afficher",
+        "editImageFeatureDescription": "Cette caméra expose plusieurs images (par exemple une image par type d'objet détecté). Par défaut, l'image principale est affichée.",
         "noImageToShow": "Aucune image à afficher. Êtes-vous sûr que votre caméra est connectée et accessible par Gladys ?",
         "editBoxNameLabel": "Entrez le nom que vous souhaitez donner à la box :",
         "editBoxNamePlaceholder": "Nom de la box",

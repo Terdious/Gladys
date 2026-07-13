@@ -74,6 +74,18 @@ describe('frigate handleMqttMessage', () => {
     assert.calledOnceWithExactly(frigateManager.updateCameraImage, 'c660');
   });
 
+  it('should normalize the object count to a binary state', async () => {
+    gladys.stateManager.get = fake.returns({ external_id: 'frigate:c660:person' });
+
+    await frigateManager.handleMqttMessage('frigate/c660/person', '2');
+
+    assert.calledOnceWithExactly(gladys.event.emit, 'device.new-state', {
+      device_feature_external_id: 'frigate:c660:person',
+      state: 1,
+    });
+    assert.calledOnceWithExactly(frigateManager.updateCameraImage, 'c660');
+  });
+
   it('should emit a new state without refreshing the image on label detection end', async () => {
     gladys.stateManager.get = fake.returns({ external_id: 'frigate:c660:person' });
 

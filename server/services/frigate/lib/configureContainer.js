@@ -10,7 +10,11 @@ const { buildCameraConfig } = require('./buildCameraConfig');
 const YAML_CONFIG = { singleQuote: true };
 
 /**
- * @description Configure Frigate container.
+ * @description Configure Frigate container. Gladys owns the mqtt, go2rtc and
+ * cameras sections of the config file; any other section added manually
+ * (detectors, hardware acceleration...) is left untouched. The file is only
+ * rewritten when the generated content actually differs, so the caller only
+ * restarts Frigate when needed.
  * @param {string} basePathOnContainer - Gladys base path.
  * @param {object} config - Gladys Frigate stored configuration.
  * @returns {Promise} Indicates if the configuration file has been created or modified.
@@ -31,34 +35,22 @@ async function configureContainer(basePathOnContainer, config) {
   try {
     // eslint-disable-next-line no-bitwise
     await fs.access(configFilepath, constants.R_OK | constants.W_OK);
-    logger.info('Frigate configuration file already exists.');
   } catch (e) {
     logger.info('Writing default Frigate configuration...');
-    await fs.writeFile(configFilepath, yaml.stringify(DEFAULT.CONFIGURATION_CONTENT));
+    await fs.writeFile(configFilepath, yaml.stringify(DEFAULT.CONFIGURATION_CONTENT, YAML_CONFIG));
     configCreated = true;
   }
 
-  // Check for changes
-  const fileContent = await fs.readFile(configFilepath);
-  const loadedConfig = yaml.parse(fileContent.toString());
-  const { mqtt = {} } = loadedConfig;
+  const fileContent = (await fs.readFile(configFilepath)).toString();
+  const loadedConfig = yaml.parse(fileContent) || {};
 
-  let configChanged = false;
-  if (
-    mqtt.enabled !== true ||
-    mqtt.host !== DEFAULT.MQTT_HOST_FROM_CONTAINER ||
-    mqtt.port !== config.mqttPort ||
-    mqtt.user !== config.frigateMqttUsername ||
-    mqtt.password !== config.frigateMqttPassword
-  ) {
-    mqtt.enabled = true;
-    mqtt.host = DEFAULT.MQTT_HOST_FROM_CONTAINER;
-    mqtt.port = config.mqttPort;
-    mqtt.user = config.frigateMqttUsername;
-    mqtt.password = config.frigateMqttPassword;
-    loadedConfig.mqtt = mqtt;
-    configChanged = true;
-  }
+  const mqtt = loadedConfig.mqtt || {};
+  mqtt.enabled = true;
+  mqtt.host = DEFAULT.MQTT_HOST_FROM_CONTAINER;
+  mqtt.port = config.mqttPort;
+  mqtt.user = config.frigateMqttUsername;
+  mqtt.password = config.frigateMqttPassword;
+  loadedConfig.mqtt = mqtt;
 
   // Build go2rtc streams and cameras sections from Gladys devices
   // (the Gladys DB is the source of truth for these two sections)
@@ -76,25 +68,18 @@ async function configureContainer(basePathOnContainer, config) {
   });
 
   if (Object.keys(go2rtcStreams).length > 0) {
-    const newGo2rtc = { streams: go2rtcStreams };
-    if (JSON.stringify(loadedConfig.go2rtc) !== JSON.stringify(newGo2rtc)) {
-      loadedConfig.go2rtc = newGo2rtc;
-      configChanged = true;
-    }
-  } else if (loadedConfig.go2rtc) {
+    loadedConfig.go2rtc = { streams: go2rtcStreams };
+  } else {
     delete loadedConfig.go2rtc;
-    configChanged = true;
   }
-
   // Frigate refuses to start without a cameras section
-  if (JSON.stringify(loadedConfig.cameras) !== JSON.stringify(cameras)) {
-    loadedConfig.cameras = cameras;
-    configChanged = true;
-  }
+  loadedConfig.cameras = cameras;
 
+  const newContent = yaml.stringify(loadedConfig, YAML_CONFIG);
+  const configChanged = newContent !== fileContent;
   if (configChanged) {
     logger.info('Writing custom Frigate configuration file...');
-    await fs.writeFile(configFilepath, yaml.stringify(loadedConfig, YAML_CONFIG));
+    await fs.writeFile(configFilepath, newContent);
   }
 
   return { configChanged: configCreated || configChanged };

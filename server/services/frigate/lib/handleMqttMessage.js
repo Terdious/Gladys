@@ -36,13 +36,16 @@ async function handleMqttMessage(topic, message) {
     }
     default: {
       const topicParts = topic.split('/');
-      // frigate/<camera>/<label> => 1/0 detection state
+      // frigate/<camera>/<label> => number of detected objects
       if (topicParts.length === 3) {
         const [, cameraName, label] = topicParts;
         const featureExternalId = `${DEVICE_EXTERNAL_ID_PREFIX}:${cameraName}:${label}`;
         const feature = this.gladys.stateManager.get('deviceFeatureByExternalId', featureExternalId);
-        const state = parseInt(message, 10);
-        if (feature && !Number.isNaN(state)) {
+        const count = parseInt(message, 10);
+        if (feature && !Number.isNaN(count)) {
+          // The payload is an object count: normalize to a binary detection state
+          const state = count > 0 ? 1 : 0;
+          logger.info(`Frigate: camera ${cameraName}, ${label} detection = ${state} (${count} object(s))`);
           this.gladys.event.emit(EVENTS.DEVICE.NEW_STATE, {
             device_feature_external_id: featureExternalId,
             state,

@@ -121,6 +121,18 @@ describe('frigate configureContainer', () => {
     expect(fileContent).to.contain('cameras: {}');
   });
 
+  it('should handle an empty existing configuration file', async () => {
+    await fs.mkdir(path.dirname(configFilePath), { recursive: true });
+    await fs.writeFile(configFilePath, '');
+
+    const { configChanged } = await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, config);
+
+    expect(configChanged).to.equal(true);
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.contain('user: frigate');
+    expect(fileContent).to.contain('cameras: {}');
+  });
+
   it('should add missing mqtt section to existing config', async () => {
     await fs.mkdir(path.dirname(configFilePath), { recursive: true });
     await fs.writeFile(configFilePath, 'cameras: {}\n');

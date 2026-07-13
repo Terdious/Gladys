@@ -1419,7 +1419,10 @@
             "tapoCloudPassword": "Modèle batterie/solaire sans RTSP : saisissez le mot de passe de votre compte cloud TP-Link. Le flux léger 640×360 est utilisé (le flux principal n'est pas exploitable sur ces modèles).",
             "tapoUnknownModel": "Modèle Tapo non listé : s'il est filaire, essayez d'abord « RTSP » avec un compte caméra (chemins stream1/stream2). S'il est sur batterie/solaire, essayez le type « TP-Link Tapo (sans RTSP) » avec votre mot de passe cloud. Partagez votre résultat :",
             "reolinkRtsp": "Utilisez les identifiants de votre caméra Reolink. La plupart des modèles exposent les chemins h264Preview_01_main (HQ) et h264Preview_01_sub (léger).",
-            "reolinkUnknownModel": "Modèle Reolink non listé : essayez « RTSP » avec les chemins h264Preview_01_main / h264Preview_01_sub. Partagez votre résultat :"
+            "reolinkUnknownModel": "Modèle Reolink non listé : essayez « RTSP » avec les chemins h264Preview_01_main / h264Preview_01_sub. Partagez votre résultat :",
+            "dlinkPlaySdp": "Utilisez les identifiants de l'interface web de la caméra (admin + mot de passe). Le flux principal est play1.sdp ; un second profil play2.sdp existe selon la configuration.",
+            "dlinkDefogger": "Le firmware mydlink verrouille les flux : activez une fois le RTSP avec l'outil « defogger » (via Bluetooth, voir github.com/bmork/defogger). Ensuite : utilisateur admin, mot de passe = code PIN de l'étiquette, chemin live/profile.0.",
+            "dlinkUnknownModel": "Modèle D-Link non listé : les anciens modèles utilisent play1.sdp en RTSP, les mydlink (DCS-8xxxLH) nécessitent l'outil defogger. Partagez votre résultat :"
           }
         }
       }

@@ -143,19 +143,33 @@ describe('frigate buildCameraConfig', () => {
     );
   });
 
-  it('should build an onvif source with encoded credentials', () => {
+  it('should build an onvif source with encoded credentials and catalog port', () => {
     const device = buildDevice({
       FRIGATE_SOURCE_TYPE: 'onvif',
-      FRIGATE_SOURCE_HOST: '192.168.1.30:8000',
-      FRIGATE_SOURCE_USERNAME: 'admin',
-      FRIGATE_SOURCE_PASSWORD: 'p#ss',
+      FRIGATE_SOURCE_HOST: '192.168.1.30',
+      FRIGATE_CAMERA_ONVIF_PORT: '2020',
+      FRIGATE_ONVIF_USERNAME: 'admin',
+      FRIGATE_ONVIF_PASSWORD: 'p#ss',
     });
 
     const { go2rtcSource, go2rtcSubSource, cameraSection } = buildCameraConfig(device);
 
-    expect(go2rtcSource).to.equal('onvif://admin:p%23ss@192.168.1.30:8000');
+    expect(go2rtcSource).to.equal('onvif://admin:p%23ss@192.168.1.30:2020');
     expect(go2rtcSubSource).to.equal(null);
     expect(cameraSection.ffmpeg.inputs[0].input_args).to.equal(undefined);
+  });
+
+  it('should build a rtsp source with a custom port', () => {
+    const device = buildDevice({
+      FRIGATE_SOURCE_TYPE: 'rtsp',
+      FRIGATE_SOURCE_HOST: '192.168.1.10',
+      FRIGATE_CAMERA_RTSP_PORT: '8554',
+      FRIGATE_SOURCE_PATH: 'stream1',
+    });
+
+    const { go2rtcSource } = buildCameraConfig(device);
+
+    expect(go2rtcSource).to.equal('rtsp://192.168.1.10:8554/stream1');
   });
 
   it('should build a tapo sha256 source without password', () => {
@@ -174,15 +188,15 @@ describe('frigate buildCameraConfig', () => {
     const device = buildDevice({
       FRIGATE_SOURCE_TYPE: 'onvif',
       FRIGATE_SOURCE_HOST: '192.168.1.30',
-      FRIGATE_SOURCE_USERNAME: 'admin',
+      FRIGATE_ONVIF_USERNAME: 'admin',
     });
 
     const { go2rtcSource } = buildCameraConfig(device);
 
-    expect(go2rtcSource).to.equal('onvif://admin:@192.168.1.30');
+    expect(go2rtcSource).to.equal('onvif://admin:@192.168.1.30:80');
   });
 
-  it('should build an onvif source without credentials', () => {
+  it('should build an onvif source without credentials on the default port', () => {
     const device = buildDevice({
       FRIGATE_SOURCE_TYPE: 'onvif',
       FRIGATE_SOURCE_HOST: '192.168.1.30',
@@ -190,7 +204,7 @@ describe('frigate buildCameraConfig', () => {
 
     const { go2rtcSource } = buildCameraConfig(device);
 
-    expect(go2rtcSource).to.equal('onvif://192.168.1.30');
+    expect(go2rtcSource).to.equal('onvif://192.168.1.30:80');
   });
 
   it('should throw when onvif host is missing', () => {

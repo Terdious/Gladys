@@ -97,7 +97,21 @@ class SetupTab extends Component {
       });
       if (frigateStatus.frigateConnected) {
         await this.getAdminCredentials();
+        await this.getStorage();
       }
+    }
+  };
+
+  getStorage = async () => {
+    try {
+      const frigateStats = await this.props.httpClient.get('/api/v1/service/frigate/stats');
+      const recordingsStorage =
+        frigateStats && frigateStats.service && frigateStats.service.storage
+          ? frigateStats.service.storage['/media/frigate']
+          : null;
+      this.setState({ recordingsStorage });
+    } catch (e) {
+      this.setState({ recordingsStorage: null });
     }
   };
 
@@ -180,7 +194,8 @@ class SetupTab extends Component {
       pendingAction,
       showConfirmDisable,
       frigateAdminPassword,
-      showPassword
+      showPassword,
+      recordingsStorage
     }
   ) {
     return (
@@ -381,6 +396,18 @@ class SetupTab extends Component {
                   </tr>
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {frigateEnabled && recordingsStorage && (
+            <div class="mt-3">
+              <Text
+                id="integration.frigate.setup.storageLabel"
+                fields={{
+                  used: (recordingsStorage.used / 1024).toFixed(1),
+                  total: (recordingsStorage.total / 1024).toFixed(1)
+                }}
+              />
             </div>
           )}
 

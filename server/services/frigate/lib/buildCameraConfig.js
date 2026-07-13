@@ -1,5 +1,7 @@
+const crypto = require('crypto');
+
 const { BadParameters } = require('../../../utils/coreErrors');
-const { CAMERA_PARAMS, SOURCE_TYPES, TRACKABLE_LABELS, DEFAULT } = require('./constants');
+const { CAMERA_PARAMS, SOURCE_TYPES, TAPO_AUTH_VARIANTS, TRACKABLE_LABELS, DEFAULT } = require('./constants');
 
 /**
  * @description Get a device param value.
@@ -56,7 +58,25 @@ function buildGo2rtcSource(device) {
         throw new BadParameters(`Frigate: camera ${device.external_id} has no host configured`);
       }
       const extra = getDeviceParam(device, CAMERA_PARAMS.SOURCE_EXTRA) || DEFAULT.TAPO_SOURCE_EXTRA;
+      // Some recent firmwares only accept admin + uppercase SHA256 of the cloud password
+      const authVariant = getDeviceParam(device, CAMERA_PARAMS.TAPO_AUTH_VARIANT);
+      if (authVariant === TAPO_AUTH_VARIANTS.SHA256) {
+        const passwordHash = crypto
+          .createHash('sha256')
+          .update(password || '')
+          .digest('hex')
+          .toUpperCase();
+        return `tapo://admin:${passwordHash}@${host}?${extra}`;
+      }
       return `tapo://${encodeURIComponent(password || '')}@${host}?${extra}`;
+    }
+    case SOURCE_TYPES.ONVIF: {
+      if (!host) {
+        throw new BadParameters(`Frigate: camera ${device.external_id} has no host configured`);
+      }
+      const username = getDeviceParam(device, CAMERA_PARAMS.SOURCE_USERNAME);
+      const credentials = username ? `${encodeURIComponent(username)}:${encodeURIComponent(password || '')}@` : '';
+      return `onvif://${credentials}${host}`;
     }
     case SOURCE_TYPES.CUSTOM: {
       const customSource = getDeviceParam(device, CAMERA_PARAMS.CUSTOM_SOURCE);

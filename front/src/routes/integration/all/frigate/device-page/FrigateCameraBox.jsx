@@ -80,6 +80,9 @@ class FrigateCameraBox extends Component {
   updateExtra = e => {
     this.props.updateCameraField(this.props.cameraIndex, 'extra', e.target.value);
   };
+  updateTapoAuthVariant = e => {
+    this.props.updateCameraField(this.props.cameraIndex, 'tapoAuthVariant', e.target.value);
+  };
   updateCustomSource = e => {
     this.props.updateCameraField(this.props.cameraIndex, 'customSource', e.target.value);
   };
@@ -105,6 +108,9 @@ class FrigateCameraBox extends Component {
 
   render(props, { loading, saveError, showPassword }) {
     const { camera } = props;
+    const cameraName = camera.external_id ? camera.external_id.split(':')[1] : null;
+    const cameraStats =
+      props.frigateStats && props.frigateStats.cameras && cameraName ? props.frigateStats.cameras[cameraName] : null;
     const selectedBrand = CAMERA_CATALOG.find(catalogBrand => catalogBrand.key === camera.catalogBrand);
     const selectedModel =
       selectedBrand && selectedBrand.models.find(catalogModel => catalogModel.name === camera.catalogModel);
@@ -129,6 +135,20 @@ class FrigateCameraBox extends Component {
             <div class="loader" />
             <div class="dimmer-content">
               <div class="card-body">
+                {cameraStats && (
+                  <div class="form-group">
+                    <span class={cameraStats.camera_fps > 0 ? 'tag tag-success' : 'tag tag-danger'}>
+                      {cameraStats.camera_fps > 0 ? (
+                        <Text
+                          id="integration.frigate.device.streamActive"
+                          fields={{ fps: Math.round(cameraStats.camera_fps) }}
+                        />
+                      ) : (
+                        <Text id="integration.frigate.device.streamInactive" />
+                      )}
+                    </span>
+                  </div>
+                )}
                 {saveError && (
                   <div class="alert alert-danger">
                     <Text id="integration.frigate.device.saveError" />
@@ -238,6 +258,9 @@ class FrigateCameraBox extends Component {
                     <option value={SOURCE_TYPES.TAPO}>
                       <Text id="integration.frigate.device.sourceTypes.tapo" />
                     </option>
+                    <option value={SOURCE_TYPES.ONVIF}>
+                      <Text id="integration.frigate.device.sourceTypes.onvif" />
+                    </option>
                     <option value={SOURCE_TYPES.CUSTOM}>
                       <Text id="integration.frigate.device.sourceTypes.custom" />
                     </option>
@@ -245,6 +268,11 @@ class FrigateCameraBox extends Component {
                   {camera.sourceType === SOURCE_TYPES.TAPO && (
                     <div class="help-block">
                       <Text id="integration.frigate.device.tapoHelp" />
+                    </div>
+                  )}
+                  {camera.sourceType === SOURCE_TYPES.ONVIF && (
+                    <div class="help-block">
+                      <Text id="integration.frigate.device.onvifHelp" />
                     </div>
                   )}
                 </div>
@@ -267,7 +295,7 @@ class FrigateCameraBox extends Component {
                     </div>
                   </div>
                 )}
-                {camera.sourceType === SOURCE_TYPES.RTSP && (
+                {(camera.sourceType === SOURCE_TYPES.RTSP || camera.sourceType === SOURCE_TYPES.ONVIF) && (
                   <div class="form-group">
                     <label>
                       <Text id="integration.frigate.device.usernameLabel" />
@@ -301,6 +329,28 @@ class FrigateCameraBox extends Component {
                         <Text id="integration.frigate.device.tapoPasswordHelp" />
                       </div>
                     )}
+                  </div>
+                )}
+                {camera.sourceType === SOURCE_TYPES.TAPO && (
+                  <div class="form-group">
+                    <label>
+                      <Text id="integration.frigate.device.tapoAuthVariantLabel" />
+                    </label>
+                    <select
+                      onChange={this.updateTapoAuthVariant}
+                      value={camera.tapoAuthVariant || 'cloud'}
+                      class="form-control"
+                    >
+                      <option value="cloud">
+                        <Text id="integration.frigate.device.tapoAuthCloud" />
+                      </option>
+                      <option value="sha256">
+                        <Text id="integration.frigate.device.tapoAuthSha256" />
+                      </option>
+                    </select>
+                    <div class="help-block">
+                      <Text id="integration.frigate.device.tapoAuthHelp" />
+                    </div>
                   </div>
                 )}
                 {camera.sourceType === SOURCE_TYPES.RTSP && (

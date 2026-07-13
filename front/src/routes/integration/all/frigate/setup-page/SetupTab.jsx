@@ -66,6 +66,9 @@ class SetupTab extends Component {
       gladysConnected: false,
       frigateConnected: false,
       vaapiAvailable: false,
+      coralAvailable: false,
+      coralDeviceType: null,
+      detector: 'auto',
       mqttPort: null,
       frigateUiPort: null,
       frigateApiPort: null,
@@ -91,12 +94,21 @@ class SetupTab extends Component {
         gladysConnected: frigateStatus.gladysConnected,
         frigateConnected: frigateStatus.frigateConnected,
         vaapiAvailable: frigateStatus.vaapiAvailable,
+        coralAvailable: frigateStatus.coralAvailable,
+        coralDeviceType: frigateStatus.coralDeviceType,
         mqttPort: frigateStatus.mqttPort,
         frigateUiPort: frigateStatus.frigateUiPort,
         frigateApiPort: frigateStatus.frigateApiPort,
         frigateRtspPort: frigateStatus.frigateRtspPort,
         frigateUrl
       });
+      if (!this.state.detectorLoaded && frigateStatus.detector) {
+        this.setState({
+          detector: frigateStatus.detector,
+          savedDetector: frigateStatus.detector,
+          detectorLoaded: true
+        });
+      }
       if (frigateStatus.frigateEnabled) {
         await this.getRetentionSettings();
       }
@@ -155,6 +167,26 @@ class SetupTab extends Component {
 
   updateRetention = field => e => {
     this.setState({ [field]: e.target.value, retentionStatus: null });
+  };
+
+  updateDetector = e => {
+    this.setState({ detector: e.target.value, detectorStatus: null });
+  };
+
+  saveDetector = async () => {
+    this.setState({ detectorStatus: RequestStatus.Getting });
+    try {
+      const { detector } = this.state;
+      await this.props.httpClient.post('/api/v1/service/frigate/variable/FRIGATE_DETECTOR', {
+        value: detector
+      });
+      // Regenerate the Frigate configuration (only restarts Frigate when it changed)
+      await this.props.httpClient.post('/api/v1/service/frigate/config/apply');
+      this.setState({ detectorStatus: RequestStatus.Success, savedDetector: detector });
+    } catch (e) {
+      console.error(e);
+      this.setState({ detectorStatus: RequestStatus.Error });
+    }
   };
 
   saveRetention = async () => {
@@ -265,7 +297,12 @@ class SetupTab extends Component {
       recordContinuousDays,
       recordAlertsDays,
       recordDetectionsDays,
-      retentionStatus
+      retentionStatus,
+      coralAvailable,
+      coralDeviceType,
+      detector,
+      savedDetector,
+      detectorStatus
     }
   ) {
     const usedPercent = recordingsStorage
@@ -405,10 +442,64 @@ class SetupTab extends Component {
           )}
 
           {frigateEnabled && (
-            <div class="mt-3">
-              <span class={vaapiAvailable ? 'tag tag-success' : 'tag tag-warning'}>
-                <Text id={`integration.frigate.setup.${vaapiAvailable ? 'hardwareGpu' : 'hardwareCpu'}`} />
-              </span>
+            <div class="mt-4">
+              <div class="card-header d-none d-sm-block pl-0">
+                <h2 class="card-title">
+                  <Text id="integration.frigate.setup.hardwareTitle" />
+                </h2>
+              </div>
+              <div class="mb-3">
+                <span class={`tag mr-2 ${vaapiAvailable ? 'tag-success' : 'tag-warning'}`}>
+                  <Text id={`integration.frigate.setup.${vaapiAvailable ? 'hardwareGpu' : 'hardwareCpu'}`} />
+                </span>
+                <span class={`tag ${coralAvailable ? 'tag-success' : 'tag-secondary'}`}>
+                  <Text
+                    id={`integration.frigate.setup.${coralAvailable ? 'hardwareCoral' : 'hardwareNoCoral'}`}
+                    fields={{ type: coralDeviceType === 'pcie' ? 'PCIe' : 'USB' }}
+                  />
+                </span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">
+                  <Text id="integration.frigate.setup.detectorLabel" />
+                </label>
+                <select class="form-control custom-select col-lg-4" value={detector} onChange={this.updateDetector}>
+                  <option value="auto">
+                    <Text id="integration.frigate.setup.detectorAuto" />
+                  </option>
+                  <option value="coral" disabled={!coralAvailable}>
+                    <Text id="integration.frigate.setup.detectorCoral" />
+                    {!coralAvailable && <Text id="integration.frigate.setup.detectorMissing" />}
+                  </option>
+                  <option value="openvino" disabled={!vaapiAvailable}>
+                    <Text id="integration.frigate.setup.detectorOpenvino" />
+                    {!vaapiAvailable && <Text id="integration.frigate.setup.detectorMissing" />}
+                  </option>
+                  <option value="cpu">
+                    <Text id="integration.frigate.setup.detectorCpu" />
+                  </option>
+                </select>
+                <small class="text-muted">
+                  <Text id="integration.frigate.setup.detectorHelp" />
+                </small>
+              </div>
+              <button
+                class="btn btn-primary"
+                onClick={this.saveDetector}
+                disabled={detector === savedDetector || detectorStatus === RequestStatus.Getting}
+              >
+                <Text id="integration.frigate.setup.detectorApply" />
+              </button>
+              {detectorStatus === RequestStatus.Success && (
+                <div class="alert alert-success mt-2">
+                  <Text id="integration.frigate.setup.detectorSaved" />
+                </div>
+              )}
+              {detectorStatus === RequestStatus.Error && (
+                <div class="alert alert-danger mt-2">
+                  <Text id="integration.frigate.setup.detectorError" />
+                </div>
+              )}
             </div>
           )}
 

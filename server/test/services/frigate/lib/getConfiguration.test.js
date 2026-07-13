@@ -28,6 +28,7 @@ describe('frigate getConfiguration', () => {
       FRIGATE_RECORD_CONTINUOUS_DAYS: '10',
       FRIGATE_RECORD_ALERTS_DAYS: '30',
       FRIGATE_RECORD_DETECTIONS_DAYS: '14',
+      FRIGATE_DETECTOR: 'coral',
       TIMEZONE: 'Europe/Paris',
     };
     const gladys = {
@@ -54,6 +55,7 @@ describe('frigate getConfiguration', () => {
       recordContinuousDays: '10',
       recordAlertsDays: '30',
       recordDetectionsDays: '14',
+      detector: 'coral',
       timezone: 'Europe/Paris',
     });
   });
@@ -83,6 +85,7 @@ describe('frigate getConfiguration', () => {
       recordContinuousDays: null,
       recordAlertsDays: null,
       recordDetectionsDays: null,
+      detector: null,
       timezone: null,
     });
   });

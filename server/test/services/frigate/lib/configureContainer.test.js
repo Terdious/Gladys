@@ -252,6 +252,104 @@ describe('frigate configureContainer', () => {
     expect(fileContent).to.not.contain('preset-vaapi');
   });
 
+  it('should prefer the Coral over the GPU in auto mode', async () => {
+    frigateManager.vaapiAvailable = true;
+    frigateManager.coralAvailable = true;
+    frigateManager.coralDeviceType = 'usb';
+
+    await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, config);
+
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.contain('edgetpu');
+    expect(fileContent).to.contain('device: usb');
+    expect(fileContent).to.not.contain('openvino');
+    // VAAPI decoding stays enabled, independently from the detector
+    expect(fileContent).to.contain('preset-vaapi');
+  });
+
+  it('should configure a PCIe Coral device', async () => {
+    frigateManager.coralAvailable = true;
+    frigateManager.coralDeviceType = 'pcie';
+
+    await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, config);
+
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.contain('edgetpu');
+    expect(fileContent).to.contain('device: pci');
+  });
+
+  it('should apply an explicit CPU detector choice and drop the generated OpenVINO model', async () => {
+    frigateManager.vaapiAvailable = true;
+    // First run in auto mode: OpenVINO detectors + model are generated
+    await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, config);
+
+    const { configChanged } = await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, {
+      ...config,
+      detector: 'cpu',
+    });
+
+    expect(configChanged).to.equal(true);
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.contain('type: cpu');
+    expect(fileContent).to.not.contain('openvino');
+    expect(fileContent).to.not.contain('ssdlite_mobilenet_v2');
+    // VAAPI decoding stays enabled
+    expect(fileContent).to.contain('preset-vaapi');
+  });
+
+  it('should apply an explicit OpenVINO detector choice', async () => {
+    frigateManager.vaapiAvailable = true;
+    frigateManager.coralAvailable = true;
+    frigateManager.coralDeviceType = 'usb';
+
+    await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, {
+      ...config,
+      detector: 'openvino',
+    });
+
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.contain('openvino');
+    expect(fileContent).to.contain('ssdlite_mobilenet_v2');
+    expect(fileContent).to.not.contain('edgetpu');
+  });
+
+  it('should apply an explicit Coral detector choice and preserve a custom model', async () => {
+    frigateManager.coralAvailable = true;
+    frigateManager.coralDeviceType = 'usb';
+    await fs.mkdir(path.dirname(configFilePath), { recursive: true });
+    const existingConfig = ['model:', '  path: /config/custom-model.tflite', ''].join('\n');
+    await fs.writeFile(configFilePath, existingConfig);
+
+    await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, {
+      ...config,
+      detector: 'coral',
+    });
+
+    const fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.contain('edgetpu');
+    expect(fileContent).to.contain('custom-model.tflite');
+  });
+
+  it('should fall back to auto when the chosen detector hardware is missing', async () => {
+    // No Coral nor GPU detected: both explicit choices fall back to auto (no detectors section)
+    await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, {
+      ...config,
+      detector: 'coral',
+    });
+
+    let fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.not.contain('edgetpu');
+    expect(fileContent).to.not.contain('detectors');
+
+    await frigateManager.configureContainer(TEMP_GLADYS_FOLDER, {
+      ...config,
+      detector: 'openvino',
+    });
+
+    fileContent = (await fs.readFile(configFilePath)).toString();
+    expect(fileContent).to.not.contain('openvino');
+  });
+
   it('should preserve manual detectors and ffmpeg sections', async () => {
     frigateManager.vaapiAvailable = true;
     await fs.mkdir(path.dirname(configFilePath), { recursive: true });

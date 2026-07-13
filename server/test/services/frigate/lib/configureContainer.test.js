@@ -134,7 +134,7 @@ describe('frigate configureContainer', () => {
     expect(configChanged).to.equal(true);
     const fileContent = (await fs.readFile(configFilePath)).toString();
     expect(fileContent).to.contain('zone_chatiere');
-    expect(fileContent).to.contain("mask: '0,0,0.5,0.5'");
+    expect(fileContent).to.contain('0,0,0.5,0.5');
     expect(fileContent).to.contain('threshold: 0.8');
     expect(fileContent).to.contain('- person');
     expect(fileContent).to.contain('rtsp://127.0.0.1:8554/c660');

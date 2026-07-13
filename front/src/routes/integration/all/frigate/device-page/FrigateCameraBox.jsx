@@ -139,6 +139,8 @@ class FrigateCameraBox extends Component {
           { value: OTHER_VALUE, label: props.otherModelText }
         ]
       : [];
+    // The catalog constrains which source types make sense for a known model
+    const allowedSourceTypes = selectedModel ? selectedModel.allowedSourceTypes : Object.values(SOURCE_TYPES);
     return (
       <div class="col-lg-6">
         <div class="card">
@@ -267,18 +269,11 @@ class FrigateCameraBox extends Component {
                     <Text id="integration.frigate.device.sourceTypeLabel" />
                   </label>
                   <select onChange={this.updateSourceType} value={camera.sourceType} class="form-control">
-                    <option value={SOURCE_TYPES.RTSP}>
-                      <Text id="integration.frigate.device.sourceTypes.rtsp" />
-                    </option>
-                    <option value={SOURCE_TYPES.TAPO}>
-                      <Text id="integration.frigate.device.sourceTypes.tapo" />
-                    </option>
-                    <option value={SOURCE_TYPES.ONVIF}>
-                      <Text id="integration.frigate.device.sourceTypes.onvif" />
-                    </option>
-                    <option value={SOURCE_TYPES.CUSTOM}>
-                      <Text id="integration.frigate.device.sourceTypes.custom" />
-                    </option>
+                    {allowedSourceTypes.map(sourceType => (
+                      <option value={sourceType}>
+                        <Text id={`integration.frigate.device.sourceTypes.${sourceType}`} />
+                      </option>
+                    ))}
                   </select>
                   {camera.sourceType === SOURCE_TYPES.TAPO && (
                     <div class="help-block">

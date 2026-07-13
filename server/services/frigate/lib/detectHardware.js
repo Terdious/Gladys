@@ -6,7 +6,7 @@ const { DEFAULT, CORAL_DEVICE_TYPES, GPU_VENDORS } = require('./constants');
 
 /**
  * @description Pick the render node to expose to Frigate. Multi-GPU hosts
- * (e.g. a laptop with an Intel iGPU and an NVIDIA card) get several render
+ * (such as a laptop with an Intel iGPU and an NVIDIA card) get several render
  * nodes in a driver-dependent order: the vendor of each node is read from
  * sysfs to select an Intel one (OpenVINO GPU + VAAPI), or an AMD one (VAAPI
  * decoding only).

@@ -70,6 +70,13 @@ describe('frigate streaming', () => {
       clearInterval(frigateManager.checkIfLiveActiveInterval);
     }
   });
+  it('should not start in remote mode (v1 limitation)', async () => {
+    frigateManager.mode = 'remote';
+    const promise = frigateManager.startStreaming('my-camera', false, 1);
+    await assert.isRejected(promise, ServiceNotConfiguredError);
+    expect(frigateManager.liveStreams.size).to.equal(0);
+  });
+
   it('should not start, rtsp port not allocated', async () => {
     frigateManager.frigateRtspPort = null;
     const promise = frigateManager.startStreaming('my-camera', false, 1);

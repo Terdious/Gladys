@@ -53,6 +53,23 @@ async function getConfiguration() {
   // Load object detector choice (auto/coral/openvino/cpu)
   const detector = await this.gladys.variable.getValue(CONFIGURATION.DETECTOR_KEY, this.serviceId);
 
+  // Load remote instance settings (Frigate running on another machine)
+  const mode = await this.gladys.variable.getValue(CONFIGURATION.MODE_KEY, this.serviceId);
+  const remoteHost = await this.gladys.variable.getValue(CONFIGURATION.REMOTE_HOST_KEY, this.serviceId);
+  const remotePort = await this.gladys.variable.getValue(CONFIGURATION.REMOTE_PORT_KEY, this.serviceId);
+  const remoteUsername = await this.gladys.variable.getValue(CONFIGURATION.REMOTE_USERNAME_KEY, this.serviceId);
+  const remotePassword = await this.gladys.variable.getValue(CONFIGURATION.REMOTE_PASSWORD_KEY, this.serviceId);
+  const remoteMqttHost = await this.gladys.variable.getValue(CONFIGURATION.REMOTE_MQTT_HOST_KEY, this.serviceId);
+  const remoteMqttPort = await this.gladys.variable.getValue(CONFIGURATION.REMOTE_MQTT_PORT_KEY, this.serviceId);
+  const remoteMqttUsername = await this.gladys.variable.getValue(
+    CONFIGURATION.REMOTE_MQTT_USERNAME_KEY,
+    this.serviceId,
+  );
+  const remoteMqttPassword = await this.gladys.variable.getValue(
+    CONFIGURATION.REMOTE_MQTT_PASSWORD_KEY,
+    this.serviceId,
+  );
+
   // Gladys params
   const timezone = await this.gladys.variable.getValue(SYSTEM_VARIABLE_NAMES.TIMEZONE);
 
@@ -72,6 +89,15 @@ async function getConfiguration() {
     recordAlertsDays,
     recordDetectionsDays,
     detector,
+    mode,
+    remoteHost,
+    remotePort,
+    remoteUsername,
+    remotePassword,
+    remoteMqttHost,
+    remoteMqttPort,
+    remoteMqttUsername,
+    remoteMqttPassword,
     timezone,
   };
 }

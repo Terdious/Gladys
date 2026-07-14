@@ -1146,7 +1146,9 @@
         "running": "Frigate wurde erfolgreich gestartet.",
         "notEnabled": "Frigate ist nicht aktiviert.",
         "nonDockerEnv": "Gladys läuft nicht auf Docker, daher kann Frigate hier nicht installiert werden.",
-        "invalidDockerNetwork": "Gladys ist eine benutzerdefinierte Installation. Um Frigate hier zu installieren, muss der Gladys-Container mit dem Netzwerkmodus \"host\" konfiguriert sein."
+        "invalidDockerNetwork": "Gladys ist eine benutzerdefinierte Installation. Um Frigate hier zu installieren, muss der Gladys-Container mit dem Netzwerkmodus \"host\" konfiguriert sein.",
+        "remoteNotConnected": "Verbindung zur entfernten Frigate-Instanz läuft oder fehlgeschlagen…",
+        "remoteRunning": "Mit der entfernten Frigate-Instanz verbunden."
       },
       "setup": {
         "title": "Frigate-Konfiguration",
@@ -1206,7 +1208,22 @@
         "retentionApply": "Aufbewahrung anwenden",
         "retentionSaved": "Aufbewahrung angewendet. Frigate startet neu, wenn sich die Konfiguration geändert hat.",
         "retentionError": "Fehler beim Anwenden der Aufbewahrung.",
-        "frigateOwnershipNote": "Gladys verwaltet und überschreibt bei jedem Anwenden: Kameraquellen, verfolgte Objekte, die obige Aufbewahrung und die Aktivierung von Aufzeichnungen/Schnappschüssen — ändern Sie diese über Gladys. In der Frigate-Oberfläche vorgenommene Einstellungen (Zonen, Masken, Objektfilter, benutzerdefinierte Detektoren) bleiben erhalten, und eine auf Frigate-Seite geänderte Aufbewahrung bleibt bestehen, solange Sie sie nicht über Gladys anwenden."
+        "frigateOwnershipNote": "Gladys verwaltet und überschreibt bei jedem Anwenden: Kameraquellen, verfolgte Objekte, die obige Aufbewahrung und die Aktivierung von Aufzeichnungen/Schnappschüssen — ändern Sie diese über Gladys. In der Frigate-Oberfläche vorgenommene Einstellungen (Zonen, Masken, Objektfilter, benutzerdefinierte Detektoren) bleiben erhalten, und eine auf Frigate-Seite geänderte Aufbewahrung bleibt bestehen, solange Sie sie nicht über Gladys anwenden.",
+        "modeLabel": "Wo läuft Frigate?",
+        "modeLocal": "Auf dieser Maschine (von Gladys verwaltete Container)",
+        "modeRemote": "Auf einer anderen Maschine (bestehende Frigate-Instanz)",
+        "modeHelp": "Der Remote-Modus verbindet sich mit einem bereits installierten Frigate (zum Beispiel von einer anderen Gladys-Instanz verwaltet): Erkennungen, Bilder und PTZ funktionieren; Live-Video erfordert vorerst die lokale Installation.",
+        "remoteHostLabel": "Adresse der Frigate-Maschine",
+        "remotePortLabel": "Port der Frigate-Oberfläche (HTTPS)",
+        "remoteUsernameLabel": "Frigate-Benutzer",
+        "remotePasswordLabel": "Frigate-Passwort",
+        "remoteMqttHostLabel": "Adresse des Frigate-MQTT-Brokers",
+        "remoteMqttPortLabel": "MQTT-Port",
+        "remoteMqttUsernameLabel": "MQTT-Benutzer",
+        "remoteMqttPasswordLabel": "MQTT-Passwort",
+        "remoteHelp": "Wenn das entfernte Frigate von einer anderen Gladys-Instanz verwaltet wird: Die Frigate- (admin) und MQTT-Zugangsdaten (frigate) werden auf DEREN Frigate-Konfigurationsseite angezeigt, und der MQTT-Broker ist bereits im lokalen Netzwerk erreichbar.",
+        "remoteConnect": "Speichern und verbinden",
+        "remoteError": "Verbindung nicht möglich: Prüfen Sie die Adresse sowie die Frigate- und MQTT-Zugangsdaten."
       },
       "device": {
         "title": "Frigate-Kameras",
@@ -1302,7 +1319,12 @@
         "ptzHelp": "Halten Sie eine Taste gedrückt, um die Kamera zu bewegen, loslassen zum Stoppen.",
         "ptzError": "PTZ-Befehl abgelehnt — prüfen Sie die ONVIF-Zugangsdaten und ob die Integration verbunden ist.",
         "httpPortLabel": "HTTP-Port der Kamera",
-        "mjpegPathHelp": "Pfad des MJPEG-Streams (video.cgi bei D-Link). Der Stream wird von go2rtc in H.264 umkodiert, bei VGA sehr leichtgewichtig."
+        "mjpegPathHelp": "Pfad des MJPEG-Streams (video.cgi bei D-Link). Der Stream wird von go2rtc in H.264 umkodiert, bei VGA sehr leichtgewichtig.",
+        "discoverRemoteButton": "Kameras entdecken",
+        "remoteCamerasTitle": "Kameras der entfernten Instanz",
+        "remoteCamerasEmpty": "Keine Kamera auf der entfernten Instanz konfiguriert.",
+        "alreadyImported": "Importiert",
+        "importButton": "Importieren"
       },
       "debug": {
         "title": "MQTT-Debug",

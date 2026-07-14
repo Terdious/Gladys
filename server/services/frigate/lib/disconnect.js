@@ -1,4 +1,5 @@
 const logger = require('../../../utils/logger');
+const { MODES } = require('./constants');
 
 const mqttContainerDescriptor = require('../docker/gladys-frigate-mqtt-container.json');
 const frigateContainerDescriptor = require('../docker/gladys-frigate-container.json');
@@ -21,7 +22,14 @@ async function disconnect() {
     logger.debug('Not connected');
   }
   this.gladysConnected = false;
+  this.frigateConnected = false;
   this.emitStatusEvent();
+
+  // Remote mode: nothing else to clean, the containers belong to the
+  // installation running on the other machine
+  if (this.mode === MODES.REMOTE) {
+    return;
+  }
 
   // Stop & remove MQTT container
   let dockerContainer = await this.getDockerContainer(mqttContainerDescriptor.name);

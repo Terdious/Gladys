@@ -26,6 +26,7 @@ describe('frigate emitStatusEvent', () => {
     assert.calledOnceWithExactly(gladys.event.emit, EVENTS.WEBSOCKET.SEND_ALL, {
       type: WEBSOCKET_MESSAGE_TYPES.FRIGATE.STATUS_CHANGE,
       payload: {
+        mode: 'local',
         dockerBased: false,
         networkModeValid: false,
         frigateEnabled: false,

@@ -1,5 +1,6 @@
 const logger = require('../../../utils/logger');
-const { CONFIGURATION, DETECTORS } = require('./constants');
+const { CONFIGURATION, DETECTORS, MODES, DEFAULT } = require('./constants');
+const { ServiceNotConfiguredError } = require('../../../utils/coreErrors');
 const { generate } = require('../../../utils/password');
 const { PlatformNotCompatible } = require('../../../utils/coreErrors');
 
@@ -24,6 +25,36 @@ async function init() {
   const configuration = await this.getConfiguration();
   this.frigateEnabled = configuration.frigateEnabled;
   this.detector = configuration.detector || DETECTORS.AUTO;
+  this.mode = configuration.mode || MODES.LOCAL;
+
+  // Remote mode: connect to a Frigate running on another machine. No Docker
+  // requirement, no containers, no configuration generation: the remote
+  // instance stays owned by its own installation.
+  if (this.mode === MODES.REMOTE) {
+    this.remoteAuthToken = null;
+    if (!this.frigateEnabled) {
+      logger.info('Frigate integration is not enabled, skipping remote connection');
+      this.emitStatusEvent();
+      return null;
+    }
+    if (!configuration.remoteHost || !configuration.remoteMqttHost) {
+      this.emitStatusEvent();
+      throw new ServiceNotConfiguredError('FRIGATE_REMOTE_NOT_CONFIGURED');
+    }
+    this.remote = {
+      host: configuration.remoteHost,
+      port: Number(configuration.remotePort) || DEFAULT.REMOTE_UI_PORT,
+      username: configuration.remoteUsername,
+      password: configuration.remotePassword,
+    };
+    const remoteMqttPort = Number(configuration.remoteMqttPort) || DEFAULT.PORTS.MQTT.min;
+    await this.connect({
+      mqttUrl: `mqtt://${configuration.remoteMqttHost}:${remoteMqttPort}`,
+      mqttUsername: configuration.remoteMqttUsername,
+      mqttPassword: configuration.remoteMqttPassword,
+    });
+    return null;
+  }
 
   try {
     const dockerBased = await this.gladys.system.isDocker();

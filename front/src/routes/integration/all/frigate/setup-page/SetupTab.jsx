@@ -56,6 +56,7 @@ class SetupTab extends Component {
 
   checkStatus = async () => {
     let frigateStatus = {
+      mode: 'local',
       dockerBased: false,
       networkModeValid: false,
       frigateEnabled: false,
@@ -84,7 +85,14 @@ class SetupTab extends Component {
         const url = new URL(config.localApiUrl);
         frigateUrl = `https://${url.hostname}:${frigateStatus.frigateUiPort}`;
       }
+      if (!this.state.modeLoaded) {
+        this.setState({ mode: frigateStatus.mode || 'local', modeLoaded: true });
+        if (frigateStatus.mode === 'remote') {
+          this.loadRemoteSettings();
+        }
+      }
       this.setState({
+        statusMode: frigateStatus.mode || 'local',
         dockerBased: frigateStatus.dockerBased,
         networkModeValid: frigateStatus.networkModeValid,
         frigateEnabled: frigateStatus.frigateEnabled,
@@ -171,6 +179,74 @@ class SetupTab extends Component {
     this.setState({ [field]: e.target.value, retentionStatus: null });
   };
 
+  updateMode = e => {
+    const mode = e.target.value;
+    this.setState({ mode });
+    if (mode === 'remote' && !this.state.remoteSettingsLoaded) {
+      this.loadRemoteSettings();
+    }
+  };
+
+  updateRemoteField = field => e => {
+    this.setState({ [field]: e.target.value, remoteStatus: null });
+  };
+
+  loadRemoteSettings = async () => {
+    if (this.state.remoteSettingsLoaded) {
+      return;
+    }
+    const loadVariable = async key => {
+      try {
+        const variable = await this.props.httpClient.get(`/api/v1/service/frigate/variable/${key}`);
+        return variable.value;
+      } catch (e) {
+        return null;
+      }
+    };
+    const remoteHost = await loadVariable('FRIGATE_REMOTE_HOST');
+    const remotePort = (await loadVariable('FRIGATE_REMOTE_PORT')) || '8971';
+    const remoteUsername = (await loadVariable('FRIGATE_REMOTE_USERNAME')) || 'admin';
+    const remotePassword = await loadVariable('FRIGATE_REMOTE_PASSWORD');
+    const remoteMqttHost = await loadVariable('FRIGATE_REMOTE_MQTT_HOST');
+    const remoteMqttPort = (await loadVariable('FRIGATE_REMOTE_MQTT_PORT')) || '1885';
+    const remoteMqttUsername = (await loadVariable('FRIGATE_REMOTE_MQTT_USERNAME')) || 'frigate';
+    const remoteMqttPassword = await loadVariable('FRIGATE_REMOTE_MQTT_PASSWORD');
+    this.setState({
+      remoteHost,
+      remotePort,
+      remoteUsername,
+      remotePassword,
+      remoteMqttHost,
+      remoteMqttPort,
+      remoteMqttUsername,
+      remoteMqttPassword,
+      remoteSettingsLoaded: true
+    });
+  };
+
+  saveRemoteAndConnect = async () => {
+    this.setState({ remoteStatus: RequestStatus.Getting });
+    try {
+      const postVariable = (key, value) =>
+        this.props.httpClient.post(`/api/v1/service/frigate/variable/${key}`, { value: value || '' });
+      await postVariable('FRIGATE_MODE', 'remote');
+      await postVariable('FRIGATE_REMOTE_HOST', this.state.remoteHost);
+      await postVariable('FRIGATE_REMOTE_PORT', this.state.remotePort);
+      await postVariable('FRIGATE_REMOTE_USERNAME', this.state.remoteUsername);
+      await postVariable('FRIGATE_REMOTE_PASSWORD', this.state.remotePassword);
+      await postVariable('FRIGATE_REMOTE_MQTT_HOST', this.state.remoteMqttHost);
+      await postVariable('FRIGATE_REMOTE_MQTT_PORT', this.state.remoteMqttPort);
+      await postVariable('FRIGATE_REMOTE_MQTT_USERNAME', this.state.remoteMqttUsername);
+      await postVariable('FRIGATE_REMOTE_MQTT_PASSWORD', this.state.remoteMqttPassword);
+      await this.props.httpClient.post('/api/v1/service/frigate/connect');
+      this.setState({ remoteStatus: RequestStatus.Success });
+    } catch (e) {
+      console.error(e);
+      this.setState({ remoteStatus: RequestStatus.Error });
+    }
+    await this.checkStatus();
+  };
+
   updateDetector = e => {
     this.setState({ detector: e.target.value, detectorStatus: null });
   };
@@ -222,6 +298,7 @@ class SetupTab extends Component {
     });
 
     try {
+      await this.props.httpClient.post('/api/v1/service/frigate/variable/FRIGATE_MODE', { value: 'local' });
       await this.props.httpClient.post('/api/v1/service/frigate/connect');
     } catch (e) {
       error = error | get(e, 'response.status');
@@ -305,9 +382,20 @@ class SetupTab extends Component {
       coralDeviceType,
       detector,
       savedDetector,
-      detectorStatus
+      detectorStatus,
+      mode,
+      remoteHost,
+      remotePort,
+      remoteUsername,
+      remotePassword,
+      remoteMqttHost,
+      remoteMqttPort,
+      remoteMqttUsername,
+      remoteMqttPassword,
+      remoteStatus
     }
   ) {
+    const isRemote = mode === 'remote';
     const usedPercent = recordingsStorage
       ? Math.min(100, Math.round((recordingsStorage.used / recordingsStorage.total) * 100))
       : 0;
@@ -326,17 +414,177 @@ class SetupTab extends Component {
             <MarkupText id="integration.frigate.setup.description" />
           </p>
 
+          <div class="form-group">
+            <label class="form-label">
+              <Text id="integration.frigate.setup.modeLabel" />
+            </label>
+            <select class="form-control custom-select col-lg-4" value={mode} onChange={this.updateMode}>
+              <option value="local">
+                <Text id="integration.frigate.setup.modeLocal" />
+              </option>
+              <option value="remote">
+                <Text id="integration.frigate.setup.modeRemote" />
+              </option>
+            </select>
+            <small class="text-muted">
+              <Text id="integration.frigate.setup.modeHelp" />
+            </small>
+          </div>
+
           <CheckStatus
+            mode={mode}
             frigateEnabled={frigateEnabled}
             frigateExist={frigateExist}
             frigateRunning={frigateRunning}
             dockerBased={dockerBased}
             networkModeValid={networkModeValid}
+            frigateConnected={frigateConnected}
             frigateStatus={frigateStatus}
             pendingAction={pendingAction}
           />
 
-          {dockerBased && networkModeValid && !frigateEnabled && !showConfirmDisable && (
+          {isRemote && (
+            <div class="mt-3">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label">
+                      <Text id="integration.frigate.setup.remoteHostLabel" />
+                    </label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      value={remoteHost}
+                      onInput={this.updateRemoteField('remoteHost')}
+                      placeholder="10.5.0.227"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label">
+                      <Text id="integration.frigate.setup.remotePortLabel" />
+                    </label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      value={remotePort}
+                      onInput={this.updateRemoteField('remotePort')}
+                      placeholder="8971"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label">
+                      <Text id="integration.frigate.setup.remoteUsernameLabel" />
+                    </label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      value={remoteUsername}
+                      onInput={this.updateRemoteField('remoteUsername')}
+                      placeholder="admin"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label">
+                      <Text id="integration.frigate.setup.remotePasswordLabel" />
+                    </label>
+                    <input
+                      type="password"
+                      class="form-control"
+                      value={remotePassword}
+                      onInput={this.updateRemoteField('remotePassword')}
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label">
+                      <Text id="integration.frigate.setup.remoteMqttHostLabel" />
+                    </label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      value={remoteMqttHost}
+                      onInput={this.updateRemoteField('remoteMqttHost')}
+                      placeholder="10.5.0.227"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label">
+                      <Text id="integration.frigate.setup.remoteMqttPortLabel" />
+                    </label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      value={remoteMqttPort}
+                      onInput={this.updateRemoteField('remoteMqttPort')}
+                      placeholder="1885"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label">
+                      <Text id="integration.frigate.setup.remoteMqttUsernameLabel" />
+                    </label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      value={remoteMqttUsername}
+                      onInput={this.updateRemoteField('remoteMqttUsername')}
+                      placeholder="frigate"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label">
+                      <Text id="integration.frigate.setup.remoteMqttPasswordLabel" />
+                    </label>
+                    <input
+                      type="password"
+                      class="form-control"
+                      value={remoteMqttPassword}
+                      onInput={this.updateRemoteField('remoteMqttPassword')}
+                    />
+                  </div>
+                </div>
+              </div>
+              <p class="text-muted small">
+                <Text id="integration.frigate.setup.remoteHelp" />
+              </p>
+              <button
+                onClick={this.saveRemoteAndConnect}
+                class="btn btn-primary"
+                disabled={remoteStatus === RequestStatus.Getting || !remoteHost || !remoteMqttHost}
+              >
+                <Text id="integration.frigate.setup.remoteConnect" />
+              </button>
+              {frigateEnabled && !showConfirmDisable && (
+                <button
+                  onClick={this.showConfirmDisable}
+                  class="btn btn-danger ml-2"
+                  disabled={frigateStatus === RequestStatus.Getting}
+                >
+                  <Text id="integration.frigate.setup.disableFrigate" />
+                </button>
+              )}
+              {remoteStatus === RequestStatus.Error && (
+                <div class="alert alert-danger mt-2">
+                  <Text id="integration.frigate.setup.remoteError" />
+                </div>
+              )}
+            </div>
+          )}
+
+          {!isRemote && dockerBased && networkModeValid && !frigateEnabled && !showConfirmDisable && (
             <button
               onClick={this.startContainers}
               class="btn btn-primary"
@@ -345,7 +593,7 @@ class SetupTab extends Component {
               <Text id="integration.frigate.setup.enableFrigate" />
             </button>
           )}
-          {dockerBased && networkModeValid && frigateEnabled && !showConfirmDisable && (
+          {!isRemote && dockerBased && networkModeValid && frigateEnabled && !showConfirmDisable && (
             <button
               onClick={this.showConfirmDisable}
               class="btn btn-danger"
@@ -354,7 +602,7 @@ class SetupTab extends Component {
               <Text id="integration.frigate.setup.disableFrigate" />
             </button>
           )}
-          {dockerBased && networkModeValid && frigateEnabled && showConfirmDisable && (
+          {(isRemote || (dockerBased && networkModeValid)) && frigateEnabled && showConfirmDisable && (
             <div
               class={cx(
                 'd-flex',
@@ -387,7 +635,7 @@ class SetupTab extends Component {
             </div>
           )}
 
-          {frigateRunning && frigateUrl && (
+          {!isRemote && frigateRunning && frigateUrl && (
             <div class="mt-4">
               <div class="form-group">
                 <label htmlFor="frigateUrl" className="form-label">
@@ -405,7 +653,7 @@ class SetupTab extends Component {
             </div>
           )}
 
-          {frigateRunning && frigateAdminPassword && (
+          {!isRemote && frigateRunning && frigateAdminPassword && (
             <div>
               <div class="form-group">
                 <label htmlFor="frigateUsername" className="form-label">
@@ -444,7 +692,7 @@ class SetupTab extends Component {
             </div>
           )}
 
-          {frigateEnabled && (
+          {!isRemote && frigateEnabled && (
             <div class="mt-4">
               <div class="card-header d-none d-sm-block pl-0">
                 <h2 class="card-title">
@@ -512,7 +760,7 @@ class SetupTab extends Component {
             </div>
           )}
 
-          {frigateEnabled && mqttPort && (
+          {!isRemote && frigateEnabled && mqttPort && (
             <div class="mt-4">
               <div class="card-header pl-0">
                 <h2 class="card-title">
@@ -583,7 +831,7 @@ class SetupTab extends Component {
             </div>
           )}
 
-          {frigateEnabled && (
+          {!isRemote && frigateEnabled && (
             <div class="mt-4">
               <div class="card-header d-none d-sm-block pl-0">
                 <h2 class="card-title">

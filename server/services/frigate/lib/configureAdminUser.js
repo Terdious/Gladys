@@ -3,7 +3,7 @@ const { promisify } = require('util');
 
 const logger = require('../../../utils/logger');
 const { generate } = require('../../../utils/password');
-const { CONFIGURATION } = require('./constants');
+const { CONFIGURATION, MODES } = require('./constants');
 
 const sleep = promisify(setTimeout);
 
@@ -20,6 +20,11 @@ const MAX_ATTEMPTS = 3;
  * await frigate.configureAdminUser();
  */
 async function configureAdminUser() {
+  // The remote instance already has its own admin account
+  if (this.mode === MODES.REMOTE) {
+    this.adminConfigured = true;
+    return;
+  }
   if (this.adminConfigured || this.adminConfiguring) {
     return;
   }

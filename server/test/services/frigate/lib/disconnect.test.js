@@ -8,6 +8,25 @@ const FrigateManager = require('../../../../services/frigate/lib');
 const serviceId = 'f87b7af2-ca8e-44fc-b754-444354b42fee';
 
 describe('frigate disconnect', () => {
+  it('should only close the MQTT connection in remote mode', async () => {
+    const gladysRemote = {
+      event: { emit: fake.resolves(null) },
+      system: {
+        getContainers: fake.resolves([]),
+        stopContainer: fake.resolves(true),
+        removeContainer: fake.resolves(true),
+      },
+    };
+    const manager = new FrigateManager(gladysRemote, null, serviceId);
+    manager.mode = 'remote';
+    manager.mqttClient = { end: fake.returns(null), removeAllListeners: fake.returns(null) };
+
+    await manager.disconnect();
+
+    assert.notCalled(gladysRemote.system.getContainers);
+    assert.notCalled(gladysRemote.system.stopContainer);
+  });
+
   let frigateManager;
   let gladys;
 

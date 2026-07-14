@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 const { NotFoundError, BadParameters } = require('../../../utils/coreErrors');
-const { DEFAULT, DEVICE_EXTERNAL_ID_PREFIX } = require('./constants');
+const { DEFAULT, DEVICE_EXTERNAL_ID_PREFIX, MODES } = require('./constants');
 
 // Same limit as the core camera.setImage (150 Ko of base64 characters)
 const MAX_SIZE_IMAGE = 150 * 1024;
@@ -18,16 +18,20 @@ async function getImage(device) {
   if (prefix !== DEVICE_EXTERNAL_ID_PREFIX || !cameraName) {
     throw new BadParameters(`Frigate: device ${device.external_id} has an invalid external id`);
   }
-  if (!this.frigateApiPort) {
-    throw new NotFoundError('Frigate: API port is not allocated yet');
-  }
-
-  const { data, headers } = await axios.get(
-    `http://127.0.0.1:${this.frigateApiPort}/api/${cameraName}/latest.webp?height=${DEFAULT.IMAGE_HEIGHT}`,
-    {
+  const imagePath = `/api/${cameraName}/latest.webp?height=${DEFAULT.IMAGE_HEIGHT}`;
+  let data;
+  let headers;
+  if (this.mode === MODES.REMOTE) {
+    // Remote instance: authenticated UI port
+    ({ data, headers } = await this.remoteApiGet(imagePath, { responseType: 'arraybuffer' }));
+  } else {
+    if (!this.frigateApiPort) {
+      throw new NotFoundError('Frigate: API port is not allocated yet');
+    }
+    ({ data, headers } = await axios.get(`http://127.0.0.1:${this.frigateApiPort}${imagePath}`, {
       responseType: 'arraybuffer',
-    },
-  );
+    }));
+  }
 
   const contentType = headers['content-type'] || 'image/webp';
   const image = `${contentType};base64,${Buffer.from(data).toString('base64')}`;

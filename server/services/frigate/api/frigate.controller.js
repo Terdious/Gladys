@@ -81,6 +81,16 @@ module.exports = function FrigateController(gladys, frigateManager) {
   }
 
   /**
+   * @api {get} /api/v1/service/frigate/remote/cameras Discover the cameras of the remote instance
+   * @apiName discoverRemoteCameras
+   * @apiGroup Frigate
+   */
+  async function discoverRemoteCameras(req, res) {
+    const cameras = await frigateManager.discoverRemoteCameras();
+    res.json(cameras);
+  }
+
+  /**
    * @api {get} /api/v1/service/frigate/mqtt/debug Get last received MQTT messages
    * @apiName getMqttDebugMessages
    * @apiGroup Frigate
@@ -183,6 +193,11 @@ module.exports = function FrigateController(gladys, frigateManager) {
     'post /api/v1/service/frigate/config/apply': {
       authenticated: true,
       controller: asyncMiddleware(applyConfig),
+    },
+    'get /api/v1/service/frigate/remote/cameras': {
+      authenticated: true,
+      admin: true,
+      controller: asyncMiddleware(discoverRemoteCameras),
     },
     'get /api/v1/service/frigate/mqtt/debug': {
       authenticated: true,

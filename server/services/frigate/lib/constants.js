@@ -1,5 +1,14 @@
 const CONFIGURATION = {
   FRIGATE_ENABLED: 'FRIGATE_ENABLED',
+  MODE_KEY: 'FRIGATE_MODE',
+  REMOTE_HOST_KEY: 'FRIGATE_REMOTE_HOST',
+  REMOTE_PORT_KEY: 'FRIGATE_REMOTE_PORT',
+  REMOTE_USERNAME_KEY: 'FRIGATE_REMOTE_USERNAME',
+  REMOTE_PASSWORD_KEY: 'FRIGATE_REMOTE_PASSWORD',
+  REMOTE_MQTT_HOST_KEY: 'FRIGATE_REMOTE_MQTT_HOST',
+  REMOTE_MQTT_PORT_KEY: 'FRIGATE_REMOTE_MQTT_PORT',
+  REMOTE_MQTT_USERNAME_KEY: 'FRIGATE_REMOTE_MQTT_USERNAME',
+  REMOTE_MQTT_PASSWORD_KEY: 'FRIGATE_REMOTE_MQTT_PASSWORD',
   GLADYS_MQTT_USERNAME_KEY: 'FRIGATE_GLADYS_MQTT_USERNAME',
   GLADYS_MQTT_USERNAME_VALUE: 'gladys',
   GLADYS_MQTT_PASSWORD_KEY: 'FRIGATE_GLADYS_MQTT_PASSWORD',
@@ -58,6 +67,13 @@ const SOURCE_TYPES = {
   // HTTP MJPEG stream (old cameras without RTSP), re-encoded to H264 by go2rtc
   MJPEG: 'mjpeg',
   CUSTOM: 'custom',
+};
+
+// Where the Frigate instance runs: installed by Gladys (local containers)
+// or an existing instance on another machine (like the zigbee2mqtt remote mode)
+const MODES = {
+  LOCAL: 'local',
+  REMOTE: 'remote',
 };
 
 // Camera control protocols (PTZ, night mode), declared by the catalog
@@ -128,6 +144,7 @@ const DEFAULT = {
   RTSP_PORT: 554,
   ONVIF_PORT: 80,
   HTTP_PORT: 80,
+  REMOTE_UI_PORT: 8971,
   MJPEG_PATH: 'video.cgi',
   // D-Link proprietary HTTP control (validated on DCS-5020L firmware 1.16):
   // pan/tilt single-step matrix and day/night mode
@@ -243,6 +260,7 @@ const PTZ_COMMAND_REGEX = /^(MOVE_(UP|DOWN|LEFT|RIGHT)|ZOOM_(IN|OUT)|STOP|preset
 
 module.exports = {
   CONFIGURATION,
+  MODES,
   MQTT_TOPICS,
   DEVICE_EXTERNAL_ID_PREFIX,
   CAMERA_PARAMS,

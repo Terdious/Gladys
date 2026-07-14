@@ -18,6 +18,6 @@ class FrigateDeviceIntegration extends Component {
 }
 
 export default connect(
-  'user,session,httpClient,frigateCameras,frigateStatus,frigateStats,housesWithRooms,getFrigateCamerasStatus,frigateCameraSearch,getFrigateCamerasOrderDir',
+  'user,session,httpClient,frigateCameras,frigateStatus,frigateStats,housesWithRooms,getFrigateCamerasStatus,frigateCameraSearch,getFrigateCamerasOrderDir,remoteCameras,remoteCamerasStatus',
   actions
 )(FrigateDeviceIntegration);

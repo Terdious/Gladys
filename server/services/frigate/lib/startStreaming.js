@@ -8,7 +8,7 @@ const util = require('util');
 const randomBytes = util.promisify(require('crypto').randomBytes);
 const logger = require('../../../utils/logger');
 const { NotFoundError, ServiceNotConfiguredError } = require('../../../utils/coreErrors');
-const { DEVICE_EXTERNAL_ID_PREFIX, DEFAULT } = require('./constants');
+const { DEVICE_EXTERNAL_ID_PREFIX, DEFAULT, MODES } = require('./constants');
 
 /**
  * @description Start live streaming a Frigate camera through the go2rtc restream.
@@ -38,6 +38,11 @@ async function startStreaming(cameraSelector, isGladysGateway, segmentDuration =
   });
 
   try {
+    // The go2rtc restream of a remote instance is bound to its localhost:
+    // live streaming needs the local installation (v1 limitation)
+    if (this.mode === MODES.REMOTE) {
+      throw new ServiceNotConfiguredError('FRIGATE_REMOTE_LIVE_NOT_SUPPORTED');
+    }
     if (!this.frigateRtspPort) {
       throw new ServiceNotConfiguredError('FRIGATE_RTSP_PORT_NOT_ALLOCATED');
     }

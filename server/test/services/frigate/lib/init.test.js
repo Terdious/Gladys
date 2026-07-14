@@ -122,6 +122,95 @@ describe('frigate init', () => {
     expect(frigateManager.frigateRtspPort).to.equal(8554);
   });
 
+  it('should connect to the remote instance in remote mode', async () => {
+    frigateManager.getConfiguration = fake.resolves({
+      frigateEnabled: true,
+      mode: 'remote',
+      remoteHost: '10.5.0.227',
+      remotePort: '8971',
+      remoteUsername: 'admin',
+      remotePassword: 'secret',
+      remoteMqttHost: '10.5.0.227',
+      remoteMqttPort: '1885',
+      remoteMqttUsername: 'frigate',
+      remoteMqttPassword: 'mqtt-secret',
+    });
+
+    await frigateManager.init();
+
+    assert.calledOnceWithExactly(frigateManager.connect, {
+      mqttUrl: 'mqtt://10.5.0.227:1885',
+      mqttUsername: 'frigate',
+      mqttPassword: 'mqtt-secret',
+    });
+    expect(frigateManager.remote).to.deep.equal({
+      host: '10.5.0.227',
+      port: 8971,
+      username: 'admin',
+      password: 'secret',
+    });
+    assert.notCalled(frigateManager.installMqttContainer);
+    assert.notCalled(frigateManager.installFrigateContainer);
+    assert.notCalled(frigateManager.detectHardware);
+  });
+
+  it('should use the default ports when the remote ports are not set', async () => {
+    frigateManager.getConfiguration = fake.resolves({
+      frigateEnabled: true,
+      mode: 'remote',
+      remoteHost: '10.5.0.227',
+      remoteUsername: 'admin',
+      remotePassword: 'secret',
+      remoteMqttHost: '10.5.0.227',
+      remoteMqttUsername: 'frigate',
+      remoteMqttPassword: 'mqtt-secret',
+    });
+
+    await frigateManager.init();
+
+    assert.calledOnceWithExactly(frigateManager.connect, {
+      mqttUrl: 'mqtt://10.5.0.227:1885',
+      mqttUsername: 'frigate',
+      mqttPassword: 'mqtt-secret',
+    });
+    expect(frigateManager.remote.port).to.equal(8971);
+  });
+
+  it('should throw when the remote MQTT host is missing', async () => {
+    frigateManager.getConfiguration = fake.resolves({
+      frigateEnabled: true,
+      mode: 'remote',
+      remoteHost: '10.5.0.227',
+    });
+
+    try {
+      await frigateManager.init();
+      assert.fail();
+    } catch (e) {
+      expect(e.message).to.equal('FRIGATE_REMOTE_NOT_CONFIGURED');
+    }
+  });
+
+  it('should skip the remote connection when disabled', async () => {
+    frigateManager.getConfiguration = fake.resolves({ frigateEnabled: false, mode: 'remote' });
+
+    const result = await frigateManager.init();
+
+    expect(result).to.equal(null);
+    assert.notCalled(frigateManager.connect);
+  });
+
+  it('should throw when the remote instance is not configured', async () => {
+    frigateManager.getConfiguration = fake.resolves({ frigateEnabled: true, mode: 'remote' });
+
+    try {
+      await frigateManager.init();
+      assert.fail();
+    } catch (e) {
+      expect(e.message).to.equal('FRIGATE_REMOTE_NOT_CONFIGURED');
+    }
+  });
+
   it('should keep existing credentials when enabled', async () => {
     const existingConfig = {
       frigateEnabled: true,

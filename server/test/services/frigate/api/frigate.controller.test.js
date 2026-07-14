@@ -38,6 +38,7 @@ const frigateManager = {
   stopStreaming: fake.resolves(null),
   liveActivePing: fake.resolves(null),
   getRetentionSettings: fake.resolves({ continuous: 2, alerts: 7, detections: 7 }),
+  discoverRemoteCameras: fake.resolves([{ name: 'cam', trackedLabels: ['person'], alreadyImported: false }]),
   sendPtzCommand: fake.resolves(null),
   mqttDebugMessages: [{ topic: 'frigate/available', payload: 'online', received_at: '2026-07-13T18:00:00.000Z' }],
 };
@@ -121,6 +122,18 @@ describe('frigate API', () => {
 
     assert.calledOnce(frigateManager.init);
     assert.calledWith(res.json, { success: true });
+  });
+
+  it('get /api/v1/service/frigate/remote/cameras', async () => {
+    const req = {};
+    const res = {
+      json: fake.returns(null),
+    };
+
+    await controller['get /api/v1/service/frigate/remote/cameras'].controller(req, res);
+
+    assert.calledOnce(frigateManager.discoverRemoteCameras);
+    assert.calledWith(res.json, [{ name: 'cam', trackedLabels: ['person'], alreadyImported: false }]);
   });
 
   it('get /api/v1/service/frigate/mqtt/debug', async () => {

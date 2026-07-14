@@ -6,11 +6,13 @@ import classNames from 'classnames/bind';
 let cx = classNames.bind(style);
 
 const CheckStatus = ({
+  mode,
   frigateEnabled,
   frigateExist,
   frigateRunning,
   dockerBased,
   networkModeValid,
+  frigateConnected,
   frigateStatus,
   pendingAction
 }) => {
@@ -22,6 +24,19 @@ const CheckStatus = ({
         ? 'integration.frigate.setup.deactivationFrigate'
         : 'integration.frigate.setup.activationFrigate';
     alertClass = 'alert-info';
+  } else if (mode === 'remote') {
+    // Remote instance: no Docker requirement, the containers live on the
+    // other machine
+    if (!frigateEnabled) {
+      textLabel = 'integration.frigate.status.notEnabled';
+      alertClass = 'alert-info';
+    } else if (!frigateConnected) {
+      textLabel = 'integration.frigate.status.remoteNotConnected';
+      alertClass = 'alert-warning';
+    } else {
+      textLabel = 'integration.frigate.status.remoteRunning';
+      alertClass = 'alert-success';
+    }
   } else if (!dockerBased) {
     textLabel = 'integration.frigate.status.nonDockerEnv';
     alertClass = 'alert-danger';

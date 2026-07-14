@@ -114,4 +114,13 @@ describe('frigate configureAdminUser', () => {
     expect(frigateManager.adminConfigured).to.equal(false);
     expect(frigateManager.adminConfiguring).to.equal(false);
   });
+
+  it('should mark the admin as configured without any call in remote mode', async () => {
+    frigateManager.mode = 'remote';
+
+    await frigateManager.configureAdminUser();
+
+    expect(frigateManager.adminConfigured).to.equal(true);
+    sinon.assert.notCalled(axios.put);
+  });
 });

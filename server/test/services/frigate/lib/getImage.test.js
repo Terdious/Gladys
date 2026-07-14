@@ -87,4 +87,20 @@ describe('frigate getImage', () => {
       expect(e.message).to.contain('is too big');
     }
   });
+
+  it('should fetch the image through the remote authenticated API in remote mode', async () => {
+    frigateManager.mode = 'remote';
+    const { fake } = sinon;
+    frigateManager.remoteApiGet = fake.resolves({
+      data: Buffer.from('remote-image'),
+      headers: { 'content-type': 'image/webp' },
+    });
+
+    const image = await frigateManager.getImage({ external_id: 'frigate:c660' });
+
+    expect(image).to.equal(`image/webp;base64,${Buffer.from('remote-image').toString('base64')}`);
+    sinon.assert.calledWith(frigateManager.remoteApiGet, '/api/c660/latest.webp?height=360', {
+      responseType: 'arraybuffer',
+    });
+  });
 });

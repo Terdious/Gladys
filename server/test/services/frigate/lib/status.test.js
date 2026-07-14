@@ -9,6 +9,7 @@ describe('frigate status', () => {
     const frigateManager = new FrigateManager({}, null, serviceId);
     const status = frigateManager.status();
     expect(status).to.deep.equal({
+      mode: 'local',
       dockerBased: false,
       networkModeValid: false,
       frigateEnabled: false,
@@ -54,6 +55,7 @@ describe('frigate status', () => {
     frigateManager.frigateRtspPort = 8554;
     const status = frigateManager.status();
     expect(status).to.deep.equal({
+      mode: 'local',
       dockerBased: true,
       networkModeValid: true,
       frigateEnabled: true,

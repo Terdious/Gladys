@@ -6,6 +6,7 @@
  */
 function status() {
   const frigateStatus = {
+    mode: this.mode,
     dockerBased: this.dockerBased,
     networkModeValid: this.networkModeValid,
     frigateEnabled: this.frigateEnabled,

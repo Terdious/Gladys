@@ -29,6 +29,15 @@ describe('frigate getConfiguration', () => {
       FRIGATE_RECORD_ALERTS_DAYS: '30',
       FRIGATE_RECORD_DETECTIONS_DAYS: '14',
       FRIGATE_DETECTOR: 'coral',
+      FRIGATE_MODE: 'remote',
+      FRIGATE_REMOTE_HOST: '10.5.0.227',
+      FRIGATE_REMOTE_PORT: '8971',
+      FRIGATE_REMOTE_USERNAME: 'admin',
+      FRIGATE_REMOTE_PASSWORD: 'remote-password',
+      FRIGATE_REMOTE_MQTT_HOST: '10.5.0.227',
+      FRIGATE_REMOTE_MQTT_PORT: '1885',
+      FRIGATE_REMOTE_MQTT_USERNAME: 'frigate',
+      FRIGATE_REMOTE_MQTT_PASSWORD: 'remote-mqtt-password',
       TIMEZONE: 'Europe/Paris',
     };
     const gladys = {
@@ -56,6 +65,15 @@ describe('frigate getConfiguration', () => {
       recordAlertsDays: '30',
       recordDetectionsDays: '14',
       detector: 'coral',
+      mode: 'remote',
+      remoteHost: '10.5.0.227',
+      remotePort: '8971',
+      remoteUsername: 'admin',
+      remotePassword: 'remote-password',
+      remoteMqttHost: '10.5.0.227',
+      remoteMqttPort: '1885',
+      remoteMqttUsername: 'frigate',
+      remoteMqttPassword: 'remote-mqtt-password',
       timezone: 'Europe/Paris',
     });
   });
@@ -86,6 +104,15 @@ describe('frigate getConfiguration', () => {
       recordAlertsDays: null,
       recordDetectionsDays: null,
       detector: null,
+      mode: null,
+      remoteHost: null,
+      remotePort: null,
+      remoteUsername: null,
+      remotePassword: null,
+      remoteMqttHost: null,
+      remoteMqttPort: null,
+      remoteMqttUsername: null,
+      remoteMqttPassword: null,
       timezone: null,
     });
   });

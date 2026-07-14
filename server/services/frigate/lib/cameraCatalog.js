@@ -101,6 +101,9 @@ const CAMERA_CATALOG = [
           sourceType: SOURCE_TYPES.RTSP,
           path: 'live/profile.0',
           subPath: 'live/profile.1',
+          // The cameras expose AAC + Opus audio: keep only AAC so the mp4
+          // recordings stay valid
+          sourceFilter: '#video=copy#audio=aac',
           rtspPort: 554,
         },
       },
@@ -112,6 +115,7 @@ const CAMERA_CATALOG = [
           sourceType: SOURCE_TYPES.RTSP,
           path: 'live/profile.0',
           subPath: 'live/profile.1',
+          sourceFilter: '#video=copy#audio=aac',
           rtspPort: 554,
           onvifPort: 80,
         },

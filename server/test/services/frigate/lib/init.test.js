@@ -29,6 +29,7 @@ describe('frigate init', () => {
     frigateManager.installMqttContainer = fake.resolves(null);
     frigateManager.installFrigateContainer = fake.resolves(null);
     frigateManager.connect = fake.resolves(null);
+    frigateManager.remoteLogin = fake.resolves(null);
     frigateManager.allocatePorts = fake(async (config) => {
       config.mqttPort = 1885;
       config.frigateUiPort = 8971;
@@ -152,6 +153,52 @@ describe('frigate init', () => {
     assert.notCalled(frigateManager.installMqttContainer);
     assert.notCalled(frigateManager.installFrigateContainer);
     assert.notCalled(frigateManager.detectHardware);
+    assert.calledOnce(frigateManager.remoteLogin);
+    expect(frigateManager.mqttExist).to.equal(true);
+    expect(frigateManager.mqttRunning).to.equal(true);
+    expect(frigateManager.remoteConnectionError).to.equal(null);
+  });
+
+  it('should report bad credentials when the remote login is refused', async () => {
+    frigateManager.getConfiguration = fake.resolves({
+      frigateEnabled: true,
+      mode: 'remote',
+      remoteHost: '10.5.0.227',
+      remoteUsername: 'admin',
+      remotePassword: 'wrong',
+      remoteMqttHost: '10.5.0.227',
+    });
+    const loginError = new Error('Request failed with status code 401');
+    loginError.response = { status: 401 };
+    frigateManager.remoteLogin = fake.rejects(loginError);
+
+    try {
+      await frigateManager.init();
+      assert.fail();
+    } catch (e) {
+      expect(e.message).to.equal('FRIGATE_REMOTE_BAD_CREDENTIALS');
+    }
+    expect(frigateManager.remoteConnectionError).to.equal('BAD_CREDENTIALS');
+    assert.notCalled(frigateManager.connect);
+  });
+
+  it('should report an unreachable remote instance', async () => {
+    frigateManager.getConfiguration = fake.resolves({
+      frigateEnabled: true,
+      mode: 'remote',
+      remoteHost: '10.6.0.99',
+      remoteMqttHost: '10.6.0.99',
+    });
+    frigateManager.remoteLogin = fake.rejects(new Error('connect ECONNREFUSED 10.6.0.99:8971'));
+
+    try {
+      await frigateManager.init();
+      assert.fail();
+    } catch (e) {
+      expect(e.message).to.equal('FRIGATE_REMOTE_UNREACHABLE');
+    }
+    expect(frigateManager.remoteConnectionError).to.equal('UNREACHABLE');
+    assert.notCalled(frigateManager.connect);
   });
 
   it('should use the default ports when the remote ports are not set', async () => {

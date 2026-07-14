@@ -32,6 +32,7 @@ async function init() {
   // instance stays owned by its own installation.
   if (this.mode === MODES.REMOTE) {
     this.remoteAuthToken = null;
+    this.remoteConnectionError = null;
     if (!this.frigateEnabled) {
       logger.info('Frigate integration is not enabled, skipping remote connection');
       this.emitStatusEvent();
@@ -47,7 +48,24 @@ async function init() {
       username: configuration.remoteUsername,
       password: configuration.remotePassword,
     };
+    // Check the remote Frigate API first, so a wrong address or wrong
+    // credentials fail immediately with an explicit error
+    logger.info(`Frigate remote: logging in to https://${this.remote.host}:${this.remote.port}...`);
+    try {
+      await this.remoteLogin();
+      logger.info('Frigate remote: login successful');
+    } catch (e) {
+      logger.warn(`Frigate remote: login to https://${this.remote.host}:${this.remote.port} failed - ${e.message}`);
+      this.remoteConnectionError = e.response && e.response.status === 401 ? 'BAD_CREDENTIALS' : 'UNREACHABLE';
+      this.emitStatusEvent();
+      throw new ServiceNotConfiguredError(`FRIGATE_REMOTE_${this.remoteConnectionError}`);
+    }
+    // The MQTT broker belongs to the remote machine: consider it present so
+    // the connection is attempted (its state is then reported by MQTT events)
+    this.mqttExist = true;
+    this.mqttRunning = true;
     const remoteMqttPort = Number(configuration.remoteMqttPort) || DEFAULT.PORTS.MQTT.min;
+    logger.info(`Frigate remote: connecting to MQTT broker mqtt://${configuration.remoteMqttHost}:${remoteMqttPort}`);
     await this.connect({
       mqttUrl: `mqtt://${configuration.remoteMqttHost}:${remoteMqttPort}`,
       mqttUsername: configuration.remoteMqttUsername,

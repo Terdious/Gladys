@@ -1365,7 +1365,10 @@
         "remoteMqttPasswordLabel": "Mot de passe MQTT",
         "remoteHelp": "Si le Frigate distant est géré par une autre instance Gladys : les identifiants Frigate (admin) et MQTT (frigate) sont affichés sur SA page de configuration Frigate, et le broker MQTT y est déjà accessible depuis le réseau local.",
         "remoteConnect": "Enregistrer et se connecter",
-        "remoteError": "Connexion impossible : vérifiez l'adresse, les identifiants Frigate et MQTT."
+        "remoteError": "Connexion impossible : vérifiez l'adresse, les identifiants Frigate et MQTT.",
+        "remoteErrorBadCredentials": "Connexion refusée par le Frigate distant : utilisateur ou mot de passe Frigate incorrect. Vérifiez les identifiants affichés sur la page de configuration Frigate de la Gladys principale.",
+        "remoteErrorUnreachable": "Impossible de joindre le Frigate distant à cette adresse/port. Vérifiez l'adresse IP, le port (8971 par défaut), que Frigate tourne sur la machine distante et qu'aucun pare-feu ne bloque.",
+        "remoteMqttPendingWarning": "Frigate distant joint, mais Gladys n'est pas encore connecté à son broker MQTT. Vérifiez l'adresse, le port (1885 par défaut) et les identifiants MQTT — puis patientez quelques secondes."
       },
       "device": {
         "title": "Caméras Frigate",

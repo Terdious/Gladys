@@ -133,6 +133,7 @@ class SetupTab extends Component {
         frigateExist: frigateStatus.frigateExist,
         frigateRunning: frigateStatus.frigateRunning,
         gladysConnected: frigateStatus.gladysConnected,
+        remoteConnectionError: frigateStatus.remoteConnectionError,
         frigateConnected: frigateStatus.frigateConnected,
         vaapiAvailable: frigateStatus.vaapiAvailable,
         openvinoCapable: frigateStatus.openvinoCapable,
@@ -255,6 +256,14 @@ class SetupTab extends Component {
       remoteMqttPassword,
       remoteSettingsLoaded: true
     });
+  };
+
+  toggleRemotePassword = () => {
+    this.setState(prevState => ({ showRemotePassword: !prevState.showRemotePassword }));
+  };
+
+  toggleRemoteMqttPassword = () => {
+    this.setState(prevState => ({ showRemoteMqttPassword: !prevState.showRemoteMqttPassword }));
   };
 
   saveRemoteAndConnect = async () => {
@@ -454,7 +463,7 @@ class SetupTab extends Component {
             <label class="form-label">
               <Text id="integration.frigate.setup.modeLabel" />
             </label>
-            <select class="form-control custom-select col-lg-4" value={mode} onChange={this.updateMode}>
+            <select class="form-control custom-select" value={mode} onChange={this.updateMode}>
               <option value="local">
                 <Text id="integration.frigate.setup.modeLocal" />
               </option>
@@ -462,9 +471,9 @@ class SetupTab extends Component {
                 <Text id="integration.frigate.setup.modeRemote" />
               </option>
             </select>
-            <small class="text-muted">
+            <div class="help-block">
               <Text id="integration.frigate.setup.modeHelp" />
-            </small>
+            </div>
           </div>
 
           <CheckStatus
@@ -529,12 +538,22 @@ class SetupTab extends Component {
                     <label class="form-label">
                       <Text id="integration.frigate.setup.remotePasswordLabel" />
                     </label>
-                    <input
-                      type="password"
-                      class="form-control"
-                      value={remotePassword}
-                      onInput={this.updateRemoteField('remotePassword')}
-                    />
+                    <div class="input-icon">
+                      <input
+                        type={this.state.showRemotePassword ? 'text' : 'password'}
+                        class="form-control"
+                        value={remotePassword}
+                        onInput={this.updateRemoteField('remotePassword')}
+                      />
+                      <span class="input-icon-addon cursor-pointer" onClick={this.toggleRemotePassword}>
+                        <i
+                          class={cx('fe', {
+                            'fe-eye': !this.state.showRemotePassword,
+                            'fe-eye-off': this.state.showRemotePassword
+                          })}
+                        />
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -584,12 +603,22 @@ class SetupTab extends Component {
                     <label class="form-label">
                       <Text id="integration.frigate.setup.remoteMqttPasswordLabel" />
                     </label>
-                    <input
-                      type="password"
-                      class="form-control"
-                      value={remoteMqttPassword}
-                      onInput={this.updateRemoteField('remoteMqttPassword')}
-                    />
+                    <div class="input-icon">
+                      <input
+                        type={this.state.showRemoteMqttPassword ? 'text' : 'password'}
+                        class="form-control"
+                        value={remoteMqttPassword}
+                        onInput={this.updateRemoteField('remoteMqttPassword')}
+                      />
+                      <span class="input-icon-addon cursor-pointer" onClick={this.toggleRemoteMqttPassword}>
+                        <i
+                          class={cx('fe', {
+                            'fe-eye': !this.state.showRemoteMqttPassword,
+                            'fe-eye-off': this.state.showRemoteMqttPassword
+                          })}
+                        />
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -614,7 +643,20 @@ class SetupTab extends Component {
               )}
               {remoteStatus === RequestStatus.Error && (
                 <div class="alert alert-danger mt-2">
-                  <Text id="integration.frigate.setup.remoteError" />
+                  <Text
+                    id={`integration.frigate.setup.${
+                      this.state.remoteConnectionError === 'BAD_CREDENTIALS'
+                        ? 'remoteErrorBadCredentials'
+                        : this.state.remoteConnectionError === 'UNREACHABLE'
+                        ? 'remoteErrorUnreachable'
+                        : 'remoteError'
+                    }`}
+                  />
+                </div>
+              )}
+              {remoteStatus === RequestStatus.Success && frigateEnabled && !gladysConnected && (
+                <div class="alert alert-warning mt-2">
+                  <Text id="integration.frigate.setup.remoteMqttPendingWarning" />
                 </div>
               )}
             </div>

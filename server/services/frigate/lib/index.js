@@ -72,6 +72,7 @@ const FrigateManager = function FrigateManager(gladys, mqttLibrary, serviceId, c
   this.gladysConnected = false;
   this.frigateConnected = false;
   this.configPendingRestart = false;
+  this.remoteConnectionError = null;
   this.adminConfigured = false;
   this.adminConfiguring = false;
   this.vaapiAvailable = false;

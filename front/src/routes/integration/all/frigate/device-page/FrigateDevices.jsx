@@ -13,9 +13,26 @@ const FrigateDevicesPage = props => (
         <MarkupText id="integration.frigate.device.notEnabledWarning" />
       </div>
     )}
-    {props.frigateStatus && props.frigateStatus.frigateEnabled && (
-      <div class="alert alert-info">
-        <Text id="integration.frigate.device.autoRestartInfo" />
+    {props.frigateStatus && props.frigateStatus.frigateEnabled && props.frigateStatus.configPendingRestart && (
+      <div class="alert alert-warning d-flex align-items-center justify-content-between flex-wrap">
+        <span class="mr-2">
+          <Text id="integration.frigate.device.pendingRestartWarning" />
+        </span>
+        <button
+          onClick={props.restartFrigate}
+          class={cx('btn btn-warning', {
+            'btn-loading': props.restartFrigateStatus === RequestStatus.Getting
+          })}
+          disabled={props.restartFrigateStatus === RequestStatus.Getting}
+        >
+          <i class="fe fe-refresh-cw mr-2" />
+          <Text id="integration.frigate.device.restartButton" />
+        </button>
+      </div>
+    )}
+    {props.restartFrigateStatus === RequestStatus.Error && (
+      <div class="alert alert-danger">
+        <Text id="integration.frigate.device.restartError" />
       </div>
     )}
     <div class="card">

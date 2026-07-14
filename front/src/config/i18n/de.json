@@ -277,6 +277,7 @@
       "humidity-in-room": "Luftfeuchtigkeit im Raum",
       "user-presence": "Anwesenheit von Benutzern",
       "camera": "Kamera",
+      "camera-image": "Kamerabild",
       "devices-in-room": "Geräte im Raum (Veraltet)",
       "devices": "Geräte",
       "chart": "Diagramm",
@@ -347,8 +348,6 @@
       },
       "camera": {
         "editCameraLabel": "Wähle die Kamera aus, die du hier anzeigen möchtest.",
-        "editImageFeatureLabel": "Anzuzeigendes Bild",
-        "editImageFeatureDescription": "Diese Kamera stellt mehrere Bilder bereit (zum Beispiel ein Bild pro erkanntem Objekttyp). Standardmäßig wird das Hauptbild angezeigt.",
         "noImageToShow": "Kein Bild zum Anzeigen. Bist du sicher, dass deine Kamera verbunden und für Gladys zugänglich ist?",
         "editBoxNameLabel": "Gib den Namen für die Box ein:",
         "editBoxNamePlaceholder": "Name der Box",
@@ -366,6 +365,13 @@
           "medium": "Mittel",
           "standard": "Standard"
         }
+      },
+      "cameraImage": {
+        "editCameraLabel": "Kamera",
+        "editImageFeatureLabel": "Anzuzeigendes Bild",
+        "editImageFeatureDescription": "Manche Kameras stellen mehrere Bilder bereit, zum Beispiel die letzte Erkennung jedes Objekttyps. Standardmäßig wird das Hauptbild angezeigt.",
+        "editBoxNameLabel": "Name der Box",
+        "editBoxNamePlaceholder": "Letzte Personenerkennung"
       },
       "chart": {
         "defaultInterval": "Standardintervall",
@@ -1233,7 +1239,6 @@
         "streamActive": "Stream aktiv ({{fps}} fps)",
         "streamInactive": "Kein Stream empfangen — prüfen Sie die Quelle",
         "notEnabledWarning": "Die Frigate-Integration ist nicht aktiviert: Ihre Kameras sind nicht aktiv. Aktivieren Sie sie nach dem Anlegen Ihrer Kameras im Tab <a href=\"/dashboard/integration/device/frigate/setup\">Einrichtung</a>.",
-        "autoRestartInfo": "Bei jedem Speichern oder Löschen einer Kamera wird die Frigate-Konfiguration neu generiert und Frigate startet automatisch neu (ca. 30 Sekunden).",
         "nameLabel": "Kameraname",
         "namePlaceholder": "Meine Kamera",
         "nameHelp": "Der technische Frigate-Name wird bei der Erstellung von diesem Namen abgeleitet. Sie können die Kamera danach frei umbenennen.",
@@ -1310,21 +1315,22 @@
             "tapoUnknownModel": "Tapo-Modell nicht gelistet: Wenn es kabelgebunden ist, versuchen Sie zuerst \"RTSP\" mit einem Kamerakonto (Pfade stream1/stream2). Bei Akku/Solar versuchen Sie den Typ \"TP-Link Tapo (ohne RTSP)\" mit Ihrem Cloud-Passwort. Teilen Sie Ihr Ergebnis:",
             "reolinkRtsp": "Verwenden Sie die Zugangsdaten Ihrer Reolink-Kamera. Die meisten Modelle bieten die Pfade h264Preview_01_main (HQ) und h264Preview_01_sub (leicht).",
             "reolinkUnknownModel": "Reolink-Modell nicht gelistet: Versuchen Sie \"RTSP\" mit den Pfaden h264Preview_01_main / h264Preview_01_sub. Teilen Sie Ihr Ergebnis:",
-            "dlinkDefogger": "Die mydlink-Firmware sperrt die Streams: Aktivieren Sie RTSP einmalig mit dem \"defogger\"-Tool (über Bluetooth, siehe github.com/bmork/defogger). Danach: Benutzer admin, Passwort = PIN-Code vom Etikett, Pfad live/profile.0.",
-            "dlinkUnknownModel": "D-Link-Modell nicht gelistet: Ältere Modelle nutzen play1.sdp über RTSP, mydlink-Modelle (DCS-8xxxLH) benötigen das defogger-Tool. Teilen Sie Ihr Ergebnis:",
+            "dlinkUnknownModel": "Nicht gelistetes D-Link-Modell: Ältere Modelle verwenden play1.sdp über RTSP; bei mydlink-Modellen (DCS-8xxxLH) aktivieren Sie den lokalen Zugriff über die mydlink-App (siehe gelistete Modelle). Teilen Sie Ihr Ergebnis:",
+            "dlinkMydlinkLocal": "Aktivieren Sie den lokalen Zugriff in der mydlink-App: Kameraeinstellungen → \"Lokaler Zugriff\" (oder ONVIF) — bei manchen Modellen genügt es, einmal http://KAMERA-IP im Browser zu öffnen. Zugangsdaten: Benutzer admin, Passwort = PIN-Code der Kamera (auf dem Sockel oder der Installationskarte aufgedruckt und in der mydlink-App → Geräteinfo sichtbar). Wird die vollständige PIN abgelehnt, versuchen Sie die letzten 6 Ziffern. Beide Streams sind vorausgefüllt: live/profile.0 (hohe Qualität, Aufzeichnung) und live/profile.1 (leichter, Erkennung). ONVIF ermöglicht auf motorisierten Modellen auch die PTZ-Steuerung.",
+            "reolinkBatteryHub": "Eigenständige Reolink-Akkukameras (Argus usw.) bieten keinerlei lokalen Stream: Das ist eine Herstellerbeschränkung. Sie funktionieren nur mit einem Reolink Home Hub, der pro Kamera einen Stream bereitstellt. Geben Sie die IP-Adresse des Home Hub (nicht der Kamera) und dessen Zugangsdaten ein. Die Streams sind für Kanal 1 vorausgefüllt (Preview_01_main / Preview_01_sub): Für die 2. Kamera des Hubs ersetzen Sie 01 durch 02 usw. Achtung: Dauerhafte Erkennung belastet den Akku stark, eine Solar- oder USB-Stromversorgung wird empfohlen.",
             "dlinkMjpeg": "Diese Firmware hat kein RTSP: Gladys nutzt den lokalen MJPEG-Stream (leichte Umkodierung). Stream: ein Benutzerkonto der Kamera genügt. Schwenken/Neigen und Nachtmodus: Hinterlegen Sie das ADMIN-Konto der Kamera in den Steuerungs-Zugangsdaten — ein \"Nachtmodus\"-Schalter wird am Gerät angelegt (an = Infrarot erzwungen, aus = automatisch). Kein motorisierter Zoom."
           }
         },
-        "ptzLabel": "PTZ-Steuerung (über ONVIF)",
-        "ptzHelp": "Halten Sie eine Taste gedrückt, um die Kamera zu bewegen, loslassen zum Stoppen.",
-        "ptzError": "PTZ-Befehl abgelehnt — prüfen Sie die ONVIF-Zugangsdaten und ob die Integration verbunden ist.",
         "httpPortLabel": "HTTP-Port der Kamera",
         "mjpegPathHelp": "Pfad des MJPEG-Streams (video.cgi bei D-Link). Der Stream wird von go2rtc in H.264 umkodiert, bei VGA sehr leichtgewichtig.",
         "discoverRemoteButton": "Kameras entdecken",
         "remoteCamerasTitle": "Kameras der entfernten Instanz",
         "remoteCamerasEmpty": "Keine Kamera auf der entfernten Instanz konfiguriert.",
         "alreadyImported": "Importiert",
-        "importButton": "Importieren"
+        "importButton": "Importieren",
+        "pendingRestartWarning": "Konfigurationsänderungen stehen aus: Starten Sie Frigate neu, um sie anzuwenden (ca. 30 Sekunden, die Erkennung wird während des Neustarts unterbrochen).",
+        "restartButton": "Frigate neu starten",
+        "restartError": "Frigate kann nicht neu gestartet werden. Prüfen Sie den Status auf der Einrichtungsseite."
       },
       "debug": {
         "title": "MQTT-Debug",

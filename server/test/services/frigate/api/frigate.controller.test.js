@@ -41,6 +41,8 @@ const frigateManager = {
   discoverRemoteCameras: fake.resolves([{ name: 'cam', trackedLabels: ['person'], alreadyImported: false }]),
   sendPtzCommand: fake.resolves(null),
   mqttDebugMessages: [{ topic: 'frigate/available', payload: 'online', received_at: '2026-07-13T18:00:00.000Z' }],
+  writeConfig: fake.resolves({ configChanged: true, configPendingRestart: true }),
+  restartFrigate: fake.resolves(null),
 };
 
 describe('frigate API', () => {
@@ -326,5 +328,29 @@ describe('frigate API', () => {
     );
 
     await chaiAssert.isRejected(promise, 'Invalid session id');
+  });
+
+  it('post /api/v1/service/frigate/config/save', async () => {
+    const req = {};
+    const res = {
+      json: fake.returns(null),
+    };
+
+    await controller['post /api/v1/service/frigate/config/save'].controller(req, res);
+
+    assert.calledOnce(frigateManager.writeConfig);
+    assert.calledWith(res.json, { configChanged: true, configPendingRestart: true });
+  });
+
+  it('post /api/v1/service/frigate/config/restart', async () => {
+    const req = {};
+    const res = {
+      json: fake.returns(null),
+    };
+
+    await controller['post /api/v1/service/frigate/config/restart'].controller(req, res);
+
+    assert.calledOnce(frigateManager.restartFrigate);
+    assert.calledWith(res.json, { success: true });
   });
 });

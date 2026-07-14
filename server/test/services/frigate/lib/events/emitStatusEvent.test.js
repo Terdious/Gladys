@@ -42,6 +42,7 @@ describe('frigate emitStatusEvent', () => {
         coralAvailable: false,
         coralDeviceType: null,
         detector: 'auto',
+        configPendingRestart: false,
         mqttPort: null,
         frigateUiPort: null,
         frigateApiPort: null,

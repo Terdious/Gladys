@@ -1563,6 +1563,7 @@ const DASHBOARD_BOX_TYPE = {
   HUMIDITY_IN_ROOM: 'humidity-in-room',
   USER_PRESENCE: 'user-presence',
   CAMERA: 'camera',
+  CAMERA_IMAGE: 'camera-image',
   DEVICES_IN_ROOM: 'devices-in-room',
   DEVICES: 'devices',
   CHART: 'chart',

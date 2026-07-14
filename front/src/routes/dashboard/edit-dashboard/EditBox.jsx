@@ -3,6 +3,7 @@ import EditRoomTemperatureBox from '../../../components/boxs/room-temperature/Ed
 import EditRoomHumidityBox from '../../../components/boxs/room-humidity/EditRoomHumidityBox';
 import EditMusicBox from '../../../components/boxs/music/EditMusicBox';
 import EditCameraBox from '../../../components/boxs/camera/EditCamera';
+import EditCameraImageBox from '../../../components/boxs/camera-image/EditCameraImage';
 import EditAtHomeBox from '../../../components/boxs/user-presence/EditUserPresenceBox';
 import EditDevicesInRoom from '../../../components/boxs/device-in-room/EditDeviceInRoom';
 import EditDevices from '../../../components/boxs/device-in-room/EditDevices';
@@ -28,6 +29,8 @@ const Box = ({ children, ...props }) => {
       return <EditAtHomeBox {...props} />;
     case 'camera':
       return <EditCameraBox {...props} />;
+    case 'camera-image':
+      return <EditCameraImageBox {...props} />;
     case 'temperature-in-room':
       return <EditRoomTemperatureBox {...props} />;
     case 'humidity-in-room':

@@ -1293,10 +1293,7 @@
             "dlinkDefogger": "Die mydlink-Firmware sperrt die Streams: Aktivieren Sie RTSP einmalig mit dem \"defogger\"-Tool (über Bluetooth, siehe github.com/bmork/defogger). Danach: Benutzer admin, Passwort = PIN-Code vom Etikett, Pfad live/profile.0.",
             "dlinkUnknownModel": "D-Link-Modell nicht gelistet: Ältere Modelle nutzen play1.sdp über RTSP, mydlink-Modelle (DCS-8xxxLH) benötigen das defogger-Tool. Teilen Sie Ihr Ergebnis:"
           }
-        },
-        "ptzLabel": "PTZ-Steuerung (über ONVIF)",
-        "ptzHelp": "Halten Sie eine Taste gedrückt, um die Kamera zu bewegen, loslassen zum Stoppen.",
-        "ptzError": "PTZ-Befehl abgelehnt — prüfen Sie die ONVIF-Zugangsdaten und ob die Integration verbunden ist."
+        }
       },
       "debug": {
         "title": "MQTT-Debug",

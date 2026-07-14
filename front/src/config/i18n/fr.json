@@ -1426,10 +1426,7 @@
             "dlinkDefogger": "Le firmware mydlink verrouille les flux : activez une fois le RTSP avec l'outil « defogger » (via Bluetooth, voir github.com/bmork/defogger). Ensuite : utilisateur admin, mot de passe = code PIN de l'étiquette, chemin live/profile.0.",
             "dlinkUnknownModel": "Modèle D-Link non listé : les anciens modèles utilisent play1.sdp en RTSP, les mydlink (DCS-8xxxLH) nécessitent l'outil defogger. Partagez votre résultat :"
           }
-        },
-        "ptzLabel": "Contrôle PTZ (via ONVIF)",
-        "ptzHelp": "Maintenez un bouton pour bouger la caméra, relâchez pour arrêter.",
-        "ptzError": "Commande PTZ refusée — vérifiez les identifiants ONVIF et que l'intégration est connectée."
+        }
       },
       "debug": {
         "title": "Debug MQTT",

@@ -120,32 +120,11 @@ class FrigateCameraBox extends Component {
       model ? model.preset : null
     );
   };
-  sendPtzCommand = async command => {
-    try {
-      await this.props.httpClient.post(`/api/v1/service/frigate/camera/${this.props.camera.selector}/ptz`, {
-        command
-      });
-      this.setState({ ptzError: false });
-    } catch (e) {
-      console.error(e);
-      this.setState({ ptzError: true });
-    }
-  };
-  startPtz = command => () => {
-    this.sendPtzCommand(command);
-  };
-  stopPtz = () => {
-    this.sendPtzCommand('STOP');
-  };
-
-  render(props, { loading, saveError, showPassword, showOnvifPassword, ptzError }) {
+  render(props, { loading, saveError, showPassword, showOnvifPassword }) {
     const { camera } = props;
     const cameraName = camera.external_id ? camera.external_id.split(':')[1] : null;
     const cameraStats =
       props.frigateStats && props.frigateStats.cameras && cameraName ? props.frigateStats.cameras[cameraName] : null;
-    // PTZ commands go through the camera onvif section, generated when the
-    // dedicated ONVIF credentials are set on a saved camera
-    const ptzAvailable = Boolean(camera.selector && camera.host && camera.onvifUsername && camera.onvifPassword);
     const selectedBrand = CAMERA_CATALOG.find(catalogBrand => catalogBrand.key === camera.catalogBrand);
     const selectedModel =
       selectedBrand && selectedBrand.models.find(catalogModel => catalogModel.name === camera.catalogModel);
@@ -189,87 +168,6 @@ class FrigateCameraBox extends Component {
                 {saveError && (
                   <div class="alert alert-danger">
                     <Text id="integration.frigate.device.saveError" />
-                  </div>
-                )}
-                {ptzAvailable && (
-                  <div class="form-group">
-                    <label>
-                      <Text id="integration.frigate.device.ptzLabel" />
-                    </label>
-                    <div>
-                      <div class="btn-group mr-2" role="group">
-                        <button
-                          class="btn btn-secondary btn-sm"
-                          onMouseDown={this.startPtz('MOVE_LEFT')}
-                          onMouseUp={this.stopPtz}
-                          onMouseLeave={this.stopPtz}
-                          onTouchStart={this.startPtz('MOVE_LEFT')}
-                          onTouchEnd={this.stopPtz}
-                        >
-                          <i class="fe fe-arrow-left" />
-                        </button>
-                        <button
-                          class="btn btn-secondary btn-sm"
-                          onMouseDown={this.startPtz('MOVE_UP')}
-                          onMouseUp={this.stopPtz}
-                          onMouseLeave={this.stopPtz}
-                          onTouchStart={this.startPtz('MOVE_UP')}
-                          onTouchEnd={this.stopPtz}
-                        >
-                          <i class="fe fe-arrow-up" />
-                        </button>
-                        <button
-                          class="btn btn-secondary btn-sm"
-                          onMouseDown={this.startPtz('MOVE_DOWN')}
-                          onMouseUp={this.stopPtz}
-                          onMouseLeave={this.stopPtz}
-                          onTouchStart={this.startPtz('MOVE_DOWN')}
-                          onTouchEnd={this.stopPtz}
-                        >
-                          <i class="fe fe-arrow-down" />
-                        </button>
-                        <button
-                          class="btn btn-secondary btn-sm"
-                          onMouseDown={this.startPtz('MOVE_RIGHT')}
-                          onMouseUp={this.stopPtz}
-                          onMouseLeave={this.stopPtz}
-                          onTouchStart={this.startPtz('MOVE_RIGHT')}
-                          onTouchEnd={this.stopPtz}
-                        >
-                          <i class="fe fe-arrow-right" />
-                        </button>
-                      </div>
-                      <div class="btn-group" role="group">
-                        <button
-                          class="btn btn-secondary btn-sm"
-                          onMouseDown={this.startPtz('ZOOM_IN')}
-                          onMouseUp={this.stopPtz}
-                          onMouseLeave={this.stopPtz}
-                          onTouchStart={this.startPtz('ZOOM_IN')}
-                          onTouchEnd={this.stopPtz}
-                        >
-                          <i class="fe fe-zoom-in" />
-                        </button>
-                        <button
-                          class="btn btn-secondary btn-sm"
-                          onMouseDown={this.startPtz('ZOOM_OUT')}
-                          onMouseUp={this.stopPtz}
-                          onMouseLeave={this.stopPtz}
-                          onTouchStart={this.startPtz('ZOOM_OUT')}
-                          onTouchEnd={this.stopPtz}
-                        >
-                          <i class="fe fe-zoom-out" />
-                        </button>
-                      </div>
-                    </div>
-                    <small class="text-muted">
-                      <Text id="integration.frigate.device.ptzHelp" />
-                    </small>
-                    {ptzError && (
-                      <div class="alert alert-warning mt-2">
-                        <Text id="integration.frigate.device.ptzError" />
-                      </div>
-                    )}
                   </div>
                 )}
                 <div class="form-group">

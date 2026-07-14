@@ -1188,10 +1188,7 @@
             "dlinkDefogger": "The mydlink firmware locks the streams: enable RTSP once with the \"defogger\" tool (over Bluetooth, see github.com/bmork/defogger). Then: user admin, password = PIN code from the label, path live/profile.0.",
             "dlinkUnknownModel": "D-Link model not listed: older models use play1.sdp over RTSP, mydlink ones (DCS-8xxxLH) require the defogger tool. Share your result:"
           }
-        },
-        "ptzLabel": "PTZ control (through ONVIF)",
-        "ptzHelp": "Hold a button to move the camera, release to stop.",
-        "ptzError": "PTZ command rejected — check the ONVIF credentials and that the integration is connected."
+        }
       },
       "debug": {
         "title": "MQTT debug",

@@ -721,6 +721,51 @@ describe('Device', () => {
       'ca91dfdf-55b2-4cf8-a58b-99c0fbf6f5e4',
     );
   });
+  it('should not re-purge a feature already saved with keep_history = false', async () => {
+    const stateManager = new StateManager(event);
+    const serviceManager = new ServiceManager({}, stateManager);
+    const fakeEvent = {
+      emit: fake.returns(null),
+      on: fake.returns(null),
+    };
+    const device = new Device(fakeEvent, {}, stateManager, serviceManager, {}, {}, job, brain);
+    const deviceToSave = {
+      id: '7f85c2f8-86cc-4600-84db-6c074dadb4e8',
+      name: 'RENAMED_DEVICE',
+      selector: 'test-device',
+      external_id: 'test-device-external',
+      service_id: 'a810b8db-6d04-4697-bed3-c4b72c996279',
+      room_id: '2398c689-8b47-43cc-ad32-e98d9be098b5',
+      created_at: '2019-02-12 07:49:07.556 +00:00',
+      updated_at: '2019-02-12 07:49:07.556 +00:00',
+      features: [
+        {
+          name: 'New device feature',
+          selector: 'new-device-feature',
+          external_id: 'hue:binary:1',
+          category: 'temperature',
+          type: 'decimal',
+          keep_history: false,
+          read_only: false,
+          has_feedback: false,
+          min: 0,
+          max: 100,
+        },
+      ],
+    };
+    // first save switches the feature to keep_history = false and purges it
+    await device.create(deviceToSave);
+    fakeEvent.emit.resetHistory();
+
+    // saving the device again must not purge the feature a second time
+    await device.create(deviceToSave);
+
+    assert.neverCalledWith(
+      fakeEvent.emit,
+      EVENTS.DEVICE.PURGE_STATES_SINGLE_FEATURE,
+      'ca91dfdf-55b2-4cf8-a58b-99c0fbf6f5e4',
+    );
+  });
   it('should ignore invalid energy_parent_id when updating a device', async () => {
     const stateManager = new StateManager(event);
     const serviceManager = new ServiceManager({}, stateManager);

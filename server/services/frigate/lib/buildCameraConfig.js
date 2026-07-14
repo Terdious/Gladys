@@ -111,10 +111,16 @@ function buildGo2rtcSubSource(device) {
   const sourceType = getDeviceParam(device, CAMERA_PARAMS.SOURCE_TYPE);
   if (sourceType === SOURCE_TYPES.RTSP) {
     const subPath = getDeviceParam(device, CAMERA_PARAMS.SOURCE_SUB_PATH);
-    return subPath ? buildRtspUrl(device, subPath) : null;
+    // A secondary stream identical to the main one would open a second
+    // camera session for nothing: treat it as no secondary stream
+    if (!subPath || subPath === getDeviceParam(device, CAMERA_PARAMS.SOURCE_PATH)) {
+      return null;
+    }
+    return buildRtspUrl(device, subPath);
   }
   if (sourceType === SOURCE_TYPES.CUSTOM) {
-    return getDeviceParam(device, CAMERA_PARAMS.CUSTOM_SUB_SOURCE);
+    const customSubSource = getDeviceParam(device, CAMERA_PARAMS.CUSTOM_SUB_SOURCE);
+    return customSubSource === getDeviceParam(device, CAMERA_PARAMS.CUSTOM_SOURCE) ? null : customSubSource;
   }
   // tapo: the single supported stream is already the substream
   return null;

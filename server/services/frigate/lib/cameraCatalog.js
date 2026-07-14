@@ -108,9 +108,12 @@ const CAMERA_CATALOG = [
         },
       },
       {
+        // ONVIF discovery is a trap on this model (locks onto the H265 main
+        // profile and burns extra RTSP sessions): plain RTSP with the preset
+        // paths works, and ONVIF PTZ goes through the control credentials
         name: 'DCS-8635LH',
         noteKey: 'dlinkMydlinkLocal',
-        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.ONVIF, SOURCE_TYPES.CUSTOM],
+        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.CUSTOM],
         preset: {
           sourceType: SOURCE_TYPES.RTSP,
           path: 'live/profile.0',

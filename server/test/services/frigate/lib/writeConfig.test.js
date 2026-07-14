@@ -59,6 +59,15 @@ describe('frigate writeConfig', () => {
     expect(result).to.deep.equal({ configChanged: false, configPendingRestart: true });
   });
 
+  it('should do nothing in remote mode', async () => {
+    frigateManager.mode = 'remote';
+
+    const result = await frigateManager.writeConfig();
+
+    assert.notCalled(frigateManager.configureContainer);
+    expect(result).to.deep.equal({ configChanged: false, configPendingRestart: false });
+  });
+
   it('should do nothing when the integration is disabled', async () => {
     frigateManager.frigateEnabled = false;
 

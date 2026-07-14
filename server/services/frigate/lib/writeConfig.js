@@ -1,4 +1,5 @@
 const logger = require('../../../utils/logger');
+const { MODES } = require('./constants');
 
 /**
  * @description Regenerate the Frigate configuration file from Gladys devices
@@ -10,8 +11,8 @@ const logger = require('../../../utils/logger');
  * await frigate.writeConfig();
  */
 async function writeConfig() {
-  if (!this.frigateEnabled) {
-    logger.debug('Frigate: integration disabled, not writing configuration');
+  if (!this.frigateEnabled || this.mode === MODES.REMOTE) {
+    logger.debug('Frigate: integration disabled or remote, not writing configuration');
     return { configChanged: false, configPendingRestart: false };
   }
   const { basePathOnContainer } = await this.gladys.system.getGladysBasePath();

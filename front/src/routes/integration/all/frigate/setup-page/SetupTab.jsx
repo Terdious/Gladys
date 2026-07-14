@@ -25,6 +25,10 @@ class SetupTab extends Component {
       clearTimeout(this.showPasswordTimer);
       this.showPasswordTimer = null;
     }
+    if (this.showMqttPasswordTimer) {
+      clearTimeout(this.showMqttPasswordTimer);
+      this.showMqttPasswordTimer = null;
+    }
   };
 
   getAdminCredentials = async () => {
@@ -36,6 +40,34 @@ class SetupTab extends Component {
     } catch (e) {
       // Password not configured yet
       this.setState({ frigateAdminPassword: null });
+    }
+  };
+
+  getMqttCredentials = async () => {
+    try {
+      const [usernameVariable, passwordVariable] = await Promise.all([
+        this.props.httpClient.get('/api/v1/service/frigate/variable/FRIGATE_MQTT_USERNAME'),
+        this.props.httpClient.get('/api/v1/service/frigate/variable/FRIGATE_MQTT_PASSWORD')
+      ]);
+      this.setState({ frigateMqttUsername: usernameVariable.value, frigateMqttPassword: passwordVariable.value });
+    } catch (e) {
+      // Credentials not configured yet
+      this.setState({ frigateMqttUsername: null, frigateMqttPassword: null });
+    }
+  };
+
+  toggleMqttPassword = () => {
+    const { showMqttPassword } = this.state;
+
+    if (this.showMqttPasswordTimer) {
+      clearTimeout(this.showMqttPasswordTimer);
+      this.showMqttPasswordTimer = null;
+    }
+
+    this.setState({ showMqttPassword: !showMqttPassword });
+
+    if (!showMqttPassword) {
+      this.showMqttPasswordTimer = setTimeout(() => this.setState({ showMqttPassword: false }), 5000);
     }
   };
 
@@ -117,6 +149,7 @@ class SetupTab extends Component {
       if (frigateStatus.frigateConnected) {
         await this.getAdminCredentials();
         await this.getStorage();
+        await this.getMqttCredentials();
       }
     }
   };
@@ -305,7 +338,10 @@ class SetupTab extends Component {
       coralDeviceType,
       detector,
       savedDetector,
-      detectorStatus
+      detectorStatus,
+      frigateMqttUsername,
+      frigateMqttPassword,
+      showMqttPassword
     }
   ) {
     const usedPercent = recordingsStorage
@@ -439,6 +475,54 @@ class SetupTab extends Component {
                       })}
                     />
                   </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {frigateRunning && frigateMqttUsername && frigateMqttPassword && (
+            <div>
+              <div class="form-group">
+                <label htmlFor="frigateMqttUsername" className="form-label">
+                  <Text id="integration.frigate.setup.mqttUsernameLabel" />
+                </label>
+                <Localizer>
+                  <input
+                    id="frigateMqttUsername"
+                    name="frigateMqttUsername"
+                    value={frigateMqttUsername}
+                    className="form-control"
+                    disabled
+                  />
+                </Localizer>
+              </div>
+
+              <div class="form-group">
+                <label htmlFor="frigateMqttPassword" className="form-label">
+                  <Text id="integration.frigate.setup.mqttPasswordLabel" />
+                </label>
+                <div class="input-icon mb-1">
+                  <Localizer>
+                    <input
+                      id="frigateMqttPassword"
+                      name="frigateMqttPassword"
+                      type={showMqttPassword ? 'text' : 'password'}
+                      value={frigateMqttPassword}
+                      className="form-control"
+                      disabled
+                    />
+                  </Localizer>
+                  <span class="input-icon-addon cursor-pointer" onClick={this.toggleMqttPassword}>
+                    <i
+                      class={cx('fe', {
+                        'fe-eye': !showMqttPassword,
+                        'fe-eye-off': showMqttPassword
+                      })}
+                    />
+                  </span>
+                </div>
+                <div class="help-block">
+                  <Text id="integration.frigate.setup.mqttCredentialsHelp" />
                 </div>
               </div>
             </div>

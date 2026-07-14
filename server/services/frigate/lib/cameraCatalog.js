@@ -5,7 +5,7 @@ const { SOURCE_TYPES, CONTROL_PROTOCOLS, DEFAULT } = require('./constants');
 // explaining what the user has to do for this camera.
 
 // Wired Tapo cameras expose RTSP with a dedicated "camera account"
-const TAPO_WIRED_MODELS = ['C100', 'C110', 'C120', 'C200', 'C210', 'C225', 'C310', 'C320WS', 'C325WB', 'C520WS'];
+const TAPO_WIRED_MODELS = ['C100', 'C110', 'C120', 'C200', 'C210', 'C225', 'C310', 'C320WS', 'C325WB', 'C500', 'C520WS'];
 // Battery/solar Tapo cameras have no RTSP: go2rtc tapo:// with the cloud password
 const TAPO_BATTERY_MODELS = ['C400', 'C420', 'C425', 'C460', 'C610', 'C645D', 'C660', 'D230'];
 

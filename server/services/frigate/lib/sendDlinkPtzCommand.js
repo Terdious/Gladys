@@ -37,10 +37,15 @@ async function sendDlinkPtzCommand(device, command) {
     PanTiltSingleMove: `${move}`,
   }).toString();
   logger.debug(`Frigate: sending D-Link PTZ move ${command} to camera ${host}`);
-  await axios.post(`http://${host}:${port}${DEFAULT.DLINK_PANTILT_PATH}`, body, {
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    auth: { username, password },
-  });
+  try {
+    await axios.post(`http://${host}:${port}${DEFAULT.DLINK_PANTILT_PATH}`, body, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      auth: { username, password },
+    });
+  } catch (e) {
+    logger.warn(`Frigate: D-Link PTZ command failed on ${host}:${port} - ${e.message}`);
+    throw e;
+  }
   return null;
 }
 

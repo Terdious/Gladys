@@ -25,6 +25,7 @@ const PTZ_COMMANDS_BY_TYPE = {
  * await setValue(device, deviceFeature, 1);
  */
 async function setValue(device, deviceFeature, value) {
+  logger.info(`Frigate: control ${deviceFeature.type}=${value} on camera ${device.selector}`);
   const ptzCommands = PTZ_COMMANDS_BY_TYPE[deviceFeature.type];
   if (ptzCommands) {
     const direction = Number(value);
@@ -37,12 +38,14 @@ async function setValue(device, deviceFeature, value) {
       if (!command) {
         throw new BadParameters(`Frigate: invalid PTZ value "${value}"`);
       }
+      logger.info(`Frigate: sending D-Link ${command} to camera ${device.selector}`);
       return this.sendDlinkPtzCommand(device, command);
     }
     const command = direction === 0 ? 'STOP' : ptzCommands[direction];
     if (!command) {
       throw new BadParameters(`Frigate: invalid PTZ value "${value}"`);
     }
+    logger.info(`Frigate: sending ONVIF ${command} to camera ${device.selector}`);
     return this.sendPtzCommand(device.selector, command);
   }
 
@@ -61,10 +64,15 @@ async function setValue(device, deviceFeature, value) {
   }
   const port = Number(getDeviceParam(device, CAMERA_PARAMS.SOURCE_HTTP_PORT)) || DEFAULT.HTTP_PORT;
   const mode = value ? DEFAULT.DLINK_NIGHT_MODE_ON : DEFAULT.DLINK_NIGHT_MODE_AUTO;
-  logger.debug(`Frigate: setting D-Link night mode ${mode} on camera ${host}`);
-  await axios.get(`http://${host}:${port}${DEFAULT.DLINK_DAYNIGHT_PATH}?DayNightMode=${mode}&ConfigReboot=no`, {
-    auth: { username, password },
-  });
+  logger.info(`Frigate: setting D-Link night mode ${mode} on camera ${host}`);
+  try {
+    await axios.get(`http://${host}:${port}${DEFAULT.DLINK_DAYNIGHT_PATH}?DayNightMode=${mode}&ConfigReboot=no`, {
+      auth: { username, password },
+    });
+  } catch (e) {
+    logger.warn(`Frigate: D-Link night mode command failed on ${host}:${port} - ${e.message}`);
+    throw e;
+  }
   return null;
 }
 

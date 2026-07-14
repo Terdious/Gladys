@@ -118,6 +118,15 @@ describe('frigate setValue', () => {
     );
   });
 
+  it('should surface a night mode HTTP failure', async () => {
+    axios.get.rejects(new Error('Request failed with status code 401'));
+
+    await assert.isRejected(
+      frigateManager.setValue(dlinkDevice(), { type: 'night-mode', external_id: 'frigate:cam_boxes:nightmode' }, 1),
+      'Request failed with status code 401',
+    );
+  });
+
   it('should reject when the camera has no night mode protocol', async () => {
     const deviceWithoutProtocol = buildDevice({
       FRIGATE_SOURCE_HOST: '10.6.0.1',

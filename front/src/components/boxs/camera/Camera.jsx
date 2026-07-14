@@ -50,6 +50,10 @@ class CameraBoxComponent extends Component {
       const tiltFeature = cameraFeatures.find(feature => feature.type === DEVICE_FEATURE_TYPES.CAMERA.TILT);
       const zoomFeature = cameraFeatures.find(feature => feature.type === DEVICE_FEATURE_TYPES.CAMERA.ZOOM);
       const nightModeFeature = cameraFeatures.find(feature => feature.type === DEVICE_FEATURE_TYPES.CAMERA.NIGHT_MODE);
+      // The box always displays the main image of the camera: keep its
+      // feature so websocket updates of other image features (label
+      // snapshots...) don't overwrite it
+      const mainImageFeature = cameraFeatures.find(feature => feature.type === DEVICE_FEATURE_TYPES.CAMERA.IMAGE);
       const detectionFeatures = cameraFeatures.filter(feature => feature.type.endsWith('-detection'));
       const activeDetections = {};
       detectionFeatures.forEach(feature => {
@@ -61,6 +65,7 @@ class CameraBoxComponent extends Component {
         zoomFeature,
         nightModeFeature,
         nightModeValue: nightModeFeature ? nightModeFeature.last_value : 0,
+        mainImageFeature,
         detectionFeatures,
         activeDetections
       });
@@ -107,6 +112,10 @@ class CameraBoxComponent extends Component {
     }
   };
 
+  handleFullscreenChange = () => {
+    this.setState({ isFullscreen: document.fullscreenElement === this.mediaContainerRef.current });
+  };
+
   startPtzMove = (feature, direction) => () => {
     this.setFeatureValue(feature, direction);
   };
@@ -133,12 +142,20 @@ class CameraBoxComponent extends Component {
   };
 
   updateDeviceStateWebsocket = payload => {
-    if (this.props.box.camera === payload.device) {
-      this.setState({
-        image: payload.last_value_string,
-        error: false
-      });
+    if (this.props.box.camera !== payload.device) {
+      return;
     }
+    // Cameras can expose several image features (last detection snapshots
+    // per label...): only the main image feature updates the box, so the
+    // displayed format doesn't jump on every detection
+    const { mainImageFeature } = this.state;
+    if (mainImageFeature && payload.device_feature !== mainImageFeature.selector) {
+      return;
+    }
+    this.setState({
+      image: payload.last_value_string,
+      error: false
+    });
   };
 
   newNetworkError = () => {
@@ -333,6 +350,7 @@ class CameraBoxComponent extends Component {
       this.updateDeviceBinaryStateWebsocket
     );
     this.props.session.dispatcher.addListener('websocket.connected', this.handleWebsocketConnected);
+    document.addEventListener('fullscreenchange', this.handleFullscreenChange);
   }
 
   componentDidUpdate(previousProps) {
@@ -357,6 +375,7 @@ class CameraBoxComponent extends Component {
       this.stopStreaming();
     }
     this.props.session.dispatcher.removeListener('websocket.connected', this.handleWebsocketConnected);
+    document.removeEventListener('fullscreenchange', this.handleFullscreenChange);
   }
 
   renderDetectionBadges() {
@@ -468,7 +487,7 @@ class CameraBoxComponent extends Component {
   }
 
   renderControlButtons(streaming) {
-    const { panFeature, tiltFeature, nightModeFeature, nightModeValue } = this.state;
+    const { panFeature, tiltFeature, nightModeFeature, nightModeValue, isFullscreen } = this.state;
     return (
       <span>
         {nightModeFeature && (
@@ -489,11 +508,18 @@ class CameraBoxComponent extends Component {
         )}
         {streaming && (
           <button class="btn btn-secondary btn-sm mr-2" onClick={this.toggleFullscreen}>
-            <i class="fe fe-maximize" />
+            <i class={cx('fe', isFullscreen ? 'fe-minimize' : 'fe-maximize')} />
           </button>
         )}
       </span>
     );
+  }
+
+  renderFullscreenToolbar() {
+    // The dashboard card header is not part of the fullscreen element:
+    // repeat the control buttons inside the media container so night mode,
+    // PTZ and exit stay accessible in fullscreen
+    return <div class={style.fullscreenToolbar}>{this.renderControlButtons(true)}</div>;
   }
 
   render(
@@ -521,9 +547,10 @@ class CameraBoxComponent extends Component {
             <div class="loader" />
             <div class="dimmer-content">
               <div class={style.cameraMediaContainer} ref={this.mediaContainerRef}>
-                <video class="w-100" ref={this.videoRef} controls controlsList="nofullscreen" autoPlay muted />
+                <video class="w-100" ref={this.videoRef} controls controlslist="nofullscreen" autoPlay muted />
                 {this.renderDetectionBadges()}
                 {ptzPanelOpened && this.renderPtzOverlay()}
+                {this.state.isFullscreen && this.renderFullscreenToolbar()}
               </div>
             </div>
           </div>

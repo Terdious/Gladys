@@ -23,6 +23,16 @@ async function updateLabelImage(cameraName, label, imageBuffer) {
   if (!device) {
     return;
   }
+  // Frigate also publishes snapshots of below-threshold candidates: only keep
+  // the image when the matching detection feature is currently active
+  const detectionFeature = this.gladys.stateManager.get(
+    'deviceFeatureByExternalId',
+    `${DEVICE_EXTERNAL_ID_PREFIX}:${cameraName}:${label}`,
+  );
+  if (!detectionFeature || detectionFeature.last_value !== 1) {
+    logger.debug(`Frigate: ignoring ${label} snapshot of camera ${cameraName}, no active detection`);
+    return;
+  }
   try {
     const image = `image/jpeg;base64,${imageBuffer.toString('base64')}`;
     await this.gladys.device.camera.setImage(device.selector, image, feature.selector);

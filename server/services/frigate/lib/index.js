@@ -18,6 +18,8 @@ const { getDockerContainer } = require('./getDockerContainer');
 const { installMqttContainer } = require('./installMqttContainer');
 const { installFrigateContainer } = require('./installFrigateContainer');
 const { configureContainer } = require('./configureContainer');
+const { writeConfig } = require('./writeConfig');
+const { restartFrigate } = require('./restartFrigate');
 
 // EVENTS
 const { emitStatusEvent } = require('./events/emitStatusEvent');
@@ -47,6 +49,7 @@ const FrigateManager = function FrigateManager(gladys, mqttLibrary, serviceId) {
   this.frigateRunning = false;
   this.gladysConnected = false;
   this.frigateConnected = false;
+  this.configPendingRestart = false;
   this.adminConfigured = false;
   this.adminConfiguring = false;
   this.mqttPort = null;
@@ -77,6 +80,8 @@ FrigateManager.prototype.getDockerContainer = getDockerContainer;
 FrigateManager.prototype.installMqttContainer = installMqttContainer;
 FrigateManager.prototype.installFrigateContainer = installFrigateContainer;
 FrigateManager.prototype.configureContainer = configureContainer;
+FrigateManager.prototype.writeConfig = writeConfig;
+FrigateManager.prototype.restartFrigate = restartFrigate;
 
 // EVENTS
 FrigateManager.prototype.emitStatusEvent = emitStatusEvent;

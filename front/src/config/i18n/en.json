@@ -1078,7 +1078,6 @@
         "streamActive": "Stream active ({{fps}} fps)",
         "streamInactive": "No stream received — check the source",
         "notEnabledWarning": "The Frigate integration is not enabled: your cameras will not be active. Once your cameras are created, enable it in the <a href=\"/dashboard/integration/device/frigate/setup\">Configuration</a> tab.",
-        "autoRestartInfo": "When you save or delete a camera, the Frigate configuration is regenerated and Frigate restarts automatically (about 30 seconds).",
         "nameLabel": "Camera name",
         "namePlaceholder": "My camera",
         "nameHelp": "The technical Frigate name is derived from this name at creation. You can rename the camera freely afterwards.",
@@ -1155,11 +1154,14 @@
             "reolinkRtsp": "Use your Reolink camera credentials. Most models expose the h264Preview_01_main (HQ) and h264Preview_01_sub (light) paths.",
             "reolinkUnknownModel": "Reolink model not listed: try \"RTSP\" with the h264Preview_01_main / h264Preview_01_sub paths. Share your result:",
             "dlinkPlaySdp": "Use the camera web interface credentials (admin + password). The main stream is play1.sdp; a second play2.sdp profile exists depending on the configuration.",
-            "dlinkUnknownModel": "D-Link model not listed: older models use play1.sdp over RTSP, mydlink ones (DCS-8xxxLH) require the defogger tool. Share your result:",
+            "dlinkUnknownModel": "Unlisted D-Link model: older models use play1.sdp over RTSP; on mydlink models (DCS-8xxxLH), enable local access from the mydlink app (see the listed models). Share your result:",
             "dlinkMydlinkLocal": "Enable local access in the mydlink app: camera settings → \"Local Access\" (or ONVIF) — on some models, opening http://CAMERA-IP once in a browser is enough. Credentials: user admin, password = the camera PIN code (printed on the base or the setup card, and visible in the mydlink app → device info). If the full PIN is rejected, try its last 6 digits. Both streams are prefilled: live/profile.0 (high quality, recording) and live/profile.1 (lighter, detection). ONVIF also enables PTZ control on motorized models.",
             "reolinkBatteryHub": "Standalone Reolink battery cameras (Argus, etc.) expose no local stream at all: this is a manufacturer limitation. They only work when paired with a Reolink Home Hub, which exposes one stream per camera. Enter the IP address of the Home Hub (not the camera) and its credentials. Streams are prefilled for channel 1 (Preview_01_main / Preview_01_sub): for the hub's 2nd camera, replace 01 with 02, and so on. Warning: continuous detection drains the battery quickly, a solar or USB power supply is recommended."
           }
-        }
+        },
+        "pendingRestartWarning": "Configuration changes are pending: restart Frigate to apply them (about 30 seconds, detection is interrupted during the restart).",
+        "restartButton": "Restart Frigate",
+        "restartError": "Unable to restart Frigate. Check its state on the setup page."
       }
     },
     "matterbridge": {

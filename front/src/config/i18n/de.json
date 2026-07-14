@@ -1183,7 +1183,6 @@
         "streamActive": "Stream aktiv ({{fps}} fps)",
         "streamInactive": "Kein Stream empfangen — prüfen Sie die Quelle",
         "notEnabledWarning": "Die Frigate-Integration ist nicht aktiviert: Ihre Kameras sind nicht aktiv. Aktivieren Sie sie nach dem Anlegen Ihrer Kameras im Tab <a href=\"/dashboard/integration/device/frigate/setup\">Einrichtung</a>.",
-        "autoRestartInfo": "Bei jedem Speichern oder Löschen einer Kamera wird die Frigate-Konfiguration neu generiert und Frigate startet automatisch neu (ca. 30 Sekunden).",
         "nameLabel": "Kameraname",
         "namePlaceholder": "Meine Kamera",
         "nameHelp": "Der technische Frigate-Name wird bei der Erstellung von diesem Namen abgeleitet. Sie können die Kamera danach frei umbenennen.",
@@ -1260,11 +1259,14 @@
             "reolinkRtsp": "Verwenden Sie die Zugangsdaten Ihrer Reolink-Kamera. Die meisten Modelle bieten die Pfade h264Preview_01_main (HQ) und h264Preview_01_sub (leicht).",
             "reolinkUnknownModel": "Reolink-Modell nicht gelistet: Versuchen Sie \"RTSP\" mit den Pfaden h264Preview_01_main / h264Preview_01_sub. Teilen Sie Ihr Ergebnis:",
             "dlinkPlaySdp": "Verwenden Sie die Zugangsdaten der Kamera-Weboberfläche (admin + Passwort). Der Hauptstream ist play1.sdp; ein zweites Profil play2.sdp existiert je nach Konfiguration.",
-            "dlinkUnknownModel": "D-Link-Modell nicht gelistet: Ältere Modelle nutzen play1.sdp über RTSP, mydlink-Modelle (DCS-8xxxLH) benötigen das defogger-Tool. Teilen Sie Ihr Ergebnis:",
+            "dlinkUnknownModel": "Nicht gelistetes D-Link-Modell: Ältere Modelle verwenden play1.sdp über RTSP; bei mydlink-Modellen (DCS-8xxxLH) aktivieren Sie den lokalen Zugriff über die mydlink-App (siehe gelistete Modelle). Teilen Sie Ihr Ergebnis:",
             "dlinkMydlinkLocal": "Aktivieren Sie den lokalen Zugriff in der mydlink-App: Kameraeinstellungen → \"Lokaler Zugriff\" (oder ONVIF) — bei manchen Modellen genügt es, einmal http://KAMERA-IP im Browser zu öffnen. Zugangsdaten: Benutzer admin, Passwort = PIN-Code der Kamera (auf dem Sockel oder der Installationskarte aufgedruckt und in der mydlink-App → Geräteinfo sichtbar). Wird die vollständige PIN abgelehnt, versuchen Sie die letzten 6 Ziffern. Beide Streams sind vorausgefüllt: live/profile.0 (hohe Qualität, Aufzeichnung) und live/profile.1 (leichter, Erkennung). ONVIF ermöglicht auf motorisierten Modellen auch die PTZ-Steuerung.",
             "reolinkBatteryHub": "Eigenständige Reolink-Akkukameras (Argus usw.) bieten keinerlei lokalen Stream: Das ist eine Herstellerbeschränkung. Sie funktionieren nur mit einem Reolink Home Hub, der pro Kamera einen Stream bereitstellt. Geben Sie die IP-Adresse des Home Hub (nicht der Kamera) und dessen Zugangsdaten ein. Die Streams sind für Kanal 1 vorausgefüllt (Preview_01_main / Preview_01_sub): Für die 2. Kamera des Hubs ersetzen Sie 01 durch 02 usw. Achtung: Dauerhafte Erkennung belastet den Akku stark, eine Solar- oder USB-Stromversorgung wird empfohlen."
           }
-        }
+        },
+        "pendingRestartWarning": "Konfigurationsänderungen stehen aus: Starten Sie Frigate neu, um sie anzuwenden (ca. 30 Sekunden, die Erkennung wird während des Neustarts unterbrochen).",
+        "restartButton": "Frigate neu starten",
+        "restartError": "Frigate kann nicht neu gestartet werden. Prüfen Sie den Status auf der Einrichtungsseite."
       }
     },
     "matterbridge": {

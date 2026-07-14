@@ -15,6 +15,7 @@ function status() {
     frigateRunning: this.frigateRunning,
     gladysConnected: this.gladysConnected,
     frigateConnected: this.frigateConnected,
+    configPendingRestart: this.configPendingRestart,
     mqttPort: this.mqttPort,
     frigateUiPort: this.frigateUiPort,
     frigateApiPort: this.frigateApiPort,

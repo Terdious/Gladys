@@ -1180,7 +1180,6 @@
         "emptyState": "Noch keine Kamera. Klicken Sie auf \"+\", um Ihre erste Kamera hinzuzufügen.",
         "saveError": "Beim Speichern der Kamera ist ein Fehler aufgetreten. Prüfen Sie, ob der Name ausgefüllt und die Quelle vollständig ist.",
         "notEnabledWarning": "Die Frigate-Integration ist nicht aktiviert: Ihre Kameras sind nicht aktiv. Aktivieren Sie sie nach dem Anlegen Ihrer Kameras im Tab <a href=\"/dashboard/integration/device/frigate/setup\">Einrichtung</a>.",
-        "autoRestartInfo": "Bei jedem Speichern oder Löschen einer Kamera wird die Frigate-Konfiguration neu generiert und Frigate startet automatisch neu (ca. 30 Sekunden).",
         "nameLabel": "Kameraname",
         "namePlaceholder": "Meine Kamera",
         "nameHelp": "Der technische Frigate-Name wird bei der Erstellung von diesem Namen abgeleitet. Sie können die Kamera danach frei umbenennen.",
@@ -1226,7 +1225,10 @@
         "every30Seconds": "Alle 30 Sekunden",
         "every10Seconds": "Alle 10 Sekunden",
         "saveButton": "Speichern",
-        "deleteButton": "Löschen"
+        "deleteButton": "Löschen",
+        "pendingRestartWarning": "Konfigurationsänderungen stehen aus: Starten Sie Frigate neu, um sie anzuwenden (ca. 30 Sekunden, die Erkennung wird während des Neustarts unterbrochen).",
+        "restartButton": "Frigate neu starten",
+        "restartError": "Frigate kann nicht neu gestartet werden. Prüfen Sie den Status auf der Einrichtungsseite."
       }
     },
     "matterbridge": {

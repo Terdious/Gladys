@@ -1075,7 +1075,6 @@
         "emptyState": "No camera yet. Click on \"+\" to add your first camera.",
         "saveError": "There was an error while saving the camera. Check that the name is filled and the source is complete.",
         "notEnabledWarning": "The Frigate integration is not enabled: your cameras will not be active. Once your cameras are created, enable it in the <a href=\"/dashboard/integration/device/frigate/setup\">Configuration</a> tab.",
-        "autoRestartInfo": "When you save or delete a camera, the Frigate configuration is regenerated and Frigate restarts automatically (about 30 seconds).",
         "nameLabel": "Camera name",
         "namePlaceholder": "My camera",
         "nameHelp": "The technical Frigate name is derived from this name at creation. You can rename the camera freely afterwards.",
@@ -1121,7 +1120,10 @@
         "every30Seconds": "Every 30 seconds",
         "every10Seconds": "Every 10 seconds",
         "saveButton": "Save",
-        "deleteButton": "Delete"
+        "deleteButton": "Delete",
+        "pendingRestartWarning": "Configuration changes are pending: restart Frigate to apply them (about 30 seconds, detection is interrupted during the restart).",
+        "restartButton": "Restart Frigate",
+        "restartError": "Unable to restart Frigate. Check its state on the setup page."
       }
     },
     "matterbridge": {

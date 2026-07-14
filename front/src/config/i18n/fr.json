@@ -1313,7 +1313,6 @@
         "emptyState": "Aucune caméra pour le moment. Cliquez sur « + » pour ajouter votre première caméra.",
         "saveError": "Une erreur s'est produite lors de l'enregistrement de la caméra. Vérifiez que le nom est rempli et que la source est complète.",
         "notEnabledWarning": "L'intégration Frigate n'est pas activée : vos caméras ne seront pas actives. Une fois vos caméras créées, activez-la dans l'onglet <a href=\"/dashboard/integration/device/frigate/setup\">Configuration</a>.",
-        "autoRestartInfo": "À chaque sauvegarde ou suppression de caméra, la configuration Frigate est régénérée et Frigate redémarre automatiquement (environ 30 secondes).",
         "nameLabel": "Nom de la caméra",
         "namePlaceholder": "Ma caméra",
         "nameHelp": "Le nom technique Frigate est dérivé de ce nom à la création. Vous pourrez ensuite renommer librement la caméra.",
@@ -1359,7 +1358,10 @@
         "every30Seconds": "Toutes les 30 secondes",
         "every10Seconds": "Toutes les 10 secondes",
         "saveButton": "Sauvegarder",
-        "deleteButton": "Supprimer"
+        "deleteButton": "Supprimer",
+        "pendingRestartWarning": "Des changements de configuration sont en attente : redémarrez Frigate pour les appliquer (environ 30 secondes, la détection est interrompue pendant le redémarrage).",
+        "restartButton": "Redémarrer Frigate",
+        "restartError": "Impossible de redémarrer Frigate. Vérifiez son état sur la page de configuration."
       }
     },
     "matterbridge": {

@@ -158,8 +158,12 @@ async function create(device) {
         });
         const featureToUpdate = { ...feature };
         delete featureToUpdate.selector;
+        const keepHistoryBeforeUpdate = deviceFeature.keep_history;
         await deviceFeature.update(featureToUpdate, { transaction });
-        if (deviceFeature.keep_history === false) {
+        // Only purge when the feature just lost its history: re-saving a
+        // device full of history-less features (cameras...) must not launch
+        // one purge task per feature every time
+        if (deviceFeature.keep_history === false && keepHistoryBeforeUpdate === true) {
           deviceFeaturesIdsToPurge.push(deviceFeature.id);
         }
         return deviceFeature.get({ plain: true });

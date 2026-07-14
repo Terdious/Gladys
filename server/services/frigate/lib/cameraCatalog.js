@@ -55,6 +55,20 @@ const CAMERA_CATALOG = [
           onvifPort: 8000,
         },
       },
+      {
+        // Standalone battery cameras have no local stream at all: they only
+        // work through the Reolink Home Hub, which exposes one RTSP channel
+        // per paired camera
+        name: 'Argus / battery (Home Hub)',
+        noteKey: 'reolinkBatteryHub',
+        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.CUSTOM],
+        preset: {
+          sourceType: SOURCE_TYPES.RTSP,
+          path: 'Preview_01_main',
+          subPath: 'Preview_01_sub',
+          rtspPort: 554,
+        },
+      },
     ],
   },
   {
@@ -82,6 +96,7 @@ const CAMERA_CATALOG = [
         preset: {
           sourceType: SOURCE_TYPES.RTSP,
           path: 'live/profile.0',
+          subPath: 'live/profile.1',
           rtspPort: 554,
           onvifPort: 80,
         },
@@ -93,6 +108,7 @@ const CAMERA_CATALOG = [
         preset: {
           sourceType: SOURCE_TYPES.RTSP,
           path: 'live/profile.0',
+          subPath: 'live/profile.1',
           rtspPort: 554,
           onvifPort: 80,
         },

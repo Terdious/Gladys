@@ -1390,7 +1390,7 @@
           "openIssue": "Proposer cette caméra au catalogue (issue GitHub)",
           "notes": {
             "tapoCameraAccount": "Créez un « compte caméra » dans l'app Tapo (réglages de la caméra → Paramètres avancés → Compte de la caméra) : saisissez ces identifiants ci-dessous, PAS votre compte cloud TP-Link.",
-            "tapoCloudPassword": "Modèle batterie/solaire sans RTSP : saisissez le mot de passe de votre compte cloud TP-Link. Le flux léger 640×360 est utilisé (le flux principal n'est pas exploitable sur ces modèles).",
+            "tapoCloudPassword": "Modèle batterie/solaire sans RTSP : saisissez le mot de passe de votre compte cloud TP-Link. Le flux léger 640×360 est utilisé (le flux principal n'est pas exploitable sur ces modèles). Si les logs Frigate montrent « 401 Unauthorized » sur cette caméra, passez la « Variante d'authentification » sur SHA256 : certains firmwares récents l'exigent.",
             "tapoUnknownModel": "Modèle Tapo non listé : s'il est filaire, essayez d'abord « RTSP » avec un compte caméra (chemins stream1/stream2). S'il est sur batterie/solaire, essayez le type « TP-Link Tapo (sans RTSP) » avec votre mot de passe cloud. Partagez votre résultat :",
             "reolinkRtsp": "Utilisez les identifiants de votre caméra Reolink. La plupart des modèles exposent les chemins h264Preview_01_main (HQ) et h264Preview_01_sub (léger).",
             "reolinkUnknownModel": "Modèle Reolink non listé : essayez « RTSP » avec les chemins h264Preview_01_main / h264Preview_01_sub. Partagez votre résultat :",

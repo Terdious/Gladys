@@ -137,7 +137,9 @@ class FrigateCameraBox extends Component {
     ];
     const modelOptions = selectedBrand
       ? [
-          ...selectedBrand.models.map(catalogModel => ({ value: catalogModel.name, label: catalogModel.name })),
+          ...selectedBrand.models
+            .map(catalogModel => ({ value: catalogModel.name, label: catalogModel.name }))
+            .sort((a, b) => a.label.localeCompare(b.label)),
           { value: OTHER_VALUE, label: props.otherModelText }
         ]
       : [];

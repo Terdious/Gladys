@@ -121,6 +121,11 @@ async function configureContainer(basePathOnContainer, config) {
           ...cameraSection.objects,
         },
       };
+      // Gladys owns the onvif section: when it is no longer generated
+      // (control credentials removed), a stale one must not be preserved
+      if (!cameraSection.onvif) {
+        delete cameras[cameraName].onvif;
+      }
     } catch (e) {
       logger.warn(`Frigate: skipping camera ${device.external_id} - ${e}`);
     }

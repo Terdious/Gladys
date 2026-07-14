@@ -21,6 +21,7 @@ function status() {
     coralAvailable: this.coralAvailable,
     coralDeviceType: this.coralDeviceType,
     detector: this.detector,
+    configPendingRestart: this.configPendingRestart,
     mqttPort: this.mqttPort,
     frigateUiPort: this.frigateUiPort,
     frigateApiPort: this.frigateApiPort,

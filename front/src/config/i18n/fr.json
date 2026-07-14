@@ -1348,7 +1348,6 @@
         "streamActive": "Flux actif ({{fps}} img/s)",
         "streamInactive": "Aucun flux reçu — vérifiez la source",
         "notEnabledWarning": "L'intégration Frigate n'est pas activée : vos caméras ne seront pas actives. Une fois vos caméras créées, activez-la dans l'onglet <a href=\"/dashboard/integration/device/frigate/setup\">Configuration</a>.",
-        "autoRestartInfo": "À chaque sauvegarde ou suppression de caméra, la configuration Frigate est régénérée et Frigate redémarre automatiquement (environ 30 secondes).",
         "nameLabel": "Nom de la caméra",
         "namePlaceholder": "Ma caméra",
         "nameHelp": "Le nom technique Frigate est dérivé de ce nom à la création. Vous pourrez ensuite renommer librement la caméra.",
@@ -1425,13 +1424,14 @@
             "reolinkRtsp": "Utilisez les identifiants de votre caméra Reolink. La plupart des modèles exposent les chemins h264Preview_01_main (HQ) et h264Preview_01_sub (léger).",
             "reolinkUnknownModel": "Modèle Reolink non listé : essayez « RTSP » avec les chemins h264Preview_01_main / h264Preview_01_sub. Partagez votre résultat :",
             "dlinkPlaySdp": "Utilisez les identifiants de l'interface web de la caméra (admin + mot de passe). Le flux principal est play1.sdp ; un second profil play2.sdp existe selon la configuration.",
-            "dlinkDefogger": "Le firmware mydlink verrouille les flux : activez une fois le RTSP avec l'outil « defogger » (via Bluetooth, voir github.com/bmork/defogger). Ensuite : utilisateur admin, mot de passe = code PIN de l'étiquette, chemin live/profile.0.",
-            "dlinkUnknownModel": "Modèle D-Link non listé : les anciens modèles utilisent play1.sdp en RTSP, les mydlink (DCS-8xxxLH) nécessitent l'outil defogger. Partagez votre résultat :"
+            "dlinkUnknownModel": "Modèle D-Link non listé : les anciens modèles utilisent play1.sdp en RTSP ; sur les mydlink (DCS-8xxxLH), activez l'accès local depuis l'app mydlink (voir les modèles listés). Partagez votre résultat :",
+            "dlinkMydlinkLocal": "Activez l'accès local dans l'app mydlink : réglages de la caméra → « Accès local » (ou ONVIF) — sur certains modèles, il suffit d'ouvrir une fois http://IP-de-la-caméra dans un navigateur. Identifiants : utilisateur admin, mot de passe = code PIN de la caméra (imprimé sur le socle ou la carte d'installation, et visible dans l'app mydlink → infos de l'appareil). Si le PIN complet est refusé, essayez ses 6 derniers chiffres. Les deux flux sont préremplis : live/profile.0 (haute qualité, enregistrement) et live/profile.1 (allégé, détection). L'ONVIF permet aussi le contrôle PTZ sur les modèles motorisés.",
+            "reolinkBatteryHub": "Les caméras Reolink sur batterie (Argus, etc.) n'offrent aucun flux local en autonome : c'est une limitation du fabricant. Elles fonctionnent uniquement associées à un Reolink Home Hub, qui expose un flux par caméra. Renseignez l'adresse IP du Home Hub (pas celle de la caméra) et ses identifiants. Les flux sont préremplis pour le canal 1 (Preview_01_main / Preview_01_sub) : pour la 2e caméra du hub, remplacez 01 par 02, etc. Attention : la détection en continu sollicite fortement la batterie, une alimentation solaire ou USB est recommandée."
           }
         },
-        "ptzLabel": "Contrôle PTZ (via ONVIF)",
-        "ptzHelp": "Maintenez un bouton pour bouger la caméra, relâchez pour arrêter.",
-        "ptzError": "Commande PTZ refusée — vérifiez les identifiants ONVIF et que l'intégration est connectée."
+        "pendingRestartWarning": "Des changements de configuration sont en attente : redémarrez Frigate pour les appliquer (environ 30 secondes, la détection est interrompue pendant le redémarrage).",
+        "restartButton": "Redémarrer Frigate",
+        "restartError": "Impossible de redémarrer Frigate. Vérifiez son état sur la page de configuration."
       },
       "debug": {
         "title": "Debug MQTT",

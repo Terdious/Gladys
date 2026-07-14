@@ -24,6 +24,7 @@ describe('frigate status', () => {
       coralAvailable: false,
       coralDeviceType: null,
       detector: 'auto',
+      configPendingRestart: false,
       mqttPort: null,
       frigateUiPort: null,
       frigateApiPort: null,
@@ -48,6 +49,7 @@ describe('frigate status', () => {
     frigateManager.coralAvailable = true;
     frigateManager.coralDeviceType = 'usb';
     frigateManager.detector = 'coral';
+    frigateManager.configPendingRestart = true;
     frigateManager.mqttPort = 1885;
     frigateManager.frigateUiPort = 8971;
     frigateManager.frigateApiPort = 5000;
@@ -69,6 +71,7 @@ describe('frigate status', () => {
       coralAvailable: true,
       coralDeviceType: 'usb',
       detector: 'coral',
+      configPendingRestart: true,
       mqttPort: 1885,
       frigateUiPort: 8971,
       frigateApiPort: 5000,

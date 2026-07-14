@@ -2,9 +2,29 @@ const { ServiceNotConfiguredError } = require('../../../utils/coreErrors');
 const { MODES, TRACKABLE_LABELS, DEVICE_EXTERNAL_ID_PREFIX } = require('./constants');
 
 /**
+ * @description Extract the host of the first ffmpeg input of a camera, as an
+ * informative hint of where the actual video source lives.
+ * @param {object} cameraConfig - The camera section of the Frigate config.
+ * @returns {string|null} The source host, or null when not parseable.
+ * @example
+ * getSourceHost({ ffmpeg: { inputs: [{ path: 'rtsp://10.6.0.8:554/live' }] } });
+ */
+const getSourceHost = (cameraConfig) => {
+  const inputs = (cameraConfig.ffmpeg || {}).inputs || [];
+  if (inputs.length === 0) {
+    return null;
+  }
+  try {
+    return new URL(String(inputs[0].path).replace(/^[a-z0-9+]+:/i, 'http:')).hostname;
+  } catch (e) {
+    return null;
+  }
+};
+
+/**
  * @description List the cameras configured on the remote Frigate instance,
- * with their trackable labels and whether they are already imported in
- * Gladys, so the user can import them as devices.
+ * with their friendly name, trackable labels, source host and whether they
+ * are already imported in Gladys, so the user can import them as devices.
  * @returns {Promise<Array>} Resolve with the discovered cameras.
  * @example
  * const cameras = await frigate.discoverRemoteCameras();
@@ -21,7 +41,13 @@ async function discoverRemoteCameras() {
     );
     const alreadyImported =
       this.gladys.stateManager.get('deviceByExternalId', `${DEVICE_EXTERNAL_ID_PREFIX}:${name}`) !== null;
-    return { name, trackedLabels, alreadyImported };
+    return {
+      name,
+      friendlyName: cameras[name].friendly_name || null,
+      sourceHost: getSourceHost(cameras[name]),
+      trackedLabels,
+      alreadyImported,
+    };
   });
 }
 

@@ -1143,6 +1143,7 @@
       "title": "Frigate (Videoüberwachung)",
       "description": "Lokale Videoüberwachung mit KI-Objekterkennung.",
       "deviceTab": "Geräte",
+      "discoverTab": "Erkennung",
       "setupTab": "Einrichtung",
       "debugTab": "MQTT-Debug",
       "documentation": "Frigate-Dokumentation",
@@ -1329,14 +1330,11 @@
         },
         "httpPortLabel": "HTTP-Port der Kamera",
         "mjpegPathHelp": "Pfad des MJPEG-Streams (video.cgi bei D-Link). Der Stream wird von go2rtc in H.264 umkodiert, bei VGA sehr leichtgewichtig.",
-        "discoverRemoteButton": "Kameras entdecken",
-        "remoteCamerasTitle": "Kameras der entfernten Instanz",
-        "remoteCamerasEmpty": "Keine Kamera auf der entfernten Instanz konfiguriert.",
-        "alreadyImported": "Importiert",
-        "importButton": "Importieren",
         "pendingRestartWarning": "Konfigurationsänderungen stehen aus: Starten Sie Frigate neu, um sie anzuwenden (ca. 30 Sekunden, die Erkennung wird während des Neustarts unterbrochen).",
         "restartButton": "Frigate neu starten",
-        "restartError": "Frigate kann nicht neu gestartet werden. Prüfen Sie den Status auf der Einrichtungsseite."
+        "restartError": "Frigate kann nicht neu gestartet werden. Prüfen Sie den Status auf der Einrichtungsseite.",
+        "remoteSourceHostLabel": "Kameraadresse (von der entfernten Instanz verwaltet)",
+        "remoteLabelsHelp": "Das Abwählen eines Objekts ändert nichts am entfernten Frigate: Gladys folgt dieser Erkennung einfach nicht mehr."
       },
       "debug": {
         "title": "MQTT-Debug",
@@ -1349,6 +1347,18 @@
         "payloadColumn": "Nachricht",
         "emptyState": "Noch keine Nachricht empfangen. Prüfen Sie, ob die Integration aktiviert ist.",
         "error": "Nachrichten können nicht abgerufen werden (nur für Administratoren)."
+      },
+      "discover": {
+        "title": "Kameras der entfernten Frigate-Instanz",
+        "scanButton": "Erneut scannen",
+        "localModeInfo": "Die Erkennung gilt für den Fernmodus: Sie listet die auf einer anderen Frigate-Instanz konfigurierten Kameras auf, um sie in Gladys zu importieren. Im lokalen Modus fügen Sie Ihre Kameras über den Tab Geräte hinzu.",
+        "error": "Die Kameras der entfernten Instanz können nicht abgerufen werden. Prüfen Sie die Verbindung auf der Konfigurationsseite.",
+        "emptyState": "Keine Kamera auf der entfernten Instanz konfiguriert.",
+        "nameColumn": "Kamera",
+        "sourceColumn": "Quelladresse",
+        "labelsColumn": "Erkannte Objekte",
+        "alreadyImported": "Importiert",
+        "importButton": "Importieren"
       }
     },
     "matterbridge": {

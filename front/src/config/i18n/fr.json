@@ -1276,6 +1276,7 @@
       "title": "Frigate (vidéosurveillance)",
       "description": "Vidéosurveillance locale avec détection d'objets par IA.",
       "deviceTab": "Appareils",
+      "discoverTab": "Découverte",
       "setupTab": "Configuration",
       "debugTab": "Debug MQTT",
       "documentation": "Documentation Frigate",
@@ -1462,14 +1463,11 @@
         },
         "httpPortLabel": "Port HTTP de la caméra",
         "mjpegPathHelp": "Chemin du flux MJPEG (video.cgi pour les D-Link). Le flux est réencodé en H.264 par go2rtc, très léger en VGA.",
-        "discoverRemoteButton": "Découvrir les caméras",
-        "remoteCamerasTitle": "Caméras de l'instance distante",
-        "remoteCamerasEmpty": "Aucune caméra configurée sur l'instance distante.",
-        "alreadyImported": "Importée",
-        "importButton": "Importer",
         "pendingRestartWarning": "Des changements de configuration sont en attente : redémarrez Frigate pour les appliquer (environ 30 secondes, la détection est interrompue pendant le redémarrage).",
         "restartButton": "Redémarrer Frigate",
-        "restartError": "Impossible de redémarrer Frigate. Vérifiez son état sur la page de configuration."
+        "restartError": "Impossible de redémarrer Frigate. Vérifiez son état sur la page de configuration.",
+        "remoteSourceHostLabel": "Adresse de la caméra (gérée par l'instance distante)",
+        "remoteLabelsHelp": "Décocher un objet ne modifie pas le Frigate distant : Gladys cesse simplement de suivre cette détection."
       },
       "debug": {
         "title": "Debug MQTT",
@@ -1482,6 +1480,18 @@
         "payloadColumn": "Message",
         "emptyState": "Aucun message reçu pour le moment. Vérifiez que l'intégration est activée.",
         "error": "Impossible de récupérer les messages (réservé aux administrateurs)."
+      },
+      "discover": {
+        "title": "Caméras de l'instance Frigate distante",
+        "scanButton": "Scanner à nouveau",
+        "localModeInfo": "La découverte concerne le mode distant : elle liste les caméras déjà configurées sur une autre instance Frigate pour les importer dans Gladys. En mode local, ajoutez vos caméras depuis l'onglet Appareils.",
+        "error": "Impossible de récupérer les caméras de l'instance distante. Vérifiez la connexion sur la page Configuration.",
+        "emptyState": "Aucune caméra configurée sur l'instance distante.",
+        "nameColumn": "Caméra",
+        "sourceColumn": "Adresse de la source",
+        "labelsColumn": "Objets détectés",
+        "alreadyImported": "Importée",
+        "importButton": "Importer"
       }
     },
     "matterbridge": {

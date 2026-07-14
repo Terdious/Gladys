@@ -58,59 +58,9 @@ const FrigateDevicesPage = props => (
               <i class="fe fe-plus" />
             </button>
           )}
-          {props.frigateStatus && props.frigateStatus.mode === 'remote' && (
-            <button onClick={props.discoverRemoteCameras} class="btn btn-outline-primary ml-2">
-              <span class="d-none d-lg-inline-block mr-2">
-                <Text id="integration.frigate.device.discoverRemoteButton" />
-              </span>
-              <i class="fe fe-radio" />
-            </button>
-          )}
         </div>
       </div>
       <div class="card-body">
-        {props.frigateStatus && props.frigateStatus.mode === 'remote' && props.remoteCameras && (
-          <div class="mb-4">
-            <h4>
-              <Text id="integration.frigate.device.remoteCamerasTitle" />
-            </h4>
-            {props.remoteCameras.length === 0 && (
-              <div class="alert alert-info">
-                <Text id="integration.frigate.device.remoteCamerasEmpty" />
-              </div>
-            )}
-            {props.remoteCameras.length > 0 && (
-              <table class="table table-sm table-striped">
-                <tbody>
-                  {props.remoteCameras.map(remoteCamera => (
-                    <tr>
-                      <td>{remoteCamera.name}</td>
-                      <td>
-                        {remoteCamera.trackedLabels.map(label => (
-                          <span class="tag mr-1">{label}</span>
-                        ))}
-                      </td>
-                      <td class="text-right">
-                        {remoteCamera.alreadyImported ? (
-                          <span class="tag tag-success">
-                            <Text id="integration.frigate.device.alreadyImported" />
-                          </span>
-                        ) : (
-                          <button
-                            class="btn btn-sm btn-primary"
-                            onClick={() => props.importRemoteCamera(remoteCamera)}
-                          >
-                            <Text id="integration.frigate.device.importButton" />
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        )}
         <div
           class={cx('dimmer', {
             active: props.getFrigateCamerasStatus === RequestStatus.Getting

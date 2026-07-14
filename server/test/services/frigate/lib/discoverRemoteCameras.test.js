@@ -20,10 +20,15 @@ describe('frigate discoverRemoteCameras', () => {
     frigateManager.remoteApiGet = fake.resolves({
       data: {
         cameras: {
-          cam_already_there: { objects: { track: ['person', 'unicorn'] } },
-          cam_new: { objects: { track: ['dog', 'car'] } },
+          cam_already_there: {
+            friendly_name: 'Cam Boxes',
+            objects: { track: ['person', 'unicorn'] },
+            ffmpeg: { inputs: [{ path: 'rtsp://user:pass@10.6.0.8:554/live/profile.0' }] },
+          },
+          cam_new: { objects: { track: ['dog', 'car'] }, ffmpeg: { inputs: [{ path: 'not a url at all' }] } },
           cam_without_objects: {},
           cam_without_track: { objects: {} },
+          cam_bad_input: { ffmpeg: { inputs: [{ path: 42 }] } },
         },
       },
     });
@@ -33,10 +38,17 @@ describe('frigate discoverRemoteCameras', () => {
     const cameras = await frigateManager.discoverRemoteCameras();
 
     expect(cameras).to.deep.equal([
-      { name: 'cam_already_there', trackedLabels: ['person'], alreadyImported: true },
-      { name: 'cam_new', trackedLabels: ['dog', 'car'], alreadyImported: false },
-      { name: 'cam_without_objects', trackedLabels: [], alreadyImported: false },
-      { name: 'cam_without_track', trackedLabels: [], alreadyImported: false },
+      {
+        name: 'cam_already_there',
+        friendlyName: 'Cam Boxes',
+        sourceHost: '10.6.0.8',
+        trackedLabels: ['person'],
+        alreadyImported: true,
+      },
+      { name: 'cam_new', friendlyName: null, sourceHost: null, trackedLabels: ['dog', 'car'], alreadyImported: false },
+      { name: 'cam_without_objects', friendlyName: null, sourceHost: null, trackedLabels: [], alreadyImported: false },
+      { name: 'cam_without_track', friendlyName: null, sourceHost: null, trackedLabels: [], alreadyImported: false },
+      { name: 'cam_bad_input', friendlyName: null, sourceHost: null, trackedLabels: [], alreadyImported: false },
     ]);
   });
 

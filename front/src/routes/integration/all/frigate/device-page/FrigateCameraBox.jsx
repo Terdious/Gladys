@@ -123,11 +123,149 @@ class FrigateCameraBox extends Component {
       model ? model.preset : null
     );
   };
+  renderRemoteCamera(props, { loading, saveError }, cameraStats) {
+    const { camera } = props;
+    // Imported from a remote Frigate: Gladys only chooses which detection
+    // features it follows, everything else belongs to the remote instance
+    const remoteLabels = camera.remoteLabels && camera.remoteLabels.length > 0 ? camera.remoteLabels : camera.labels;
+    return (
+      <div class="col-lg-6">
+        <div class="card">
+          <div
+            class={cx('dimmer', {
+              active: loading
+            })}
+          >
+            <div class="loader" />
+            <div class="dimmer-content">
+              <div class="card-body">
+                {cameraStats && (
+                  <div class="form-group">
+                    <span class={cameraStats.camera_fps > 0 ? 'tag tag-success' : 'tag tag-danger'}>
+                      {cameraStats.camera_fps > 0 ? (
+                        <Text
+                          id="integration.frigate.device.streamActive"
+                          fields={{ fps: Math.round(cameraStats.camera_fps) }}
+                        />
+                      ) : (
+                        <Text id="integration.frigate.device.streamInactive" />
+                      )}
+                    </span>
+                  </div>
+                )}
+                {saveError && (
+                  <div class="alert alert-danger">
+                    <Text id="integration.frigate.device.saveError" />
+                  </div>
+                )}
+                <div class="form-group">
+                  <label>
+                    <Text id="integration.frigate.device.nameLabel" />
+                  </label>
+                  <Localizer>
+                    <input
+                      type="text"
+                      value={camera.name}
+                      onInput={this.updateCameraName}
+                      class="form-control"
+                      placeholder={<Text id="integration.frigate.device.namePlaceholder" />}
+                    />
+                  </Localizer>
+                </div>
+                <div class="form-group">
+                  <label>
+                    <Text id="integration.frigate.device.roomLabel" />
+                  </label>
+                  <select onChange={this.updateCameraRoom} class="form-control">
+                    <option value="">
+                      <Text id="global.emptySelectOption" />
+                    </option>
+                    {props.housesWithRooms &&
+                      props.housesWithRooms.map(house => (
+                        <optgroup label={house.name}>
+                          {house.rooms.map(room => (
+                            <option selected={room.id === camera.room_id} value={room.id}>
+                              {room.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                  </select>
+                </div>
+                {camera.remoteSourceHost && (
+                  <div class="form-group">
+                    <label>
+                      <Text id="integration.frigate.device.remoteSourceHostLabel" />
+                    </label>
+                    <input type="text" value={camera.remoteSourceHost} class="form-control" disabled />
+                  </div>
+                )}
+                <div class="form-group">
+                  <label>
+                    <Text id="integration.frigate.device.labelsLabel" />
+                  </label>
+                  <div class="row">
+                    {remoteLabels.map(label => (
+                      <div class="col-6">
+                        <label class="custom-control custom-checkbox">
+                          <input
+                            type="checkbox"
+                            class="custom-control-input"
+                            value={label}
+                            checked={camera.labels.includes(label)}
+                            onClick={this.toggleLabel}
+                          />
+                          <span class="custom-control-label">
+                            <Text id={`integration.frigate.device.labels.${label}`}>{label}</Text>
+                          </span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                  <div class="help-block">
+                    <Text id="integration.frigate.device.remoteLabelsHelp" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>
+                    <Text id="integration.frigate.device.pollFrequencyLabel" />
+                  </label>
+                  <select onChange={this.updatePollFrequency} value={camera.poll_frequency} class="form-control">
+                    <option value={DEVICE_POLL_FREQUENCIES.EVERY_MINUTES}>
+                      <Text id="integration.frigate.device.everyMinutes" />
+                    </option>
+                    <option value={DEVICE_POLL_FREQUENCIES.EVERY_30_SECONDS}>
+                      <Text id="integration.frigate.device.every30Seconds" />
+                    </option>
+                    <option value={DEVICE_POLL_FREQUENCIES.EVERY_10_SECONDS}>
+                      <Text id="integration.frigate.device.every10Seconds" />
+                    </option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <button onClick={this.saveCamera} class="btn btn-success mr-2">
+                    <Text id="integration.frigate.device.saveButton" />
+                  </button>
+                  <button onClick={this.deleteCamera} class="btn btn-danger">
+                    <Text id="integration.frigate.device.deleteButton" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   render(props, { loading, saveError, showPassword, showOnvifPassword }) {
     const { camera } = props;
     const cameraName = camera.external_id ? camera.external_id.split(':')[1] : null;
     const cameraStats =
       props.frigateStats && props.frigateStats.cameras && cameraName ? props.frigateStats.cameras[cameraName] : null;
+    if (camera.sourceType === 'remote') {
+      return this.renderRemoteCamera(props, { loading, saveError }, cameraStats);
+    }
     const selectedBrand = CAMERA_CATALOG.find(catalogBrand => catalogBrand.key === camera.catalogBrand);
     const selectedModel =
       selectedBrand && selectedBrand.models.find(catalogModel => catalogModel.name === camera.catalogModel);

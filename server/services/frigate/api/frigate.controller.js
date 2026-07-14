@@ -75,6 +75,30 @@ module.exports = function FrigateController(gladys, frigateManager) {
     });
   }
 
+  /**
+   * @api {post} /api/v1/service/frigate/config/save Regenerate Frigate config file without restart
+   * @apiName saveConfig
+   * @apiGroup Frigate
+   */
+  async function saveConfig(req, res) {
+    logger.debug('Saving Frigate configuration without restart');
+    const response = await frigateManager.writeConfig();
+    res.json(response);
+  }
+
+  /**
+   * @api {post} /api/v1/service/frigate/config/restart Restart Frigate to reload pending config
+   * @apiName restartFrigate
+   * @apiGroup Frigate
+   */
+  async function restartFrigate(req, res) {
+    logger.debug('Restarting Frigate');
+    await frigateManager.restartFrigate();
+    res.json({
+      success: true,
+    });
+  }
+
   return {
     'get /api/v1/service/frigate/status': {
       authenticated: true,
@@ -101,6 +125,14 @@ module.exports = function FrigateController(gladys, frigateManager) {
     'post /api/v1/service/frigate/config/apply': {
       authenticated: true,
       controller: asyncMiddleware(applyConfig),
+    },
+    'post /api/v1/service/frigate/config/save': {
+      authenticated: true,
+      controller: asyncMiddleware(saveConfig),
+    },
+    'post /api/v1/service/frigate/config/restart': {
+      authenticated: true,
+      controller: asyncMiddleware(restartFrigate),
     },
   };
 };

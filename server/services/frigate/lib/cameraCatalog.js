@@ -93,15 +93,15 @@ const CAMERA_CATALOG = [
       // mydlink cameras: local access (ONVIF + RTSP) is enabled from the
       // mydlink app, credentials are admin + the camera PIN code
       {
+        // No ONVIF on this model (checked on real hardware): RTSP only
         name: 'DCS-8302LH',
         noteKey: 'dlinkMydlinkLocal',
-        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.ONVIF, SOURCE_TYPES.CUSTOM],
+        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.CUSTOM],
         preset: {
           sourceType: SOURCE_TYPES.RTSP,
           path: 'live/profile.0',
           subPath: 'live/profile.1',
           rtspPort: 554,
-          onvifPort: 80,
         },
       },
       {

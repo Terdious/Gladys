@@ -23,6 +23,7 @@ const CONFIGURATION = {
 const MQTT_TOPICS = {
   AVAILABLE: 'frigate/available',
   STATS: 'frigate/stats',
+  RESTART: 'frigate/restart',
 };
 
 const DEVICE_EXTERNAL_ID_PREFIX = 'frigate';

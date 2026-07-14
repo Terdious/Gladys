@@ -113,8 +113,10 @@ const CAMERA_CATALOG = [
         allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.CUSTOM],
         preset: {
           sourceType: SOURCE_TYPES.RTSP,
-          path: 'live/profile.0',
-          subPath: 'live/profile.1',
+          // Single 1080p H264 profile: the 2K profile.0 is H265, which
+          // browsers cannot play live, and one session keeps the camera well
+          // under its 2-3 concurrent connections limit
+          path: 'live/profile.1',
           sourceFilter: '#video=copy#audio=aac',
           rtspPort: 554,
           onvifPort: 80,

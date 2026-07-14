@@ -79,6 +79,22 @@ describe('frigate sendDlinkPtzCommand', () => {
     sinon.assert.notCalled(axios.post);
   });
 
+  it('should surface HTTP failures', async () => {
+    axios.post.rejects(new Error('Request failed with status code 401'));
+
+    await assert.isRejected(
+      frigateManager.sendDlinkPtzCommand(
+        buildDevice({
+          FRIGATE_SOURCE_HOST: '10.6.0.1',
+          FRIGATE_ONVIF_USERNAME: 'admin',
+          FRIGATE_ONVIF_PASSWORD: 'secret',
+        }),
+        'MOVE_UP',
+      ),
+      'Request failed with status code 401',
+    );
+  });
+
   it('should reject unsupported commands', async () => {
     await assert.isRejected(frigateManager.sendDlinkPtzCommand(device(), 'ZOOM_IN'), BadParameters);
     await assert.isRejected(frigateManager.sendDlinkPtzCommand(device(), 'preset_garden'), BadParameters);

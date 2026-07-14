@@ -29,9 +29,7 @@ class CameraBoxComponent extends Component {
 
   refreshData = async () => {
     try {
-      // A specific image feature can be displayed, for cameras exposing several images
-      const featureQuery = this.props.box.camera_feature ? `?feature=${this.props.box.camera_feature}` : '';
-      const image = await this.props.httpClient.get(`/api/v1/camera/${this.props.box.camera}/image${featureQuery}`);
+      const image = await this.props.httpClient.get(`/api/v1/camera/${this.props.box.camera}/image`);
       this.setState({ image, error: false });
     } catch (e) {
       console.error(e);
@@ -50,10 +48,7 @@ class CameraBoxComponent extends Component {
   };
 
   updateDeviceStateWebsocket = payload => {
-    if (
-      this.props.box.camera === payload.device &&
-      (!this.props.box.camera_feature || this.props.box.camera_feature === payload.device_feature)
-    ) {
+    if (this.props.box.camera === payload.device) {
       this.setState({
         image: payload.last_value_string,
         error: false
@@ -273,9 +268,8 @@ class CameraBoxComponent extends Component {
 
   componentDidUpdate(previousProps) {
     const cameraChanged = get(previousProps, 'box.camera') !== get(this.props, 'box.camera');
-    const cameraFeatureChanged = get(previousProps, 'box.camera_feature') !== get(this.props, 'box.camera_feature');
     const nameChanged = get(previousProps, 'box.name') !== get(this.props, 'box.name');
-    if (cameraChanged || cameraFeatureChanged || nameChanged) {
+    if (cameraChanged || nameChanged) {
       this.refreshData();
     }
   }

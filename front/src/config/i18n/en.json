@@ -277,6 +277,7 @@
       "humidity-in-room": "Humidity in room",
       "user-presence": "User presence",
       "camera": "Camera",
+      "camera-image": "Camera image",
       "devices-in-room": "Devices in room (Deprecated)",
       "devices": "Devices",
       "chart": "Chart",
@@ -346,8 +347,6 @@
       },
       "camera": {
         "editCameraLabel": "Select the camera you want to display here.",
-        "editImageFeatureLabel": "Image to display",
-        "editImageFeatureDescription": "This camera exposes several images (for example one image per detected object type). By default, the main image is displayed.",
         "noImageToShow": "No image to show. Are you sure you camera is connected and accessible to Gladys?",
         "editBoxNameLabel": "Enter the name you want to give to the box:",
         "editBoxNamePlaceholder": "Name of the box",
@@ -365,6 +364,13 @@
           "medium": "Medium",
           "standard": "Standard"
         }
+      },
+      "cameraImage": {
+        "editCameraLabel": "Camera",
+        "editImageFeatureLabel": "Image to display",
+        "editImageFeatureDescription": "Some cameras expose several images, for example the last detection of each object type. By default, the main image is displayed.",
+        "editBoxNameLabel": "Box name",
+        "editBoxNamePlaceholder": "Last person detection"
       },
       "chart": {
         "defaultInterval": "Default interval",

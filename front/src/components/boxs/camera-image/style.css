@@ -1,0 +1,38 @@
+.cameraImageContainer {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  overflow: hidden;
+}
+
+.cameraImageContainer img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cameraImageContainer:fullscreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: auto;
+}
+
+.cameraImageTitle {
+  display: flex;
+  align-items: baseline;
+}
+
+.fullscreenToolbar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+}
+
+.noImageToShowError {
+  background-color: #34495e;
+  color: white;
+  padding: 12px;
+  margin-bottom: 0px;
+}

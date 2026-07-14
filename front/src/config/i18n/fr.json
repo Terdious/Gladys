@@ -277,6 +277,7 @@
       "humidity-in-room": "Humidité de la pièce",
       "user-presence": "Utilisateurs présents",
       "camera": "Caméra",
+      "camera-image": "Image de caméra",
       "devices-in-room": "Appareils de la pièce (Déprécié)",
       "devices": "Appareils",
       "chart": "Graphique",
@@ -347,8 +348,6 @@
       },
       "camera": {
         "editCameraLabel": "Sélectionnez la caméra que vous souhaitez afficher ici.",
-        "editImageFeatureLabel": "Image à afficher",
-        "editImageFeatureDescription": "Cette caméra expose plusieurs images (par exemple une image par type d'objet détecté). Par défaut, l'image principale est affichée.",
         "noImageToShow": "Aucune image à afficher. Êtes-vous sûr que votre caméra est connectée et accessible par Gladys ?",
         "editBoxNameLabel": "Entrez le nom que vous souhaitez donner à la box :",
         "editBoxNamePlaceholder": "Nom de la box",
@@ -366,6 +365,13 @@
           "medium": "Moyenne",
           "standard": "Standard"
         }
+      },
+      "cameraImage": {
+        "editCameraLabel": "Caméra",
+        "editImageFeatureLabel": "Image à afficher",
+        "editImageFeatureDescription": "Certaines caméras exposent plusieurs images, par exemple la dernière détection de chaque type d'objet. Par défaut, l'image principale est affichée.",
+        "editBoxNameLabel": "Nom de la box",
+        "editBoxNamePlaceholder": "Dernière détection de personne"
       },
       "chart": {
         "defaultInterval": "Intervalle par défaut",
@@ -1349,7 +1355,6 @@
         "streamActive": "Flux actif ({{fps}} img/s)",
         "streamInactive": "Aucun flux reçu — vérifiez la source",
         "notEnabledWarning": "L'intégration Frigate n'est pas activée : vos caméras ne seront pas actives. Une fois vos caméras créées, activez-la dans l'onglet <a href=\"/dashboard/integration/device/frigate/setup\">Configuration</a>.",
-        "autoRestartInfo": "À chaque sauvegarde ou suppression de caméra, la configuration Frigate est régénérée et Frigate redémarre automatiquement (environ 30 secondes).",
         "nameLabel": "Nom de la caméra",
         "namePlaceholder": "Ma caméra",
         "nameHelp": "Le nom technique Frigate est dérivé de ce nom à la création. Vous pourrez ensuite renommer librement la caméra.",
@@ -1426,16 +1431,17 @@
             "tapoUnknownModel": "Modèle Tapo non listé : s'il est filaire, essayez d'abord « RTSP » avec un compte caméra (chemins stream1/stream2). S'il est sur batterie/solaire, essayez le type « TP-Link Tapo (sans RTSP) » avec votre mot de passe cloud. Partagez votre résultat :",
             "reolinkRtsp": "Utilisez les identifiants de votre caméra Reolink. La plupart des modèles exposent les chemins h264Preview_01_main (HQ) et h264Preview_01_sub (léger).",
             "reolinkUnknownModel": "Modèle Reolink non listé : essayez « RTSP » avec les chemins h264Preview_01_main / h264Preview_01_sub. Partagez votre résultat :",
-            "dlinkDefogger": "Le firmware mydlink verrouille les flux : activez une fois le RTSP avec l'outil « defogger » (via Bluetooth, voir github.com/bmork/defogger). Ensuite : utilisateur admin, mot de passe = code PIN de l'étiquette, chemin live/profile.0.",
-            "dlinkUnknownModel": "Modèle D-Link non listé : les anciens modèles utilisent play1.sdp en RTSP, les mydlink (DCS-8xxxLH) nécessitent l'outil defogger. Partagez votre résultat :",
+            "dlinkUnknownModel": "Modèle D-Link non listé : les anciens modèles utilisent play1.sdp en RTSP ; sur les mydlink (DCS-8xxxLH), activez l'accès local depuis l'app mydlink (voir les modèles listés). Partagez votre résultat :",
+            "dlinkMydlinkLocal": "Activez l'accès local dans l'app mydlink : réglages de la caméra → « Accès local » (ou ONVIF) — sur certains modèles, il suffit d'ouvrir une fois http://IP-de-la-caméra dans un navigateur. Identifiants : utilisateur admin, mot de passe = code PIN de la caméra (imprimé sur le socle ou la carte d'installation, et visible dans l'app mydlink → infos de l'appareil). Si le PIN complet est refusé, essayez ses 6 derniers chiffres. Les deux flux sont préremplis : live/profile.0 (haute qualité, enregistrement) et live/profile.1 (allégé, détection). L'ONVIF permet aussi le contrôle PTZ sur les modèles motorisés.",
+            "reolinkBatteryHub": "Les caméras Reolink sur batterie (Argus, etc.) n'offrent aucun flux local en autonome : c'est une limitation du fabricant. Elles fonctionnent uniquement associées à un Reolink Home Hub, qui expose un flux par caméra. Renseignez l'adresse IP du Home Hub (pas celle de la caméra) et ses identifiants. Les flux sont préremplis pour le canal 1 (Preview_01_main / Preview_01_sub) : pour la 2e caméra du hub, remplacez 01 par 02, etc. Attention : la détection en continu sollicite fortement la batterie, une alimentation solaire ou USB est recommandée.",
             "dlinkMjpeg": "Ce firmware n'a pas de RTSP : Gladys utilise le flux MJPEG local (léger réencodage). Flux : un compte utilisateur de la caméra suffit. Pan/tilt et mode nuit : renseignez le compte ADMIN de la caméra dans les identifiants de contrôle — un interrupteur « mode nuit » est créé sur l'appareil (activé = infrarouge forcé, désactivé = automatique). Pas de zoom motorisé."
           }
         },
-        "ptzLabel": "Contrôle PTZ (via ONVIF)",
-        "ptzHelp": "Maintenez un bouton pour bouger la caméra, relâchez pour arrêter.",
-        "ptzError": "Commande PTZ refusée — vérifiez les identifiants ONVIF et que l'intégration est connectée.",
         "httpPortLabel": "Port HTTP de la caméra",
-        "mjpegPathHelp": "Chemin du flux MJPEG (video.cgi pour les D-Link). Le flux est réencodé en H.264 par go2rtc, très léger en VGA."
+        "mjpegPathHelp": "Chemin du flux MJPEG (video.cgi pour les D-Link). Le flux est réencodé en H.264 par go2rtc, très léger en VGA.",
+        "pendingRestartWarning": "Des changements de configuration sont en attente : redémarrez Frigate pour les appliquer (environ 30 secondes, la détection est interrompue pendant le redémarrage).",
+        "restartButton": "Redémarrer Frigate",
+        "restartError": "Impossible de redémarrer Frigate. Vérifiez son état sur la page de configuration."
       },
       "debug": {
         "title": "Debug MQTT",

@@ -20,6 +20,9 @@ describe('frigate updateLabelImage', () => {
           if (key === 'deviceByExternalId' && value === 'frigate:c660') {
             return { selector: 'frigate-c660' };
           }
+          if (key === 'deviceFeatureByExternalId' && value === 'frigate:c660:person') {
+            return { selector: 'frigate-c660-person', last_value: 1 };
+          }
           return null;
         }),
       },
@@ -61,6 +64,41 @@ describe('frigate updateLabelImage', () => {
         ? { selector: 'frigate-c660-person-image' }
         : null,
     );
+
+    await frigateManager.updateLabelImage('c660', 'person', Buffer.from('jpeg-data'));
+
+    assert.notCalled(gladys.device.camera.setImage);
+  });
+
+  it('should ignore the snapshot when the detection is not active', async () => {
+    gladys.stateManager.get = fake((key, value) => {
+      if (key === 'deviceFeatureByExternalId' && value === 'frigate:c660:person:image') {
+        return { selector: 'frigate-c660-person-image' };
+      }
+      if (key === 'deviceByExternalId' && value === 'frigate:c660') {
+        return { selector: 'frigate-c660' };
+      }
+      if (key === 'deviceFeatureByExternalId' && value === 'frigate:c660:person') {
+        return { selector: 'frigate-c660-person', last_value: 0 };
+      }
+      return null;
+    });
+
+    await frigateManager.updateLabelImage('c660', 'person', Buffer.from('jpeg-data'));
+
+    assert.notCalled(gladys.device.camera.setImage);
+  });
+
+  it('should ignore the snapshot when the detection feature is unknown', async () => {
+    gladys.stateManager.get = fake((key, value) => {
+      if (key === 'deviceFeatureByExternalId' && value === 'frigate:c660:person:image') {
+        return { selector: 'frigate-c660-person-image' };
+      }
+      if (key === 'deviceByExternalId' && value === 'frigate:c660') {
+        return { selector: 'frigate-c660' };
+      }
+      return null;
+    });
 
     await frigateManager.updateLabelImage('c660', 'person', Buffer.from('jpeg-data'));
 

@@ -79,6 +79,36 @@ function createActions(store) {
         });
       }
     },
+    async saveFrigateConfig(state) {
+      // Regenerate the Frigate config file without restarting Frigate: the
+      // user batches camera changes and reloads once with the restart button
+      const configResult = await state.httpClient.post('/api/v1/service/frigate/config/save');
+      store.setState({
+        frigateStatus: {
+          ...store.getState().frigateStatus,
+          configPendingRestart: configResult.configPendingRestart
+        }
+      });
+    },
+    async restartFrigate(state) {
+      store.setState({
+        restartFrigateStatus: RequestStatus.Getting
+      });
+      try {
+        await state.httpClient.post('/api/v1/service/frigate/config/restart');
+        store.setState({
+          restartFrigateStatus: RequestStatus.Success,
+          frigateStatus: {
+            ...store.getState().frigateStatus,
+            configPendingRestart: false
+          }
+        });
+      } catch (e) {
+        store.setState({
+          restartFrigateStatus: RequestStatus.Error
+        });
+      }
+    },
     async getFrigateStatus(state) {
       try {
         const frigateStatus = await state.httpClient.get('/api/v1/service/frigate/status');
@@ -375,7 +405,7 @@ function createActions(store) {
       };
 
       let newCamera = await state.httpClient.post(`/api/v1/device`, deviceToSave);
-      await state.httpClient.post('/api/v1/service/frigate/config/apply');
+      await actions.saveFrigateConfig(state);
       newCamera = actions.complete(newCamera);
       const frigateCameras = update(state.frigateCameras, {
         [index]: {
@@ -390,7 +420,7 @@ function createActions(store) {
       const camera = state.frigateCameras[index];
       if (camera.created_at) {
         await state.httpClient.delete(`/api/v1/device/${camera.selector}`);
-        await state.httpClient.post('/api/v1/service/frigate/config/apply');
+        await actions.saveFrigateConfig(state);
       }
       const frigateCameras = update(state.frigateCameras, {
         $splice: [[index, 1]]

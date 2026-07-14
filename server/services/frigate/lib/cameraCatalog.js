@@ -55,6 +55,20 @@ const CAMERA_CATALOG = [
           onvifPort: 8000,
         },
       },
+      {
+        // Standalone battery cameras have no local stream at all: they only
+        // work through the Reolink Home Hub, which exposes one RTSP channel
+        // per paired camera
+        name: 'Argus / battery (Home Hub)',
+        noteKey: 'reolinkBatteryHub',
+        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.CUSTOM],
+        preset: {
+          sourceType: SOURCE_TYPES.RTSP,
+          path: 'Preview_01_main',
+          subPath: 'Preview_01_sub',
+          rtspPort: 554,
+        },
+      },
     ],
   },
   {
@@ -76,26 +90,30 @@ const CAMERA_CATALOG = [
           nightModeProtocol: CONTROL_PROTOCOLS.DLINK_HTTP,
         },
       },
-      // mydlink cameras (DCS-8xxxLH): the factory firmware locks the streams to
-      // the cloud app, RTSP must be enabled once with the defogger tool
+      // mydlink cameras: local access (ONVIF + RTSP) is enabled from the
+      // mydlink app, credentials are admin + the camera PIN code
       {
         name: 'DCS-8302LH',
-        noteKey: 'dlinkDefogger',
-        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.CUSTOM],
+        noteKey: 'dlinkMydlinkLocal',
+        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.ONVIF, SOURCE_TYPES.CUSTOM],
         preset: {
           sourceType: SOURCE_TYPES.RTSP,
           path: 'live/profile.0',
+          subPath: 'live/profile.1',
           rtspPort: 554,
+          onvifPort: 80,
         },
       },
       {
-        name: 'DCS-8365LH',
-        noteKey: 'dlinkDefogger',
-        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.CUSTOM],
+        name: 'DCS-8635LH',
+        noteKey: 'dlinkMydlinkLocal',
+        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.ONVIF, SOURCE_TYPES.CUSTOM],
         preset: {
           sourceType: SOURCE_TYPES.RTSP,
           path: 'live/profile.0',
+          subPath: 'live/profile.1',
           rtspPort: 554,
+          onvifPort: 80,
         },
       },
     ],

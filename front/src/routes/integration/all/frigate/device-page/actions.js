@@ -40,6 +40,7 @@ function createActions(store) {
       camera.path = getParamValue(camera, CAMERA_PARAMS.SOURCE_PATH);
       camera.subPath = getParamValue(camera, CAMERA_PARAMS.SOURCE_SUB_PATH);
       camera.extra = getParamValue(camera, CAMERA_PARAMS.SOURCE_EXTRA);
+      camera.sourceFilter = getParamValue(camera, CAMERA_PARAMS.SOURCE_FILTER);
       camera.customSource = getParamValue(camera, CAMERA_PARAMS.CUSTOM_SOURCE);
       camera.customSubSource = getParamValue(camera, CAMERA_PARAMS.CUSTOM_SUB_SOURCE);
       camera.tapoAuthVariant = getParamValue(camera, CAMERA_PARAMS.TAPO_AUTH_VARIANT);
@@ -208,6 +209,7 @@ function createActions(store) {
         cameraUpdate.path = { $set: preset.path || null };
         cameraUpdate.subPath = { $set: preset.subPath || null };
         cameraUpdate.extra = { $set: preset.extra || null };
+        cameraUpdate.sourceFilter = { $set: preset.sourceFilter || null };
         cameraUpdate.rtspPort = { $set: preset.rtspPort ? `${preset.rtspPort}` : null };
         cameraUpdate.onvifPort = { $set: preset.onvifPort ? `${preset.onvifPort}` : null };
         cameraUpdate.customSource = { $set: null };
@@ -242,6 +244,7 @@ function createActions(store) {
         { name: CAMERA_PARAMS.SOURCE_PATH, value: camera.path },
         { name: CAMERA_PARAMS.SOURCE_SUB_PATH, value: camera.subPath },
         { name: CAMERA_PARAMS.SOURCE_EXTRA, value: camera.extra },
+        { name: CAMERA_PARAMS.SOURCE_FILTER, value: camera.sourceFilter },
         { name: CAMERA_PARAMS.CUSTOM_SOURCE, value: camera.customSource && camera.customSource.trim() },
         { name: CAMERA_PARAMS.CUSTOM_SUB_SOURCE, value: camera.customSubSource && camera.customSubSource.trim() },
         { name: CAMERA_PARAMS.TAPO_AUTH_VARIANT, value: camera.tapoAuthVariant },

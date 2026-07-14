@@ -31,7 +31,11 @@ function buildRtspUrl(device, path) {
   const port = Number(getDeviceParam(device, CAMERA_PARAMS.SOURCE_RTSP_PORT)) || DEFAULT.RTSP_PORT;
   const credentials = username ? `${encodeURIComponent(username)}:${encodeURIComponent(password || '')}@` : '';
   const cleanPath = path ? `/${path.replace(/^\//, '')}` : '';
-  return `rtsp://${credentials}${host}:${port}${cleanPath}`;
+  // Optional go2rtc modifiers set by the camera catalog, such as
+  // #video=copy#audio=aac to skip a second audio track (Opus...) that would
+  // break the mp4 recordings
+  const sourceFilter = getDeviceParam(device, CAMERA_PARAMS.SOURCE_FILTER) || '';
+  return `rtsp://${credentials}${host}:${port}${cleanPath}${sourceFilter}`;
 }
 
 /**

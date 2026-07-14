@@ -73,26 +73,28 @@ const CAMERA_CATALOG = [
           rtspPort: 554,
         },
       },
-      // mydlink cameras (DCS-8xxxLH): the factory firmware locks the streams to
-      // the cloud app, RTSP must be enabled once with the defogger tool
+      // mydlink cameras: local access (ONVIF + RTSP) is enabled from the
+      // mydlink app, credentials are admin + the camera PIN code
       {
         name: 'DCS-8302LH',
-        noteKey: 'dlinkDefogger',
-        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.CUSTOM],
+        noteKey: 'dlinkMydlinkLocal',
+        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.ONVIF, SOURCE_TYPES.CUSTOM],
         preset: {
           sourceType: SOURCE_TYPES.RTSP,
           path: 'live/profile.0',
           rtspPort: 554,
+          onvifPort: 80,
         },
       },
       {
-        name: 'DCS-8365LH',
-        noteKey: 'dlinkDefogger',
-        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.CUSTOM],
+        name: 'DCS-8635LH',
+        noteKey: 'dlinkMydlinkLocal',
+        allowedSourceTypes: [SOURCE_TYPES.RTSP, SOURCE_TYPES.ONVIF, SOURCE_TYPES.CUSTOM],
         preset: {
           sourceType: SOURCE_TYPES.RTSP,
           path: 'live/profile.0',
           rtspPort: 554,
+          onvifPort: 80,
         },
       },
     ],

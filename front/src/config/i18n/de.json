@@ -1260,8 +1260,8 @@
             "reolinkRtsp": "Verwenden Sie die Zugangsdaten Ihrer Reolink-Kamera. Die meisten Modelle bieten die Pfade h264Preview_01_main (HQ) und h264Preview_01_sub (leicht).",
             "reolinkUnknownModel": "Reolink-Modell nicht gelistet: Versuchen Sie \"RTSP\" mit den Pfaden h264Preview_01_main / h264Preview_01_sub. Teilen Sie Ihr Ergebnis:",
             "dlinkPlaySdp": "Verwenden Sie die Zugangsdaten der Kamera-Weboberfläche (admin + Passwort). Der Hauptstream ist play1.sdp; ein zweites Profil play2.sdp existiert je nach Konfiguration.",
-            "dlinkDefogger": "Die mydlink-Firmware sperrt die Streams: Aktivieren Sie RTSP einmalig mit dem \"defogger\"-Tool (über Bluetooth, siehe github.com/bmork/defogger). Danach: Benutzer admin, Passwort = PIN-Code vom Etikett, Pfad live/profile.0.",
-            "dlinkUnknownModel": "D-Link-Modell nicht gelistet: Ältere Modelle nutzen play1.sdp über RTSP, mydlink-Modelle (DCS-8xxxLH) benötigen das defogger-Tool. Teilen Sie Ihr Ergebnis:"
+            "dlinkUnknownModel": "D-Link-Modell nicht gelistet: Ältere Modelle nutzen play1.sdp über RTSP, mydlink-Modelle (DCS-8xxxLH) benötigen das defogger-Tool. Teilen Sie Ihr Ergebnis:",
+            "dlinkMydlinkLocal": "Aktivieren Sie den lokalen Zugriff in der mydlink-App: Kameraeinstellungen → \"Lokaler Zugriff\" (oder ONVIF) — bei manchen Modellen genügt es, einmal http://KAMERA-IP im Browser zu öffnen. Zugangsdaten: Benutzer admin, Passwort = PIN-Code der Kamera (auf dem Sockel oder der Installationskarte aufgedruckt und in der mydlink-App → Geräteinfo sichtbar). Wird die vollständige PIN abgelehnt, versuchen Sie die letzten 6 Ziffern. Stream: live/profile.0. ONVIF ermöglicht auf motorisierten Modellen auch die PTZ-Steuerung."
           }
         }
       }

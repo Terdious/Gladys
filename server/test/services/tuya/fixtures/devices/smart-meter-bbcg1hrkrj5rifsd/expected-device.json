@@ -60,7 +60,8 @@
       "report_rate_control",
       "tbd",
       "voltage_coef"
-    ]
+    ],
+    "cloud_only": false
   },
   "features": [
     {

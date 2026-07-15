@@ -50,6 +50,12 @@ const getIgnoredCloudCodes = device => {
   return new Set(ignored.map(value => String(value).toLowerCase()));
 };
 
+// Cloud-only device types (e.g. battery-first watering valves) never expose a
+// local listener: the whole local-override UI is hidden for them. The flag comes
+// from the server mapping through `tuya_mapping.cloud_only`.
+export const isCloudOnlyDevice = device =>
+  Boolean(device && device.tuya_mapping && device.tuya_mapping.cloud_only === true);
+
 const getLocalDpsFromProperties = (code, properties) => {
   if (!code || !properties) {
     return null;
@@ -114,33 +120,45 @@ export const getUnknownDpsKeys = (localPollDps, features, device) => {
   return Object.keys(localPollDps).filter(key => !knownKeys.has(key) && !ignoredDps.has(String(key)));
 };
 
+// Unknown cloud codes mirror the server-side mapping merge (specifications +
+// thing model + properties are all candidate sources): a code is unknown when no
+// Gladys feature covers it and the device mapping does not ignore it. Candidate
+// sources must never mask each other — a thing-model-rich device would otherwise
+// hide every unsupported specification code and disable the GitHub issue flow.
 export const getUnknownSpecificationCodes = (specifications, features, device) => {
-  if (!specifications || (!Array.isArray(specifications.functions) && !Array.isArray(specifications.status))) {
-    return [];
-  }
-  const knownCodes = new Set();
-  const addKnownCode = code => {
-    if (code !== null && code !== undefined) {
-      knownCodes.add(
-        String(code)
+  const normalizeCode = code =>
+    code === null || code === undefined
+      ? ''
+      : String(code)
           .trim()
-          .toLowerCase()
-      );
-    }
-  };
+          .toLowerCase();
+  const knownCodes = new Set();
   if (Array.isArray(features)) {
     features.forEach(feature => {
       const parts = (feature.external_id || '').split(':');
-      const code = parts.length >= 2 ? parts[parts.length - 1] : null;
-      addKnownCode(code);
+      const code = normalizeCode(parts.length >= 2 ? parts[parts.length - 1] : null);
+      if (code) {
+        knownCodes.add(code);
+      }
     });
   }
+  const candidateCodes = new Set();
+  const addCandidateCode = code => {
+    const normalized = normalizeCode(code);
+    if (normalized) {
+      candidateCodes.add(normalized);
+    }
+  };
+  ['functions', 'status'].forEach(key => {
+    const entries = specifications && Array.isArray(specifications[key]) ? specifications[key] : [];
+    entries.forEach(entry => addCandidateCode(entry && entry.code));
+  });
   const services = Array.isArray(device && device.thing_model && device.thing_model.services)
     ? device.thing_model.services
     : [];
   services.forEach(service => {
     const properties = Array.isArray(service && service.properties) ? service.properties : [];
-    properties.forEach(property => addKnownCode(property && property.code));
+    properties.forEach(property => addCandidateCode(property && property.code));
   });
   const propertiesPayload = device && device.properties;
   const properties = Array.isArray(propertiesPayload)
@@ -148,26 +166,9 @@ export const getUnknownSpecificationCodes = (specifications, features, device) =
     : Array.isArray(propertiesPayload && propertiesPayload.properties)
     ? propertiesPayload.properties
     : [];
-  properties.forEach(property => addKnownCode(property && property.code));
-  const specCodes = new Set();
-  ['functions', 'status'].forEach(key => {
-    const entries = specifications[key];
-    if (!Array.isArray(entries)) {
-      return;
-    }
-    entries.forEach(entry => {
-      if (entry && entry.code) {
-        specCodes.add(entry.code);
-      }
-    });
-  });
+  properties.forEach(property => addCandidateCode(property && property.code));
   const ignoredCodes = getIgnoredCloudCodes(device);
-  return Array.from(specCodes).filter(code => {
-    const normalized = String(code)
-      .trim()
-      .toLowerCase();
-    return !knownCodes.has(normalized) && !ignoredCodes.has(normalized);
-  });
+  return Array.from(candidateCodes).filter(code => !knownCodes.has(code) && !ignoredCodes.has(code));
 };
 
 export const buildParamsMap = device =>

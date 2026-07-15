@@ -1,0 +1,893 @@
+{
+  "name": "Vanne Brumisateur",
+  "features": [
+    {
+      "external_id": "tuya:bf7a93550662670e3agpni:switch",
+      "selector": "tuya-bf7a93550662670e3agpni-switch",
+      "read_only": false,
+      "has_feedback": false,
+      "min": 0,
+      "max": 1,
+      "name": "Switch",
+      "category": "switch",
+      "type": "binary"
+    },
+    {
+      "external_id": "tuya:bf7a93550662670e3agpni:battery_percentage",
+      "selector": "tuya-bf7a93550662670e3agpni-battery-percentage",
+      "read_only": true,
+      "has_feedback": false,
+      "min": 0,
+      "max": 100,
+      "name": "Battery",
+      "category": "battery",
+      "type": "integer",
+      "unit": "percent",
+      "scale": 0
+    },
+    {
+      "external_id": "tuya:bf7a93550662670e3agpni:valve_status",
+      "selector": "tuya-bf7a93550662670e3agpni-valve-status",
+      "read_only": true,
+      "has_feedback": false,
+      "min": 0,
+      "max": 1,
+      "name": "Valve state",
+      "category": "water-valve",
+      "type": "valve-work-state"
+    }
+  ],
+  "device_type": "water-valve",
+  "external_id": "tuya:bf7a93550662670e3agpni",
+  "selector": "tuya-bf7a93550662670e3agpni",
+  "model": "Valve Controller",
+  "product_id": "p8gyk6h5cdlxboqm",
+  "service_id": "service-id",
+  "poll_frequency": 30000,
+  "should_poll": true,
+  "params": [
+    {
+      "name": "DEVICE_ID",
+      "value": "bf7a93550662670e3agpni"
+    },
+    {
+      "name": "LOCAL_KEY",
+      "value": "***"
+    },
+    {
+      "name": "CLOUD_IP",
+      "value": "82.x.x.x"
+    },
+    {
+      "name": "LOCAL_OVERRIDE",
+      "value": false
+    },
+    {
+      "name": "PRODUCT_ID",
+      "value": "p8gyk6h5cdlxboqm"
+    },
+    {
+      "name": "CLOUD_READ_STRATEGY",
+      "value": "legacy"
+    }
+  ],
+  "properties": {
+    "properties": [
+      {
+        "code": "switch",
+        "custom_name": "",
+        "dp_id": 1,
+        "time": 1783879999619,
+        "type": "bool",
+        "value": false
+      },
+      {
+        "code": "fault",
+        "custom_name": "",
+        "dp_id": 4,
+        "time": 1783770345854,
+        "type": "bitmap",
+        "value": 0
+      },
+      {
+        "code": "battery_percentage",
+        "custom_name": "",
+        "dp_id": 7,
+        "time": 1783770345854,
+        "type": "value",
+        "value": 100
+      },
+      {
+        "code": "work_state",
+        "custom_name": "",
+        "dp_id": 12,
+        "time": 1783879999619,
+        "type": "enum",
+        "value": "auto"
+      },
+      {
+        "code": "smart_weather",
+        "custom_name": "",
+        "dp_id": 13,
+        "time": 1783770345854,
+        "type": "enum",
+        "value": "sunny"
+      },
+      {
+        "code": "water_program1",
+        "custom_name": "",
+        "dp_id": 103,
+        "time": 1783770345957,
+        "type": "raw",
+        "value": "AA=="
+      },
+      {
+        "code": "water_program2",
+        "custom_name": "",
+        "dp_id": 104,
+        "time": 1783770349988,
+        "type": "raw",
+        "value": "AA=="
+      },
+      {
+        "code": "mfg_model",
+        "custom_name": "",
+        "dp_id": 105,
+        "time": 1783770345854,
+        "type": "string",
+        "value": "wt_wifi_v2,,STYRTK251216R04D66"
+      },
+      {
+        "code": "water_program3",
+        "custom_name": "",
+        "dp_id": 106,
+        "time": 1783770350318,
+        "type": "raw",
+        "value": "AA=="
+      },
+      {
+        "code": "water_program4",
+        "custom_name": "",
+        "dp_id": 107,
+        "time": 1783770351011,
+        "type": "raw",
+        "value": "AA=="
+      },
+      {
+        "code": "irri_time",
+        "custom_name": "",
+        "dp_id": 108,
+        "time": 1783879999746,
+        "type": "raw",
+        "value": "alP1YQAAAlkAAAAAAASzAAoAAAAAAAA="
+      },
+      {
+        "code": "rain_delay",
+        "custom_name": "",
+        "dp_id": 110,
+        "time": 1783770345854,
+        "type": "value",
+        "value": 0
+      },
+      {
+        "code": "irri_flow",
+        "custom_name": "",
+        "dp_id": 111,
+        "time": 1783770345854,
+        "type": "value",
+        "value": 0
+      },
+      {
+        "code": "manual_irri_time",
+        "custom_name": "",
+        "dp_id": 112,
+        "time": 1783770345854,
+        "type": "value",
+        "value": 10
+      },
+      {
+        "code": "manual_water_program",
+        "custom_name": "",
+        "dp_id": 113,
+        "time": 1783879398378,
+        "type": "raw",
+        "value": "AQEAAAAEsxQKAAIABAAA"
+      },
+      {
+        "code": "voice_control_program",
+        "custom_name": "",
+        "dp_id": 114,
+        "time": 1783774963571,
+        "type": "raw",
+        "value": "AQAAAAOGAAoAAgAEAAAAGA=="
+      },
+      {
+        "code": "quick_rain_delay",
+        "custom_name": "",
+        "dp_id": 115,
+        "time": 1783770343011,
+        "type": "bool",
+        "value": false
+      },
+      {
+        "code": "support_features",
+        "custom_name": "",
+        "dp_id": 116,
+        "time": 1783770345854,
+        "type": "value",
+        "value": 0
+      },
+      {
+        "code": "valve_status",
+        "custom_name": "",
+        "dp_id": 117,
+        "time": 1783879999619,
+        "type": "bool",
+        "value": false
+      },
+      {
+        "code": "child_lock",
+        "custom_name": "",
+        "dp_id": 118,
+        "time": 1784103196363,
+        "type": "bool",
+        "value": true
+      },
+      {
+        "code": "unix_time",
+        "custom_name": "",
+        "dp_id": 119,
+        "time": 1783770398443,
+        "type": "value",
+        "value": 1
+      },
+      {
+        "code": "log_server_url",
+        "custom_name": "",
+        "dp_id": 120,
+        "time": 1783770343011,
+        "type": "string",
+        "value": ""
+      },
+      {
+        "code": "log_server_port",
+        "custom_name": "",
+        "dp_id": 121,
+        "time": 1783770343011,
+        "type": "value",
+        "value": -32768
+      },
+      {
+        "code": "dev_token",
+        "custom_name": "",
+        "dp_id": 122,
+        "time": 1783770343011,
+        "type": "string",
+        "value": ""
+      },
+      {
+        "code": "hydraulic_pressure",
+        "custom_name": "",
+        "dp_id": 123,
+        "time": 1784072743727,
+        "type": "raw",
+        "value": "BGVqWMU1+ErX7lZNFr635rMpY31I00pt"
+      },
+      {
+        "code": "temp_mode_flag",
+        "custom_name": "",
+        "dp_id": 124,
+        "time": 1783770345854,
+        "type": "bool",
+        "value": false
+      },
+      {
+        "code": "program_num",
+        "custom_name": "",
+        "dp_id": 127,
+        "time": 1783770345854,
+        "type": "value",
+        "value": 0
+      },
+      {
+        "code": "irri_instant_flow",
+        "custom_name": "",
+        "dp_id": 128,
+        "time": 1783770345854,
+        "type": "value",
+        "value": 0
+      },
+      {
+        "code": "soft_ver",
+        "custom_name": "",
+        "dp_id": 129,
+        "time": 1783770345854,
+        "type": "string",
+        "value": "2.0.1"
+      },
+      {
+        "code": "dev_state",
+        "custom_name": "",
+        "dp_id": 130,
+        "time": 1783879999619,
+        "type": "bool",
+        "value": false
+      },
+      {
+        "code": "app_features",
+        "custom_name": "",
+        "dp_id": 131,
+        "time": 1783770345854,
+        "type": "value",
+        "value": 1
+      }
+    ]
+  },
+  "specifications": {
+    "category": "sfkzq",
+    "functions": [
+      {
+        "code": "switch",
+        "lang_config": {
+          "false": "Off",
+          "true": "On"
+        },
+        "name": "Switch",
+        "type": "Boolean",
+        "values": "{}"
+      },
+      {
+        "code": "smart_weather",
+        "lang_config": {
+          "clear": "clear",
+          "cloud": "cloud",
+          "cloudy": "cloudy",
+          "fog": "fog",
+          "rainy": "rainy",
+          "snow": "snow",
+          "sunny": "sunny"
+        },
+        "name": "Smart Weather",
+        "type": "Enum",
+        "values": "{\"range\":[\"sunny\",\"clear\",\"cloud\",\"cloudy\",\"rainy\",\"snow\",\"fog\"]}"
+      }
+    ],
+    "status": [
+      {
+        "code": "switch",
+        "lang_config": {
+          "false": "Off",
+          "true": "On"
+        },
+        "name": "Switch",
+        "type": "Boolean",
+        "values": "{}"
+      },
+      {
+        "code": "battery_percentage",
+        "lang_config": {
+          "unit": "%"
+        },
+        "name": "Battery",
+        "type": "Integer",
+        "values": "{\"unit\":\"%\",\"min\":0,\"max\":100,\"scale\":0,\"step\":1}"
+      },
+      {
+        "code": "work_state",
+        "lang_config": {
+          "auto": "auto",
+          "manual": "manual"
+        },
+        "name": "work state",
+        "type": "Enum",
+        "values": "{\"range\":[\"auto\",\"manual\"]}"
+      },
+      {
+        "code": "smart_weather",
+        "lang_config": {
+          "clear": "clear",
+          "cloud": "cloud",
+          "cloudy": "cloudy",
+          "fog": "fog",
+          "rainy": "rainy",
+          "snow": "snow",
+          "sunny": "sunny"
+        },
+        "name": "Smart Weather",
+        "type": "Enum",
+        "values": "{\"range\":[\"sunny\",\"clear\",\"cloud\",\"cloudy\",\"rainy\",\"snow\",\"fog\"]}"
+      }
+    ]
+  },
+  "tuya_mapping": {
+    "ignored_local_dps": ["105", "116", "119", "120", "121", "122", "129", "130", "131"],
+    "ignored_cloud_codes": [
+      "app_features",
+      "dev_state",
+      "dev_token",
+      "log_server_port",
+      "log_server_url",
+      "mfg_model",
+      "soft_ver",
+      "support_features",
+      "unix_time"
+    ],
+    "cloud_only": true
+  },
+  "thing_model": {
+    "modelId": "e1ngp2xo",
+    "services": [
+      {
+        "actions": [],
+        "code": "",
+        "description": "",
+        "events": [],
+        "name": "",
+        "properties": [
+          {
+            "abilityId": 1,
+            "accessMode": "rw",
+            "code": "switch",
+            "description": "",
+            "extensions": {
+              "iconName": "icon-dp_power",
+              "attribute": "1665"
+            },
+            "name": "阀门开关",
+            "typeSpec": {
+              "type": "bool"
+            }
+          },
+          {
+            "abilityId": 4,
+            "accessMode": "ro",
+            "code": "fault",
+            "description": "e0：电池电量低，请及时更换电池\ne1：电池电量耗尽，无法继续使用，请立即更换电池\ne2：触发断水检测，电磁阀打开但检测不到水流\ne3：触发漏水检测，电磁阀关闭但检测到水流",
+            "extensions": {
+              "iconName": "icon-baojing",
+              "scope": "fault",
+              "attribute": "1216"
+            },
+            "name": "故障上报",
+            "typeSpec": {
+              "type": "bitmap",
+              "label": ["fault_low_batt", "fault_poor_batt", "fault_cut_off", "fault_leakage"],
+              "maxlen": 4
+            }
+          },
+          {
+            "abilityId": 7,
+            "accessMode": "ro",
+            "code": "battery_percentage",
+            "description": "",
+            "extensions": {
+              "iconName": "icon-dp_battery",
+              "attribute": "1216"
+            },
+            "name": "电池电量",
+            "typeSpec": {
+              "type": "value",
+              "max": 100,
+              "min": 0,
+              "scale": 0,
+              "step": 1,
+              "unit": "%"
+            }
+          },
+          {
+            "abilityId": 12,
+            "accessMode": "ro",
+            "code": "work_state",
+            "description": "",
+            "extensions": {
+              "iconName": "icon-zhuangtai",
+              "scope": "",
+              "attribute": "1248"
+            },
+            "name": "工作状态",
+            "typeSpec": {
+              "type": "enum",
+              "range": ["auto", "manual"]
+            }
+          },
+          {
+            "abilityId": 13,
+            "accessMode": "rw",
+            "code": "smart_weather",
+            "description": "设备可以获取到的天气状态数据",
+            "extensions": {
+              "iconName": "icon-dp_smart",
+              "attribute": "1216"
+            },
+            "name": "智能天气",
+            "typeSpec": {
+              "type": "enum",
+              "range": ["sunny", "clear", "cloud", "cloudy", "rainy", "snow", "fog"]
+            }
+          },
+          {
+            "abilityId": 103,
+            "accessMode": "rw",
+            "code": "water_program1",
+            "description": "程序1-3",
+            "extensions": {
+              "scope": ""
+            },
+            "name": "浇水程序1",
+            "typeSpec": {
+              "type": "raw",
+              "maxlen": 128
+            }
+          },
+          {
+            "abilityId": 104,
+            "accessMode": "rw",
+            "code": "water_program2",
+            "description": "程序4-6",
+            "extensions": {
+              "scope": ""
+            },
+            "name": "浇水程序2",
+            "typeSpec": {
+              "type": "raw",
+              "maxlen": 128
+            }
+          },
+          {
+            "abilityId": 105,
+            "accessMode": "ro",
+            "code": "mfg_model",
+            "description": "",
+            "name": "机型",
+            "typeSpec": {
+              "type": "string",
+              "maxlen": 255
+            }
+          },
+          {
+            "abilityId": 106,
+            "accessMode": "rw",
+            "code": "water_program3",
+            "description": "程序7-9",
+            "extensions": {
+              "iconName": "",
+              "scope": "",
+              "attribute": "0"
+            },
+            "name": "浇水程序3",
+            "typeSpec": {
+              "type": "raw",
+              "maxlen": 128
+            }
+          },
+          {
+            "abilityId": 107,
+            "accessMode": "rw",
+            "code": "water_program4",
+            "description": "程序10",
+            "extensions": {
+              "scope": ""
+            },
+            "name": "浇水程序4",
+            "typeSpec": {
+              "type": "raw",
+              "maxlen": 128
+            }
+          },
+          {
+            "abilityId": 108,
+            "accessMode": "ro",
+            "code": "irri_time",
+            "description": "上报时间+浇水总时间+浇水总水量+浇水类型+浇水程序内容",
+            "extensions": {
+              "scope": ""
+            },
+            "name": "灌溉日志",
+            "typeSpec": {
+              "type": "raw",
+              "maxlen": 128
+            }
+          },
+          {
+            "abilityId": 110,
+            "accessMode": "rw",
+            "code": "rain_delay",
+            "description": "",
+            "extensions": {
+              "scope": "",
+              "trigger": "direct"
+            },
+            "name": "降雨延迟",
+            "typeSpec": {
+              "type": "value",
+              "max": 2147483647,
+              "min": 0,
+              "scale": 0,
+              "step": 1,
+              "unit": ""
+            }
+          },
+          {
+            "abilityId": 111,
+            "accessMode": "ro",
+            "code": "irri_flow",
+            "description": "平均值，乘100表示",
+            "extensions": {
+              "scope": ""
+            },
+            "name": "灌溉流速",
+            "typeSpec": {
+              "type": "value",
+              "max": 2147483647,
+              "min": 0,
+              "scale": 2,
+              "step": 1,
+              "unit": "L/min"
+            }
+          },
+          {
+            "abilityId": 112,
+            "accessMode": "rw",
+            "code": "manual_irri_time",
+            "description": "设备短按按键开启的手动浇水程序执行时间",
+            "extensions": {
+              "scope": ""
+            },
+            "name": "手动浇水时间",
+            "typeSpec": {
+              "type": "value",
+              "max": 86400,
+              "min": 0,
+              "scale": 0,
+              "step": 1,
+              "unit": "min"
+            }
+          },
+          {
+            "abilityId": 113,
+            "accessMode": "rw",
+            "code": "manual_water_program",
+            "description": "",
+            "name": "手动浇水程序",
+            "typeSpec": {
+              "type": "raw",
+              "maxlen": 128
+            }
+          },
+          {
+            "abilityId": 114,
+            "accessMode": "rw",
+            "code": "voice_control_program",
+            "description": "",
+            "name": "语音控制程序",
+            "typeSpec": {
+              "type": "raw",
+              "maxlen": 128
+            }
+          },
+          {
+            "abilityId": 115,
+            "accessMode": "rw",
+            "code": "quick_rain_delay",
+            "description": "测试属性，用于语音助手绑定测试",
+            "extensions": {
+              "trigger": "direct"
+            },
+            "name": "快速浇水延迟",
+            "typeSpec": {
+              "type": "bool"
+            }
+          },
+          {
+            "abilityId": 116,
+            "accessMode": "ro",
+            "code": "support_features",
+            "description": "bit0:是否支持流量计",
+            "extensions": {
+              "scope": ""
+            },
+            "name": "支持的特性",
+            "typeSpec": {
+              "type": "value",
+              "max": 2147483647,
+              "min": 0,
+              "scale": 0,
+              "step": 1,
+              "unit": ""
+            }
+          },
+          {
+            "abilityId": 117,
+            "accessMode": "ro",
+            "code": "valve_status",
+            "description": "",
+            "extensions": {
+              "scope": ""
+            },
+            "name": "电磁阀状态",
+            "typeSpec": {
+              "type": "bool"
+            }
+          },
+          {
+            "abilityId": 118,
+            "accessMode": "rw",
+            "code": "child_lock",
+            "description": "",
+            "name": "童锁",
+            "typeSpec": {
+              "type": "bool"
+            }
+          },
+          {
+            "abilityId": 119,
+            "accessMode": "rw",
+            "code": "unix_time",
+            "description": "",
+            "extensions": {
+              "scope": ""
+            },
+            "name": "时间戳",
+            "typeSpec": {
+              "type": "value",
+              "max": 2147483647,
+              "min": 0,
+              "scale": 0,
+              "step": 1,
+              "unit": ""
+            }
+          },
+          {
+            "abilityId": 120,
+            "accessMode": "rw",
+            "code": "log_server_url",
+            "description": "",
+            "name": "日志服务器域名",
+            "typeSpec": {
+              "type": "string",
+              "maxlen": 255
+            }
+          },
+          {
+            "abilityId": 121,
+            "accessMode": "rw",
+            "code": "log_server_port",
+            "description": "",
+            "extensions": {
+              "scope": ""
+            },
+            "name": "日志服务器端口",
+            "typeSpec": {
+              "type": "value",
+              "max": 32767,
+              "min": -32768,
+              "scale": 0,
+              "step": 1,
+              "unit": ""
+            }
+          },
+          {
+            "abilityId": 122,
+            "accessMode": "rw",
+            "code": "dev_token",
+            "description": "",
+            "name": "设备上报密钥",
+            "typeSpec": {
+              "type": "string",
+              "maxlen": 255
+            }
+          },
+          {
+            "abilityId": 123,
+            "accessMode": "ro",
+            "code": "hydraulic_pressure",
+            "description": "",
+            "name": "水压",
+            "typeSpec": {
+              "type": "raw",
+              "maxlen": 128
+            }
+          },
+          {
+            "abilityId": 124,
+            "accessMode": "rw",
+            "code": "temp_mode_flag",
+            "description": "",
+            "extensions": {
+              "iconName": "",
+              "scope": "",
+              "attribute": "0"
+            },
+            "name": "临时模式标志",
+            "typeSpec": {
+              "type": "bool"
+            }
+          },
+          {
+            "abilityId": 127,
+            "accessMode": "ro",
+            "code": "program_num",
+            "description": "",
+            "extensions": {
+              "iconName": "",
+              "scope": "",
+              "attribute": "0"
+            },
+            "name": "执行程序编号",
+            "typeSpec": {
+              "type": "value",
+              "max": 10,
+              "min": 0,
+              "scale": 0,
+              "step": 1,
+              "unit": ""
+            }
+          },
+          {
+            "abilityId": 128,
+            "accessMode": "ro",
+            "code": "irri_instant_flow",
+            "description": "瞬时值，乘100表示",
+            "extensions": {
+              "iconName": "",
+              "scope": "",
+              "attribute": "0"
+            },
+            "name": "瞬时灌溉流速",
+            "typeSpec": {
+              "type": "value",
+              "max": 2147483647,
+              "min": 0,
+              "scale": 2,
+              "step": 1,
+              "unit": "L/min"
+            }
+          },
+          {
+            "abilityId": 129,
+            "accessMode": "ro",
+            "code": "soft_ver",
+            "description": "",
+            "name": "软件版本",
+            "typeSpec": {
+              "type": "string",
+              "maxlen": 255
+            }
+          },
+          {
+            "abilityId": 130,
+            "accessMode": "ro",
+            "code": "dev_state",
+            "description": "0:设备待机 \n1:设备工作",
+            "extensions": {
+              "scope": ""
+            },
+            "name": "设备状态",
+            "typeSpec": {
+              "type": "bool"
+            }
+          },
+          {
+            "abilityId": 131,
+            "accessMode": "rw",
+            "code": "app_features",
+            "description": "bit有效\nbit0：是否同步语音配置和手动设置配置",
+            "extensions": {
+              "scope": ""
+            },
+            "name": "app支持的特性",
+            "typeSpec": {
+              "type": "value",
+              "max": 2147483647,
+              "min": -2147483647,
+              "scale": 0,
+              "step": 1,
+              "unit": ""
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "online": true
+}

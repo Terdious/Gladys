@@ -47,6 +47,7 @@ describe('tuya.convertDevice', () => {
     expect(device.tuya_mapping).to.deep.equal({
       ignored_local_dps: ['11'],
       ignored_cloud_codes: ['countdown', 'countdown_1'],
+      cloud_only: false,
     });
     expect(device.poll_frequency).to.equal(DEVICE_POLL_FREQUENCIES.EVERY_10_SECONDS);
 

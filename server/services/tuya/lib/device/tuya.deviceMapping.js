@@ -105,6 +105,16 @@ const readValues = {
       return scaleValue(valueFromDevice, deviceFeature, 1);
     },
   },
+  [DEVICE_FEATURE_CATEGORIES.BATTERY]: {
+    [DEVICE_FEATURE_TYPES.BATTERY.INTEGER]: (valueFromDevice, deviceFeature) => {
+      return scaleValue(valueFromDevice, deviceFeature, 0);
+    },
+  },
+  [DEVICE_FEATURE_CATEGORIES.WATER_VALVE]: {
+    [DEVICE_FEATURE_TYPES.WATER_VALVE.VALVE_WORK_STATE]: (valueFromDevice) => {
+      return normalizeBoolean(valueFromDevice) ? 1 : 0;
+    },
+  },
   [DEVICE_FEATURE_CATEGORIES.ENERGY_SENSOR]: {
     [DEVICE_FEATURE_TYPES.ENERGY_SENSOR.POWER]: (valueFromDevice, deviceFeature) => {
       return scaleValue(valueFromDevice, deviceFeature, 1);

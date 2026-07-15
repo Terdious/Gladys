@@ -337,6 +337,7 @@ describe('TuyaHandler.discoverDevices', () => {
         tuya_mapping: {
           ignored_cloud_codes: ['countdown', 'countdown_1'],
           ignored_local_dps: ['11'],
+          cloud_only: false,
         },
         online: true,
       },

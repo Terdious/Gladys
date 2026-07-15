@@ -22,7 +22,8 @@
   },
   "tuya_mapping": {
     "ignored_local_dps": ["11"],
-    "ignored_cloud_codes": ["countdown", "countdown_1"]
+    "ignored_cloud_codes": ["countdown", "countdown_1"],
+    "cloud_only": false
   },
   "features": [
     {

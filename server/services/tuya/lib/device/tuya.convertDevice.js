@@ -5,7 +5,13 @@ const { normalizeBoolean } = require('../utils/tuya.normalize');
 const { resolveCloudReadStrategy } = require('../utils/tuya.cloudStrategy');
 const { mergeTuyaReport } = require('../utils/tuya.report');
 const { convertFeature } = require('./tuya.convertFeature');
-const { getDeviceType, getIgnoredCloudCodes, getIgnoredLocalDps, DEVICE_TYPES } = require('../mappings');
+const {
+  getDeviceType,
+  getIgnoredCloudCodes,
+  getIgnoredLocalDps,
+  isCloudOnlyDeviceType,
+  DEVICE_TYPES,
+} = require('../mappings');
 const logger = require('../../../../utils/logger');
 
 const parseFeatureValues = (values) => {
@@ -250,6 +256,7 @@ function convertDevice(tuyaDevice) {
     tuya_mapping: {
       ignored_local_dps: ignoredLocalDps,
       ignored_cloud_codes: ignoredCloudCodes,
+      cloud_only: isCloudOnlyDeviceType(deviceType),
     },
     thing_model: thingModel,
   };

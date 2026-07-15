@@ -1,14 +1,17 @@
 const globalCloud = require('./cloud/global');
 const smartMeterCloud = require('./cloud/smart-meter');
 const smartSocketCloud = require('./cloud/smart-socket');
+const waterValveCloud = require('./cloud/water-valve');
 
 const globalLocal = require('./local/global');
 const smartMeterLocal = require('./local/smart-meter');
 const smartSocketLocal = require('./local/smart-socket');
+const waterValveLocal = require('./local/water-valve');
 
 const DEVICE_TYPES = {
   SMART_METER: 'smart-meter',
   SMART_SOCKET: 'smart-socket',
+  WATER_VALVE: 'water-valve',
   UNKNOWN: 'unknown',
 };
 
@@ -35,7 +38,24 @@ const SMART_METER = {
   LOCAL_MAPPINGS: smartMeterLocal,
 };
 
-const LIST_DEVICE_TYPES = [SMART_SOCKET, SMART_METER];
+const WATER_VALVE = {
+  DEVICE_TYPE_NAME: DEVICE_TYPES.WATER_VALVE,
+  // Tuya category "sfkzq" = smart watering/irrigation valve (confirmed by the R2601
+  // report, issue #2666). Product id stays as a stronger secondary match.
+  CATEGORIES: new Set(['sfkzq']),
+  PRODUCT_IDS: new Set(['p8gyk6h5cdlxboqm']),
+  KEYWORDS: ['water valve', 'irrigation', 'watering', 'sprinkler', 'arrosage', 'brumisateur'],
+  REQUIRED_CODES: SWITCH_CODES,
+  CLOUD_MAPPINGS: waterValveCloud,
+  LOCAL_MAPPINGS: waterValveLocal,
+  // Battery-first watering valves keep a persistent OUTBOUND cloud connection and
+  // never open a local listener (port 6668 refuses the connection), so LAN control
+  // is not possible even on external power. Flag them cloud-only: the frontend
+  // hides the whole local-override UI instead of offering a dead end.
+  CLOUD_ONLY: true,
+};
+
+const LIST_DEVICE_TYPES = [SMART_SOCKET, SMART_METER, WATER_VALVE];
 
 const normalizeCode = (code) => {
   if (!code) {
@@ -63,6 +83,7 @@ const DEVICE_TYPE_INDEX = LIST_DEVICE_TYPES.reduce((acc, definition) => {
       ? definition.KEYWORDS.map((keyword) => String(keyword).toLowerCase())
       : [],
     REQUIRED_CODES: normalizeStringSet(definition.REQUIRED_CODES),
+    CLOUD_ONLY: definition.CLOUD_ONLY === true,
   };
   return acc;
 }, {});
@@ -285,6 +306,14 @@ const getIgnoredCloudCodes = (deviceType) => {
   return Array.from(new Set(normalized));
 };
 
+const isCloudOnlyDeviceType = (deviceType) => {
+  if (!deviceType || deviceType === DEVICE_TYPES.UNKNOWN) {
+    return false;
+  }
+  const definition = DEVICE_TYPE_INDEX[normalizeCode(deviceType)];
+  return Boolean(definition && definition.CLOUD_ONLY);
+};
+
 module.exports = {
   DEVICE_TYPES,
   extractCodesFromSpecifications,
@@ -296,5 +325,6 @@ module.exports = {
   getIgnoredLocalDps,
   getIgnoredCloudCodes,
   getDeviceType,
+  isCloudOnlyDeviceType,
   normalizeCode,
 };

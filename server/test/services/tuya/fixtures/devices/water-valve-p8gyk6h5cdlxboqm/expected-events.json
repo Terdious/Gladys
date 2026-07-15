@@ -1,0 +1,14 @@
+[
+  {
+    "device_feature_external_id": "tuya:bf7a93550662670e3agpni:battery_percentage",
+    "state": 100
+  },
+  {
+    "device_feature_external_id": "tuya:bf7a93550662670e3agpni:switch",
+    "state": 0
+  },
+  {
+    "device_feature_external_id": "tuya:bf7a93550662670e3agpni:valve_status",
+    "state": 0
+  }
+]

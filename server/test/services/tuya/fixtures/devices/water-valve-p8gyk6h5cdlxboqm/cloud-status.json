@@ -1,0 +1,128 @@
+{
+  "result": [
+    {
+      "code": "switch",
+      "value": false
+    },
+    {
+      "code": "fault",
+      "value": 0
+    },
+    {
+      "code": "battery_percentage",
+      "value": 100
+    },
+    {
+      "code": "work_state",
+      "value": "auto"
+    },
+    {
+      "code": "smart_weather",
+      "value": "sunny"
+    },
+    {
+      "code": "water_program1",
+      "value": "AA=="
+    },
+    {
+      "code": "water_program2",
+      "value": "AA=="
+    },
+    {
+      "code": "mfg_model",
+      "value": "wt_wifi_v2,,STYRTK251216R04D66"
+    },
+    {
+      "code": "water_program3",
+      "value": "AA=="
+    },
+    {
+      "code": "water_program4",
+      "value": "AA=="
+    },
+    {
+      "code": "irri_time",
+      "value": "alP1YQAAAlkAAAAAAASzAAoAAAAAAAA="
+    },
+    {
+      "code": "rain_delay",
+      "value": 0
+    },
+    {
+      "code": "irri_flow",
+      "value": 0
+    },
+    {
+      "code": "manual_irri_time",
+      "value": 10
+    },
+    {
+      "code": "manual_water_program",
+      "value": "AQEAAAAEsxQKAAIABAAA"
+    },
+    {
+      "code": "voice_control_program",
+      "value": "AQAAAAOGAAoAAgAEAAAAGA=="
+    },
+    {
+      "code": "quick_rain_delay",
+      "value": false
+    },
+    {
+      "code": "support_features",
+      "value": 0
+    },
+    {
+      "code": "valve_status",
+      "value": false
+    },
+    {
+      "code": "child_lock",
+      "value": true
+    },
+    {
+      "code": "unix_time",
+      "value": 1
+    },
+    {
+      "code": "log_server_url",
+      "value": ""
+    },
+    {
+      "code": "log_server_port",
+      "value": -32768
+    },
+    {
+      "code": "dev_token",
+      "value": ""
+    },
+    {
+      "code": "hydraulic_pressure",
+      "value": "BGVqWMU1+ErX7lZNFr635rMpY31I00pt"
+    },
+    {
+      "code": "temp_mode_flag",
+      "value": false
+    },
+    {
+      "code": "program_num",
+      "value": 0
+    },
+    {
+      "code": "irri_instant_flow",
+      "value": 0
+    },
+    {
+      "code": "soft_ver",
+      "value": "2.0.1"
+    },
+    {
+      "code": "dev_state",
+      "value": false
+    },
+    {
+      "code": "app_features",
+      "value": 1
+    }
+  ]
+}

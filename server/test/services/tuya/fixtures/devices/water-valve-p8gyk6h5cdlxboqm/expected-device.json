@@ -1,0 +1,71 @@
+{
+  "name": "Vanne Brumisateur",
+  "external_id": "tuya:bf7a93550662670e3agpni",
+  "selector": "tuya-bf7a93550662670e3agpni",
+  "device_type": "water-valve",
+  "model": "Valve Controller",
+  "product_id": "p8gyk6h5cdlxboqm",
+  "online": true,
+  "poll_frequency": 30000,
+  "should_poll": true,
+  "params": {
+    "DEVICE_ID": "bf7a93550662670e3agpni",
+    "LOCAL_KEY": "***",
+    "CLOUD_IP": "82.x.x.x",
+    "LOCAL_OVERRIDE": false,
+    "PRODUCT_ID": "p8gyk6h5cdlxboqm",
+    "CLOUD_READ_STRATEGY": "legacy"
+  },
+  "tuya_mapping": {
+    "cloud_only": true,
+    "ignored_cloud_codes": [
+      "app_features",
+      "dev_state",
+      "dev_token",
+      "log_server_port",
+      "log_server_url",
+      "mfg_model",
+      "soft_ver",
+      "support_features",
+      "unix_time"
+    ],
+    "ignored_local_dps": ["105", "116", "119", "120", "121", "122", "129", "130", "131"]
+  },
+  "features": [
+    {
+      "category": "battery",
+      "external_id": "tuya:bf7a93550662670e3agpni:battery_percentage",
+      "has_feedback": false,
+      "max": 100,
+      "min": 0,
+      "name": "Battery",
+      "read_only": true,
+      "scale": 0,
+      "selector": "tuya-bf7a93550662670e3agpni-battery-percentage",
+      "type": "integer",
+      "unit": "percent"
+    },
+    {
+      "category": "switch",
+      "external_id": "tuya:bf7a93550662670e3agpni:switch",
+      "has_feedback": false,
+      "max": 1,
+      "min": 0,
+      "name": "Switch",
+      "read_only": false,
+      "selector": "tuya-bf7a93550662670e3agpni-switch",
+      "type": "binary"
+    },
+    {
+      "category": "water-valve",
+      "external_id": "tuya:bf7a93550662670e3agpni:valve_status",
+      "has_feedback": false,
+      "max": 1,
+      "min": 0,
+      "name": "Valve state",
+      "read_only": true,
+      "selector": "tuya-bf7a93550662670e3agpni-valve-status",
+      "type": "valve-work-state"
+    }
+  ]
+}

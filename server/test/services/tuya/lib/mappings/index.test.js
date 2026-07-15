@@ -15,6 +15,7 @@ const {
   getIgnoredLocalDps,
   getIgnoredCloudCodes,
   getDeviceType,
+  isCloudOnlyDeviceType,
   normalizeCode,
 } = mappings;
 
@@ -201,5 +202,12 @@ describe('Tuya mappings index', () => {
     expect(ignoredCloud).to.include('countdown_1');
     const ignoredCloudUnknown = getIgnoredCloudCodes(DEVICE_TYPES.UNKNOWN);
     expect(ignoredCloudUnknown).to.not.include('countdown');
+  });
+
+  it('should flag cloud-only device types', () => {
+    expect(isCloudOnlyDeviceType(DEVICE_TYPES.WATER_VALVE)).to.equal(true);
+    expect(isCloudOnlyDeviceType(DEVICE_TYPES.SMART_SOCKET)).to.equal(false);
+    expect(isCloudOnlyDeviceType(DEVICE_TYPES.UNKNOWN)).to.equal(false);
+    expect(isCloudOnlyDeviceType(null)).to.equal(false);
   });
 });

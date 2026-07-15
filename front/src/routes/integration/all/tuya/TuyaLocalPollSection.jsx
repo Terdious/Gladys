@@ -1,7 +1,13 @@
 import { Component } from 'preact';
 import { Text } from 'preact-i18n';
 import { RequestStatus } from '../../../../utils/consts';
-import { buildParamsMap, normalizeBoolean, getLocalOverrideValue, getTuyaDeviceId } from './commons/deviceHelpers';
+import {
+  buildParamsMap,
+  normalizeBoolean,
+  getLocalOverrideValue,
+  getTuyaDeviceId,
+  isCloudOnlyDevice
+} from './commons/deviceHelpers';
 import { pollLocalDevice } from './commons/localPoll';
 
 const PROTOCOL_OPTIONS = ['3.1', '3.3', '3.4', '3.5'];
@@ -174,6 +180,15 @@ class TuyaLocalPollSection extends Component {
   };
 
   render({ device, deviceIndex, localPollStatus, localPollError, localPollProtocol }, { localStatus }) {
+    // Cloud-only device types have no local listener: hide the IP/protocol/local-poll
+    // controls entirely and explain why, instead of offering a dead-end local mode.
+    if (isCloudOnlyDevice(device)) {
+      return (
+        <div class="alert alert-info" role="alert">
+          <Text id="integration.tuya.device.cloudOnlyInfo" />
+        </div>
+      );
+    }
     const params = buildParamsMap(device);
     const deviceId = params.DEVICE_ID || getTuyaDeviceId(device);
     const localKey = params.LOCAL_KEY || (device && device.local_key) || '';

@@ -114,6 +114,56 @@ describe('TuyaController POST /api/v1/service/tuya/local-poll', () => {
     await controller['post /api/v1/service/tuya/local-poll'].controller(req, res);
     assert.calledOnce(tuyaManager.localPoll);
   });
+
+  it('should pass the known local dps to localPoll when the device type is resolved', async () => {
+    const req = {
+      body: { deviceId: 'device1', ip: '1.1.1.1', localKey: 'key', protocolVersion: '3.3' },
+    };
+    const res = { json: fake.returns([]) };
+    tuyaManager.discoveredDevices = [{ external_id: 'tuya:device1', device_type: 'video-doorbell', params: [] }];
+
+    await controller['post /api/v1/service/tuya/local-poll'].controller(req, res);
+
+    const payload = tuyaManager.localPoll.firstCall.args[0];
+    expect(payload.requestedDps).to.deep.equal([
+      101,
+      103,
+      104,
+      106,
+      108,
+      109,
+      110,
+      111,
+      115,
+      117,
+      134,
+      136,
+      150,
+      151,
+      154,
+      160,
+    ]);
+  });
+
+  it('should resolve the known local dps from the state manager when the device is not discovered', async () => {
+    const req = {
+      body: { deviceId: 'device2', ip: '1.1.1.1', localKey: 'key', protocolVersion: '3.3' },
+    };
+    const res = { json: fake.returns([]) };
+    tuyaManager.gladys = {
+      stateManager: { get: fake.returns({ device_type: 'smart-meter' }) },
+    };
+    try {
+      await controller['post /api/v1/service/tuya/local-poll'].controller(req, res);
+    } finally {
+      delete tuyaManager.gladys;
+    }
+
+    const payload = tuyaManager.localPoll.firstCall.args[0];
+    expect(payload.requestedDps)
+      .to.be.an('array')
+      .that.includes(115);
+  });
 });
 
 describe('TuyaController POST /api/v1/service/tuya/local-scan', () => {

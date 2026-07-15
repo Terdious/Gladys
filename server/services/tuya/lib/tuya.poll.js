@@ -9,7 +9,7 @@ const { CLOUD_STRATEGY, getConfiguredCloudStrategy } = require('./utils/tuya.clo
 const { getParamValue } = require('./utils/tuya.deviceParams');
 const { localPoll } = require('./tuya.localPoll');
 const { mapDpsToMediaCodes } = require('./tuya.media');
-const { getLocalDpsFromCode } = require('./device/tuya.localMapping');
+const { getKnownLocalDps, getLocalDpsFromCode } = require('./device/tuya.localMapping');
 const { getDeviceType, getFeatureMapping, getProductIdFromDevice } = require('./mappings');
 const { isLocalSkipNeeded, recordLocalFailure, recordLocalSuccess } = require('./utils/tuya.degraded');
 
@@ -562,6 +562,9 @@ async function poll(device) {
         timeoutMs: 3000,
         fastScan: true,
         logDps: false,
+        // Known DP ids let localPoll retry via DP_REFRESH when the device rejects DP_QUERY
+        // (cameras/doorbells — tinytuya "device22" behaviour).
+        requestedDps: getKnownLocalDps(device),
       });
 
       const dps = localResult && localResult.dps ? localResult.dps : null;

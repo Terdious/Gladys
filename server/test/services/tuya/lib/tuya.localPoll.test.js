@@ -507,6 +507,142 @@ describe('TuyaHandler.localPoll', () => {
     }
     throw new Error('Expected error');
   });
+
+  describe('DP_REFRESH fallback (device22-style devices)', () => {
+    const buildStub = ({ get, refresh }) => {
+      const connect = sinon.stub().resolves();
+      const disconnect = sinon.stub().resolves();
+      function TuyAPIStub() {
+        this.connect = connect;
+        this.get = get;
+        this.refresh = refresh;
+        this.disconnect = disconnect;
+        attachEventHandlers(this);
+      }
+      const { localPoll } = proxyquire('../../../../services/tuya/lib/tuya.localPoll', {
+        tuyapi: TuyAPIStub,
+        '@demirdeniz/tuyapi-newgen': function TuyAPINewGenStub() {},
+      });
+      return { localPoll, connect, disconnect };
+    };
+
+    it('should fall back to DP_REFRESH when the device rejects DP_QUERY with a raw string', async () => {
+      const get = sinon.stub().resolves('parse data error');
+      const refresh = sinon.stub().resolves({ dps: { 101: true, 136: '' } });
+      const { localPoll } = buildStub({ get, refresh });
+
+      const result = await localPoll({
+        deviceId: 'device',
+        ip: '1.1.1.1',
+        localKey: 'key',
+        protocolVersion: '3.3',
+        requestedDps: [101, 136],
+      });
+
+      expect(result.dps).to.deep.equal({ 101: true, 136: '' });
+      expect(result.via).to.equal('dp_refresh');
+      expect(get.calledOnce).to.equal(true);
+      expect(refresh.calledOnce).to.equal(true);
+      expect(refresh.firstCall.args[0]).to.deep.equal({ requestedDPS: [101, 136] });
+    });
+
+    it('should fall back to DP_REFRESH when DP_QUERY fails', async () => {
+      const get = sinon.stub().rejects(new Error('Local poll timeout'));
+      const refresh = sinon.stub().resolves({ dps: { 101: false } });
+      const { localPoll } = buildStub({ get, refresh });
+
+      const result = await localPoll({
+        deviceId: 'device',
+        ip: '1.1.1.1',
+        localKey: 'key',
+        protocolVersion: '3.3',
+        requestedDps: [101],
+      });
+
+      expect(result.dps).to.deep.equal({ 101: false });
+      expect(result.via).to.equal('dp_refresh');
+    });
+
+    it('should sanitize and dedupe the requested dps list', async () => {
+      const get = sinon.stub().resolves('parse data error');
+      const refresh = sinon.stub().resolves({ dps: { 101: true } });
+      const { localPoll } = buildStub({ get, refresh });
+
+      await localPoll({
+        deviceId: 'device',
+        ip: '1.1.1.1',
+        localKey: 'key',
+        protocolVersion: '3.3',
+        requestedDps: ['101', 101, 'not-a-dp'],
+      });
+
+      expect(refresh.firstCall.args[0]).to.deep.equal({ requestedDPS: [101] });
+    });
+
+    it('should combine both failures when the DP_REFRESH fallback also fails', async () => {
+      const get = sinon.stub().resolves('parse data error');
+      const refresh = sinon.stub().rejects(new Error('refresh timeout'));
+      const { localPoll } = buildStub({ get, refresh });
+
+      try {
+        await localPoll({
+          deviceId: 'device',
+          ip: '1.1.1.1',
+          localKey: 'key',
+          protocolVersion: '3.3',
+          requestedDps: [101],
+        });
+      } catch (e) {
+        expect(e).to.be.instanceOf(BadParameters);
+        expect(e.message).to.include('Invalid local poll response: parse data error');
+        expect(e.message).to.include('DP_REFRESH fallback also failed: refresh timeout');
+        return;
+      }
+      throw new Error('Expected error');
+    });
+
+    it('should flag an invalid DP_REFRESH response with the fallback origin', async () => {
+      const get = sinon.stub().resolves('parse data error');
+      const refresh = sinon.stub().resolves('still not dps');
+      const { localPoll } = buildStub({ get, refresh });
+
+      try {
+        await localPoll({
+          deviceId: 'device',
+          ip: '1.1.1.1',
+          localKey: 'key',
+          protocolVersion: '3.3',
+          requestedDps: [101],
+        });
+      } catch (e) {
+        expect(e).to.be.instanceOf(BadParameters);
+        expect(e.message).to.equal('Invalid local poll response: still not dps (via DP_REFRESH fallback)');
+        return;
+      }
+      throw new Error('Expected error');
+    });
+
+    it('should not fall back when requestedDps is empty', async () => {
+      const get = sinon.stub().resolves('parse data error');
+      const refresh = sinon.stub().resolves({ dps: { 101: true } });
+      const { localPoll } = buildStub({ get, refresh });
+
+      try {
+        await localPoll({
+          deviceId: 'device',
+          ip: '1.1.1.1',
+          localKey: 'key',
+          protocolVersion: '3.3',
+          requestedDps: [],
+        });
+      } catch (e) {
+        expect(e.message).to.equal('Invalid local poll response: parse data error');
+        expect(refresh.called).to.equal(false);
+        return;
+      }
+      throw new Error('Expected error');
+    });
+  });
 });
 
 describe('TuyaHandler.updateDiscoveredDeviceAfterLocalPoll', () => {

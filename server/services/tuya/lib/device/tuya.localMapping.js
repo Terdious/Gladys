@@ -46,6 +46,32 @@ const getLocalDpsFromCode = (code, device) => {
   return null;
 };
 
+const getKnownLocalDps = (device) => {
+  if (!device) {
+    return null;
+  }
+  let localMapping;
+  try {
+    const deviceType = device.device_type ? device.device_type : getDeviceType(device);
+    localMapping = getLocalMapping(deviceType, getProductIdFromDevice(device));
+  } catch (e) {
+    return null;
+  }
+  const knownDps = new Set();
+  const collect = (dpId) => {
+    const numericId = Number(dpId);
+    if (Number.isFinite(numericId)) {
+      knownDps.add(numericId);
+    }
+  };
+  Object.values((localMapping && localMapping.dps) || {}).forEach(collect);
+  ((localMapping && localMapping.ignoredDps) || []).forEach(collect);
+  if (knownDps.size === 0) {
+    return null;
+  }
+  return [...knownDps].sort((a, b) => a - b);
+};
+
 const hasDpsKey = (dps, key) => {
   if (!dps || typeof dps !== 'object') {
     return false;
@@ -86,5 +112,6 @@ const addFallbackBinaryFeature = (device, dps) => {
 
 module.exports = {
   addFallbackBinaryFeature,
+  getKnownLocalDps,
   getLocalDpsFromCode,
 };

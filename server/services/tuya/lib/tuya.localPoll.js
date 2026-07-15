@@ -20,7 +20,16 @@ const SOCKET_ERROR_MESSAGE_MAX_LENGTH = 160;
  * await localPoll({ deviceId: 'id', ip: '1.1.1.1', localKey: 'key', protocolVersion: '3.3' });
  */
 async function localPoll(payload) {
-  const { deviceId, ip, localKey, protocolVersion, timeoutMs = 3000, fastScan = false, logDps = true } = payload || {};
+  const {
+    deviceId,
+    ip,
+    localKey,
+    protocolVersion,
+    timeoutMs = 3000,
+    fastScan = false,
+    logDps = true,
+    requestedDps = null,
+  } = payload || {};
   const isProtocol34 = protocolVersion === '3.4';
   const isProtocol35 = protocolVersion === '3.5';
   const isNewGenProtocol = isProtocol34 || isProtocol35;
@@ -74,7 +83,7 @@ async function localPoll(payload) {
   };
   tuyaLocal.on('error', onError);
 
-  const runGet = async (options) => {
+  const runLocalRequest = async (request) => {
     let errorListener;
     let timeoutId;
     let resolved = false;
@@ -98,7 +107,7 @@ async function localPoll(payload) {
     try {
       const operation = (async () => {
         await tuyaLocal.connect();
-        const data = await tuyaLocal.get(options);
+        const data = await request();
         return data;
       })();
       const data = await Promise.race([
@@ -121,6 +130,10 @@ async function localPoll(payload) {
     }
   };
 
+  const requestedDpsList = Array.isArray(requestedDps)
+    ? Array.from(new Set(requestedDps.map(Number).filter((dpId) => Number.isFinite(dpId))))
+    : [];
+
   try {
     // Protocol 3.5 sometimes rejects a bare `schema:true` get on first contact.
     // Fall back to probing DPS 1 (the standard switch DPS for Tuya devices) and
@@ -129,7 +142,7 @@ async function localPoll(payload) {
       protocolVersion === '3.5' ? [{ schema: true }, { schema: true, dps: [1] }, {}] : [{ schema: true }];
     const tryAttempt = async (index) => {
       try {
-        return await runGet(attempts[index]);
+        return await runLocalRequest(() => tuyaLocal.get(attempts[index]));
       } catch (e) {
         if (index >= attempts.length - 1) {
           throw e;
@@ -137,11 +150,43 @@ async function localPoll(payload) {
         return tryAttempt(index + 1);
       }
     };
-    const data = await tryAttempt(0);
+    let data;
+    let getError = null;
+    try {
+      data = await tryAttempt(0);
+    } catch (e) {
+      getError = e;
+    }
+    let viaFallback = false;
+    if ((getError || !data || typeof data !== 'object' || !data.dps) && requestedDpsList.length > 0) {
+      // Cameras/doorbells often reject DP_QUERY with a raw error string ("parse data error")
+      // or ignore it entirely (timeout) while still answering a DP_REFRESH scoped to their
+      // known DP ids — the tinytuya "device22" behaviour. tuyapi itself falls back to a
+      // null-value SET when the device rejects the refresh, so this single retry covers both
+      // documented query paths. Only attempted when the caller knows the device's DP list.
+      const initialFailure = getError
+        ? getError.message
+        : `Invalid local poll response${typeof data === 'string' ? `: ${data}` : ''}`;
+      logger.debug(
+        `[Tuya][localPoll] device=${deviceId} DP_QUERY failed (${initialFailure}): trying DP_REFRESH on ${requestedDpsList.length} known DPS`,
+      );
+      try {
+        data = await runLocalRequest(() => tuyaLocal.refresh({ requestedDPS: requestedDpsList }));
+        getError = null;
+        viaFallback = true;
+      } catch (refreshError) {
+        throw new BadParameters(`${initialFailure} (DP_REFRESH fallback also failed: ${refreshError.message})`);
+      }
+    } else if (getError) {
+      throw getError;
+    }
     if (!data || typeof data !== 'object' || !data.dps) {
       const errorMessage =
         typeof data === 'string' ? `Invalid local poll response: ${data}` : 'Invalid local poll response';
-      throw new BadParameters(errorMessage);
+      throw new BadParameters(viaFallback ? `${errorMessage} (via DP_REFRESH fallback)` : errorMessage);
+    }
+    if (viaFallback) {
+      data.via = 'dp_refresh';
     }
     if (logDps) {
       logger.debug(`[Tuya][localPoll] device=${deviceId} dps=${JSON.stringify(data)}`);

@@ -1,6 +1,7 @@
 const asyncMiddleware = require('../../../api/middlewares/asyncMiddleware');
 const logger = require('../../../utils/logger');
 const { updateDiscoveredDeviceAfterLocalPoll } = require('../lib/tuya.localPoll');
+const { getKnownLocalDps } = require('../lib/device/tuya.localMapping');
 const { buildLocalScanResponse } = require('../lib/tuya.localScan');
 const { getAllDegraded, getLocalStatus, resetLocalStatus } = require('../lib/utils/tuya.degraded');
 
@@ -40,9 +41,20 @@ module.exports = function TuyaController(tuyaManager) {
       'local_dp_read_started',
       `Manual local DP read (ip=${payload.ip || 'none'} protocol=${payload.protocolVersion || 'auto'})`,
     );
+    // Resolve the device's known local DP ids (mapped + deliberately ignored) so localPoll can
+    // fall back to a DP_REFRESH scoped to those ids when the device rejects/ignores DP_QUERY
+    // (cameras and doorbells typically do — tinytuya "device22" behaviour).
+    const externalId = `tuya:${payload.deviceId}`;
+    const knownDevice =
+      (Array.isArray(tuyaManager.discoveredDevices) &&
+        tuyaManager.discoveredDevices.find((device) => device && device.external_id === externalId)) ||
+      (tuyaManager.gladys && tuyaManager.gladys.stateManager
+        ? tuyaManager.gladys.stateManager.get('deviceByExternalId', externalId)
+        : null);
+    const requestedDps = getKnownLocalDps(knownDevice);
     let result;
     try {
-      result = await tuyaManager.localPoll(payload);
+      result = await tuyaManager.localPoll({ ...payload, requestedDps });
     } catch (e) {
       diag(
         'error',
@@ -58,7 +70,7 @@ module.exports = function TuyaController(tuyaManager) {
       'local_dp_read_ok',
       `Manual local DP read succeeded (protocol=${payload.protocolVersion || 'auto'}, ${
         Object.keys(result.dps || {}).length
-      } DPS)`,
+      } DPS${result.via === 'dp_refresh' ? ', via DP_REFRESH fallback' : ''})`,
       result.dps,
     );
     const updatedDevice = updateDiscoveredDeviceAfterLocalPoll(tuyaManager, {

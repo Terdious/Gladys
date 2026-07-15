@@ -7,6 +7,7 @@ const proxyquire = require('proxyquire')
 
 const {
   addFallbackBinaryFeature,
+  getKnownLocalDps,
   getLocalDpsFromCode,
 } = require('../../../../../services/tuya/lib/device/tuya.localMapping');
 
@@ -125,5 +126,73 @@ describe('Tuya local mapping', () => {
     expect(getLocalDpsFromCode('window_state', device)).to.equal(123);
     expect(getLocalDpsFromCode('temp_set', device)).to.equal(125);
     expect(getLocalDpsFromCode('running_mode', device)).to.equal(131);
+  });
+
+  describe('getKnownLocalDps', () => {
+    it('should return null when device is missing', () => {
+      expect(getKnownLocalDps(null)).to.equal(null);
+    });
+
+    it('should return the sorted mapped + ignored dps of the video doorbell', () => {
+      const device = { device_type: 'video-doorbell' };
+      expect(getKnownLocalDps(device)).to.deep.equal([
+        101,
+        103,
+        104,
+        106,
+        108,
+        109,
+        110,
+        111,
+        115,
+        117,
+        134,
+        136,
+        150,
+        151,
+        154,
+        160,
+      ]);
+    });
+
+    it('should fall back to the global local mapping for unknown devices', () => {
+      const device = { name: 'Mystery device' };
+      // Global mapping resolves switch/power on DPS 1 only.
+      expect(getKnownLocalDps(device)).to.deep.equal([1]);
+    });
+
+    it('should return null when the resolved mapping has no known dps', () => {
+      const { getKnownLocalDps: emptyGetKnownLocalDps } = proxyquire(
+        '../../../../../services/tuya/lib/device/tuya.localMapping',
+        {
+          './tuya.convertFeature': { convertFeature: () => null },
+          '../mappings': {
+            getDeviceType: () => 'empty-type',
+            getLocalMapping: () => ({}),
+            getProductIdFromDevice: () => null,
+            normalizeCode: (value) => value,
+          },
+        },
+      );
+      expect(emptyGetKnownLocalDps({ name: 'Empty device' })).to.equal(null);
+    });
+
+    it('should return null when the mapping resolution throws', () => {
+      const { getKnownLocalDps: throwingGetKnownLocalDps } = proxyquire(
+        '../../../../../services/tuya/lib/device/tuya.localMapping',
+        {
+          './tuya.convertFeature': { convertFeature: () => null },
+          '../mappings': {
+            getDeviceType: () => {
+              throw new Error('boom');
+            },
+            getLocalMapping: () => ({}),
+            getProductIdFromDevice: () => null,
+            normalizeCode: (value) => value,
+          },
+        },
+      );
+      expect(throwingGetKnownLocalDps({ name: 'Broken device' })).to.equal(null);
+    });
   });
 });

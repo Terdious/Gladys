@@ -17,6 +17,8 @@ async function saveConfiguration(config) {
     [CONFIGURATION.FRIGATE_MQTT_USERNAME_KEY]: config.frigateMqttUsername,
     [CONFIGURATION.FRIGATE_MQTT_PASSWORD_KEY]: config.frigateMqttPassword,
     [CONFIGURATION.MQTT_PORT_KEY]: config.mqttPort,
+    [CONFIGURATION.CONTAINER_NAME_KEY]: config.containerName,
+    [CONFIGURATION.MQTT_CONTAINER_NAME_KEY]: config.mqttContainerName,
     [CONFIGURATION.UI_PORT_KEY]: config.frigateUiPort,
     [CONFIGURATION.API_PORT_KEY]: config.frigateApiPort,
     [CONFIGURATION.RTSP_PORT_KEY]: config.frigateRtspPort,

@@ -26,6 +26,10 @@ async function getConfiguration() {
     this.serviceId,
   );
 
+  // Load resolved container names
+  const containerName = await this.gladys.variable.getValue(CONFIGURATION.CONTAINER_NAME_KEY, this.serviceId);
+  const mqttContainerName = await this.gladys.variable.getValue(CONFIGURATION.MQTT_CONTAINER_NAME_KEY, this.serviceId);
+
   // Load allocated ports
   const mqttPort = await this.gladys.variable.getValue(CONFIGURATION.MQTT_PORT_KEY, this.serviceId);
   const frigateUiPort = await this.gladys.variable.getValue(CONFIGURATION.UI_PORT_KEY, this.serviceId);
@@ -79,6 +83,8 @@ async function getConfiguration() {
     mqttPassword,
     frigateMqttUsername,
     frigateMqttPassword,
+    containerName,
+    mqttContainerName,
     mqttPort,
     frigateUiPort,
     frigateApiPort,

@@ -125,6 +125,7 @@ async function init() {
 
   // Allocate free host ports (kept as-is when already allocated)
   await this.allocatePorts(configuration);
+  await this.allocateContainerNames(configuration);
   configuration.mqttUrl = `mqtt://localhost:${configuration.mqttPort}`;
   this.mqttPort = configuration.mqttPort;
   this.frigateUiPort = configuration.frigateUiPort;

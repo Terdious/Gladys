@@ -18,6 +18,8 @@ const CONFIGURATION = {
   FRIGATE_ADMIN_USERNAME_VALUE: 'admin',
   FRIGATE_ADMIN_PASSWORD_KEY: 'FRIGATE_ADMIN_PASSWORD',
   MQTT_PORT_KEY: 'FRIGATE_MQTT_PORT',
+  CONTAINER_NAME_KEY: 'FRIGATE_CONTAINER_NAME',
+  MQTT_CONTAINER_NAME_KEY: 'FRIGATE_MQTT_CONTAINER_NAME',
   UI_PORT_KEY: 'FRIGATE_UI_PORT',
   API_PORT_KEY: 'FRIGATE_API_PORT',
   RTSP_PORT_KEY: 'FRIGATE_RTSP_PORT',
@@ -116,6 +118,11 @@ const GPU_VENDORS = {
 const TRACKABLE_LABELS = ['person', 'car', 'dog', 'cat', 'horse', 'bird', 'bicycle', 'motorcycle', 'bus', 'truck'];
 
 const DEFAULT = {
+  // Base container names: resolved once against existing containers (a user
+  // container may already use the name) then persisted as variables
+  CONTAINER_BASE_NAME: 'gladys-frigate-server',
+  LEGACY_CONTAINER_NAME: 'gladys-frigate',
+  MQTT_CONTAINER_BASE_NAME: 'gladys-frigate-mqtt',
   TOPICS: [
     'frigate/#', // Default frigate topic
   ],

@@ -16,7 +16,8 @@ const sleep = promisify(setTimeout);
  * await frigate.installMqttContainer(config);
  */
 async function installMqttContainer(config) {
-  let dockerContainers = await this.getDockerContainer(containerDescriptor.name);
+  const mqttContainerName = config.mqttContainerName || containerDescriptor.name;
+  let dockerContainers = await this.getDockerContainer(mqttContainerName);
   let [container] = dockerContainers;
 
   if (dockerContainers.length === 0) {
@@ -29,6 +30,7 @@ async function installMqttContainer(config) {
       // Prepare broker env
       logger.info(`Preparing Frigate broker environment...`);
       const containerDescriptorToMutate = cloneDeep(containerDescriptor);
+      containerDescriptorToMutate.name = mqttContainerName;
       const { basePathOnContainer, basePathOnHost } = await this.gladys.system.getGladysBasePath();
 
       const mosquittoFolderPath = path.join(basePathOnContainer, '/frigate/mqtt');
@@ -101,7 +103,7 @@ async function installMqttContainer(config) {
   } else {
     this.mqttExist = true;
     try {
-      dockerContainers = await this.getDockerContainer(containerDescriptor.name);
+      dockerContainers = await this.getDockerContainer(mqttContainerName);
       [container] = dockerContainers;
       if (container.state !== 'running') {
         logger.info('Frigate MQTT broker is starting...');

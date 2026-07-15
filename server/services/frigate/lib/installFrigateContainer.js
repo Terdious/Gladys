@@ -18,7 +18,8 @@ const sleep = promisify(setTimeout);
  * await frigate.installFrigateContainer(config);
  */
 async function installFrigateContainer(config) {
-  let dockerContainers = await this.getDockerContainer(containerDescriptor.name);
+  const containerName = config.containerName || containerDescriptor.name;
+  let dockerContainers = await this.getDockerContainer(containerName);
   let [container] = dockerContainers;
   let creationNeeded = dockerContainers.length === 0;
 
@@ -69,6 +70,7 @@ async function installFrigateContainer(config) {
       await this.gladys.system.pull(containerDescriptor.Image);
 
       const containerDescriptorToMutate = cloneDeep(containerDescriptor);
+      containerDescriptorToMutate.name = containerName;
       containerDescriptorToMutate.HostConfig.Binds.push(`${basePathOnHost}/frigate/config:/config`);
       containerDescriptorToMutate.HostConfig.Binds.push(`${basePathOnHost}/frigate/media:/media/frigate`);
       containerDescriptorToMutate.HostConfig.ShmSize = desiredShmSize;
@@ -108,7 +110,7 @@ async function installFrigateContainer(config) {
   const { configChanged } = await this.configureContainer(basePathOnContainer, config);
 
   try {
-    dockerContainers = await this.getDockerContainer(containerDescriptor.name);
+    dockerContainers = await this.getDockerContainer(containerName);
     [container] = dockerContainers;
 
     // Check if we need to restart the container (container is not running / config changed)

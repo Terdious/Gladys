@@ -11,6 +11,9 @@ const frigateContainerDescriptor = require('../docker/gladys-frigate-container.j
  */
 async function disconnect() {
   let container;
+  const configuration = await this.getConfiguration();
+  const mqttContainerName = configuration.mqttContainerName || mqttContainerDescriptor.name;
+  const frigateContainerName = configuration.containerName || frigateContainerDescriptor.name;
 
   // Disconnect from MQTT broker
   if (this.mqttClient) {
@@ -32,7 +35,7 @@ async function disconnect() {
   }
 
   // Stop & remove MQTT container
-  let dockerContainer = await this.getDockerContainer(mqttContainerDescriptor.name);
+  let dockerContainer = await this.getDockerContainer(mqttContainerName);
   if (dockerContainer.length > 0) {
     [container] = dockerContainer;
     await this.gladys.system.stopContainer(container.id);
@@ -42,7 +45,7 @@ async function disconnect() {
   this.emitStatusEvent();
 
   // Stop & remove Frigate container
-  dockerContainer = await this.getDockerContainer(frigateContainerDescriptor.name);
+  dockerContainer = await this.getDockerContainer(frigateContainerName);
   if (dockerContainer.length > 0) {
     [container] = dockerContainer;
     await this.gladys.system.stopContainer(container.id);

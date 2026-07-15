@@ -1,5 +1,6 @@
 const { init } = require('./init');
 const { allocatePorts } = require('./allocatePorts');
+const { allocateContainerNames } = require('./allocateContainerNames');
 const { connect } = require('./connect');
 const { disconnect } = require('./disconnect');
 const { subscribe } = require('./subscribe');
@@ -94,6 +95,7 @@ const FrigateManager = function FrigateManager(gladys, mqttLibrary, serviceId, c
 
 FrigateManager.prototype.init = init;
 FrigateManager.prototype.allocatePorts = allocatePorts;
+FrigateManager.prototype.allocateContainerNames = allocateContainerNames;
 FrigateManager.prototype.connect = connect;
 FrigateManager.prototype.disconnect = disconnect;
 FrigateManager.prototype.subscribe = subscribe;

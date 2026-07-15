@@ -1,6 +1,8 @@
 const fse = require('fs-extra');
 const sqlite3 = require('sqlite3');
-const duckdb = require('duckdb');
+const { DuckDBInstance } = require('@duckdb/node-api');
+const path = require('path');
+
 const { promisify } = require('util');
 
 const db = require('../../models');
@@ -42,22 +44,28 @@ async function restoreBackup(sqliteBackupFilePath, duckDbBackupFolderPath) {
   // done!
   logger.info(`SQLite backup restored`);
   if (duckDbBackupFolderPath) {
-    // Closing DuckDB current database
+    // Closing DuckDB current database to release the file handle
     logger.info(`Restoring DuckDB folder ${duckDbBackupFolderPath}`);
-    await new Promise((resolve) => {
-      db.duckDb.close(() => resolve());
-    });
-    // Delete current DuckDB file
+    if (db.duckDb) {
+      db.duckDb.closeSync();
+    }
+    // Delete current DuckDB files
     const duckDbFilePath = `${this.config.storage.replace('.db', '')}.duckdb`;
+    const duckDbWalFilePath = `${this.config.storage.replace('.db', '')}.duckdb.wal`;
     await fse.remove(duckDbFilePath);
-    const duckDb = new duckdb.Database(duckDbFilePath);
-    const duckDbWriteConnection = duckDb.connect();
-    const duckDbWriteConnectionAllAsync = promisify(duckDbWriteConnection.all).bind(duckDbWriteConnection);
-    await duckDbWriteConnectionAllAsync(`IMPORT DATABASE '${duckDbBackupFolderPath}'`);
+    await fse.remove(duckDbWalFilePath);
+    const duckDbInstance = await DuckDBInstance.create(duckDbFilePath);
+    const duckDbWriteConnection = await duckDbInstance.connect();
+    const schemaFilePath = path.join(duckDbBackupFolderPath, 'schema.sql');
+    const schema = await fse.readFile(schemaFilePath, 'utf-8');
+    const schemaCleaned = schema
+      .replace('CREATE SCHEMA information_schema;', '')
+      .replace('CREATE SCHEMA pg_catalog;', '');
+    await fse.writeFile(schemaFilePath, schemaCleaned);
+    await duckDbWriteConnection.run(`IMPORT DATABASE '${duckDbBackupFolderPath}'`);
     logger.info(`DuckDB restored with success`);
-    await new Promise((resolve) => {
-      duckDb.close(() => resolve());
-    });
+    duckDbWriteConnection.disconnectSync();
+    duckDbInstance.closeSync();
   }
 }
 

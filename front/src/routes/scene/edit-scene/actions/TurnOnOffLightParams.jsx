@@ -59,9 +59,9 @@ getOptions = async () => {
   handleChange = selectedOptions => {
     const lights = selectedOptions.map(selectedOption => selectedOption.value);
     if (selectedOptions) {
-      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'device_features', lights);
+      this.props.updateActionProperty(this.props.path, 'device_features', lights);
     } else {
-      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'device_features', []);
+      this.props.updateActionProperty(this.props.path, 'device_features', []);
     }
   };
   refreshSelectedOptions = nextProps => {
@@ -112,10 +112,12 @@ getOptions = async () => {
           value={selectedOptions}
           onChange={this.handleChange}
           options={deviceOptions}
+          className="react-select-container"
+          classNamePrefix="react-select"
         />
       </div>
     );
   }
 }
 
-export default connect('httpClient', {})(TurnOnOffLight);
+export default withIntlAsProp(connect('httpClient', {})(TurnOnOffLight));

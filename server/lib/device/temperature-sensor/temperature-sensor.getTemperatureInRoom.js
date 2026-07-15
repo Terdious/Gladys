@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
 const logger = require('../../../utils/logger');
 const db = require('../../../models');
-const { DEVICE_FEATURE_CATEGORIES, DEVICE_FEATURE_UNITS } = require('../../../utils/constants');
+const { DEVICE_FEATURE_CATEGORIES, DEVICE_FEATURE_UNITS, DEVICE_FEATURE_TYPES } = require('../../../utils/constants');
 const { celsiusToFahrenheit, fahrenheitToCelsius } = require('../../../utils/units');
 
 const DEFAULT_PARAMETERS = {
@@ -36,9 +36,28 @@ async function getTemperatureInRoom(roomId, options) {
     ],
     where: {
       category: DEVICE_FEATURE_CATEGORIES.TEMPERATURE_SENSOR,
+      type: {
+        [Op.or]: [DEVICE_FEATURE_TYPES.SENSOR.DECIMAL, DEVICE_FEATURE_TYPES.TEMPERATURE_SENSOR.AVERAGE],
+      },
       last_value: {
         [Op.not]: null,
       },
+      [Op.or]: [
+        {
+          unit: DEVICE_FEATURE_UNITS.CELSIUS,
+          last_value: {
+            [Op.gt]: -273.15,
+            [Op.lt]: 200,
+          },
+        },
+        {
+          unit: DEVICE_FEATURE_UNITS.FAHRENHEIT,
+          last_value: {
+            [Op.gt]: -459.67,
+            [Op.lt]: 392,
+          },
+        },
+      ],
       last_value_changed: {
         // we want fresh value, less than 1h
         [Op.gt]: oneHourAgo,

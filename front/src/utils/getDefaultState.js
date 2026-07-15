@@ -7,6 +7,7 @@ import { Session } from './Session';
 import { DemoSession } from './DemoSession';
 import { GatewaySession } from './GatewaySession';
 import { GatewayHttpClient } from './GatewayHttpClient';
+import { isDarkModeEnabled } from './darkModePreference';
 
 function getDefaultState() {
   const session = config.gatewayMode ? new GatewaySession() : config.demoMode ? new DemoSession() : new Session();
@@ -31,6 +32,12 @@ function getDefaultState() {
     language = AVAILABLE_LANGUAGES_LIST.includes(navLanguage) ? navLanguage : AVAILABLE_LANGUAGES.EN;
   }
 
+  // Check for dark mode preference
+  let darkMode = false;
+  try {
+    darkMode = isDarkModeEnabled();
+  } catch (e) {}
+
   const state = {
     httpClient,
     session,
@@ -38,7 +45,8 @@ function getDefaultState() {
     user: {
       language
     },
-    showDropDown: false
+    showDropDown: false,
+    darkMode
   };
   return state;
 }

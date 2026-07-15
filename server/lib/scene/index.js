@@ -35,7 +35,7 @@ const SceneManager = function SceneManager(
   http,
   gateway,
   scheduler,
-  brain,
+  _brain,
   service,
 ) {
   this.stateManager = stateManager;
@@ -47,7 +47,6 @@ const SceneManager = function SceneManager(
   this.calendar = calendar;
   this.http = http;
   this.gateway = gateway;
-  this.brain = brain;
   this.service = service;
   this.scenes = {};
   this.timezone = DEFAULT_TIMEZONE;
@@ -58,6 +57,7 @@ const SceneManager = function SceneManager(
   this.sunCalc = sunCalc;
   this.scheduler = scheduler;
   this.jobs = [];
+  this.checkTriggersDurationTimer = new Map();
   this.event.on(EVENTS.TRIGGERS.CHECK, eventFunctionWrapper(this.checkTrigger.bind(this)));
   this.event.on(EVENTS.ACTION.TRIGGERED, eventFunctionWrapper(this.executeSingleAction.bind(this)));
   // on timezone change, reload all scenes

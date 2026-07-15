@@ -1,4 +1,15 @@
-const getApexChartBarOptions = ({ displayAxes, series, colors, locales, defaultLocale }) => {
+import { yAxisFormatter } from './yAxisFormatter';
+
+const getApexChartBarOptions = ({
+  displayAxes,
+  hideLegend,
+  series,
+  colors,
+  locales,
+  defaultLocale,
+  yAxisFormatter: customYAxisFormatter,
+  disableZoom
+}) => {
   const options = {
     chart: {
       locales,
@@ -16,11 +27,14 @@ const getApexChartBarOptions = ({ displayAxes, series, colors, locales, defaultL
       animations: {
         enabled: false
       },
-      stacked: true
+      stacked: true,
+      zoom: {
+        enabled: !disableZoom
+      }
     },
     plotOptions: {
       bar: {
-        columnWidth: '100%'
+        columnWidth: '90%'
       }
     },
     dataLabels: {
@@ -60,18 +74,12 @@ const getApexChartBarOptions = ({ displayAxes, series, colors, locales, defaultL
     yaxis: {
       labels: {
         padding: 4,
-        formatter: function(value) {
-          if (Math.abs(value) < 1) {
-            return value; // For very low values, like crypto prices, use the normal value
-          } else {
-            return value.toFixed(2); // 2 decimal places for other values
-          }
-        }
+        formatter: customYAxisFormatter || yAxisFormatter
       }
     },
     colors,
     legend: {
-      show: displayAxes,
+      show: hideLegend ? false : displayAxes,
       position: 'bottom'
     }
   };

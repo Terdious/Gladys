@@ -46,6 +46,7 @@ const EditDashboard = ({ children, ...props }) => (
                     <div class="card-body">
                       {props.currentDashboard && (
                         <EditBoxColumns
+                          addBoxAtPosition={props.addBoxAtPosition}
                           user={props.user}
                           isTouchDevice={props.isTouchDevice}
                           dashboards={props.dashboards}
@@ -66,6 +67,10 @@ const EditDashboard = ({ children, ...props }) => (
                           savingNewDashboardList={props.savingNewDashboardList}
                           isMobileReordering={props.isMobileReordering}
                           toggleMobileReorder={props.toggleMobileReorder}
+                          deleteCurrentColumn={props.deleteCurrentColumn}
+                          addColumn={props.addColumn}
+                          boxNotEmptyError={props.boxNotEmptyError}
+                          columnBoxNotEmptyError={props.columnBoxNotEmptyError}
                         />
                       )}
                     </div>

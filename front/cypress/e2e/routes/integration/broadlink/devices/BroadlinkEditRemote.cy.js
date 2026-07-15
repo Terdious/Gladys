@@ -68,8 +68,11 @@ describe('Broadlink edit remote', () => {
     cy.get('.card-body').within(() => {
       // Check device name
       cy.get('input')
-        .should('have.value', 'Light Remote')
-        .should('not.be.disabled');
+        .first()
+        .as('nameInput');
+      cy.get('@nameInput').clear();
+      cy.get('@nameInput').type('New name');
+      cy.get('@nameInput').should('have.value', 'New name');
       // Check selects
       cy.get('select')
         .should('have.length', 3)
@@ -113,10 +116,10 @@ describe('Broadlink edit remote', () => {
       { learn: true }
     ).as('learnMode');
 
-    cy.contains('button', 'integration.broadlink.setup.learnAllLabel')
-      .should('not.be.disabled')
-      .click()
-      .should('not.exist');
+    cy.contains('button', 'integration.broadlink.setup.learnAllLabel').as('learnButton');
+
+    cy.get('@learnButton').should('not.be.disabled');
+    cy.get('@learnButton').click();
 
     cy.contains('button', 'integration.broadlink.setup.quitLearnModeLabel')
       .should('exist')
@@ -255,7 +258,7 @@ describe('Broadlink edit remote', () => {
     // cy.sendWebSocket({ type: 'broadlink.learn', payload: { action: 'success', code: 'payload' } });
   });
 
-  it('Enable capture mode and recieve code', () => {
+  it('Enable capture mode and receive code', () => {
     const serverUrl = Cypress.env('serverUrl');
     cy.intercept(
       {

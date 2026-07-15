@@ -2,13 +2,15 @@ const { fake, assert } = require('sinon');
 const EventEmitter = require('events');
 
 const { ACTIONS } = require('../../../../utils/constants');
-const { executeActions } = require('../../../../lib/scene/scene.executeActions');
+const executeActionsFactory = require('../../../../lib/scene/scene.executeActions');
+const actionsFunc = require('../../../../lib/scene/scene.actions');
 
 const StateManager = require('../../../../lib/state');
 
 const event = new EventEmitter();
 
 describe('scene.send-message', () => {
+  const { executeActions } = executeActionsFactory(actionsFunc);
   it('should send message with value injected', async () => {
     const stateManager = new StateManager(event);
     stateManager.setState('deviceFeature', 'my-device-feature', {
@@ -73,5 +75,28 @@ describe('scene.send-message', () => {
       scope,
     );
     assert.calledWith(message.sendToUser, 'pepper', 'Temperature in the living room is 15 °C.');
+  });
+  it('should send message with value injected with encodable value', async () => {
+    const stateManager = new StateManager(event);
+    const message = {
+      sendToUser: fake.resolves(null),
+    };
+    const scope = {
+      0: [{ calendarEvent: { name: "d'aujourd'hui" } }],
+    };
+    await executeActions(
+      { stateManager, event, message },
+      [
+        [
+          {
+            type: ACTIONS.MESSAGE.SEND,
+            user: 'pepper',
+            text: 'Event {{0.0.calendarEvent.name}} starting.',
+          },
+        ],
+      ],
+      scope,
+    );
+    assert.calledWith(message.sendToUser, 'pepper', "Event d'aujourd'hui starting.");
   });
 });

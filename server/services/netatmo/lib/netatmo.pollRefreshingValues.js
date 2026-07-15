@@ -34,7 +34,9 @@ async function refreshNetatmoValues() {
     },
     { concurrency: 2 },
   );
-  await this.saveStatus({ statusType: STATUS.CONNECTED, message: null });
+  if (this.status !== STATUS.RECONNECTING && this.status !== STATUS.DISCONNECTED) {
+    await this.saveStatus({ statusType: STATUS.CONNECTED, message: null });
+  }
 }
 
 /**
@@ -46,7 +48,7 @@ function pollRefreshingValues() {
     try {
       await this.refreshNetatmoValues();
     } catch (error) {
-      logger.error('Error refreshing Netatmo values:', error);
+      logger.error('Error refreshing Netatmo values: ', error);
     }
   }, 120 * 1000);
 }

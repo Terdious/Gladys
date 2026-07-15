@@ -25,7 +25,7 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
       - name: 📦 Install Global NPM Packages
         run: |
-          sudo npm install typescript node-gyp npm@latest -g
+          sudo npm install typescript node-gyp -g
       - name: 📦 Install NPM front packages
         working-directory: ./front
         run: |
@@ -62,7 +62,7 @@ jobs:
           sudo apt-get install -y libudev-dev sqlite3 openssl python-is-python3
       - name: 📦 Install Global NPM Packages
         run: |
-          sudo npm install typescript node-gyp npm@latest -g
+          sudo npm install typescript node-gyp -g
       - name: 📦 Install NPM server packages
         working-directory: ./server
         run: |
@@ -119,6 +119,8 @@ jobs:
           install: false
           start: npm run start:cypress
           wait-on: 'http://localhost:1444'
+          # The front is now built (Vite) before being served: leave enough time
+          wait-on-timeout: 300
           config-file: ./front/cypress/cypress.config.js
           project: ./front
           command: npm run cypress:run
@@ -142,13 +144,9 @@ jobs:
       - name: 🏗️ Build front
         working-directory: ./front
         run: |
-          npm run build-with-stats
-      - name: ↗️ Upload webpack stats artifact
-        uses: relative-ci/agent-upload-artifact-action@v1
-        with:
-          webpackStatsFile: ./front/stats.json
+          npm run build
       - name: ↗️ Upload build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: static
           path: front/build
@@ -168,7 +166,7 @@ jobs:
         with:
           version: latest
       - name: ↙️ Download build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: static
           path: static

@@ -28,6 +28,8 @@ async function handleMqttMessage(topic, message) {
 
       devices
         // Remove Coordinator
+        .filter((d) => d.type !== 'Coordinator')
+        // Keep only supported devices from zigbee2mqtt library
         .filter((d) => d.supported)
         .forEach((device) => {
           this.discoveredDevices[device.friendly_name] = device;
@@ -54,7 +56,8 @@ async function handleMqttMessage(topic, message) {
     }
     case 'zigbee2mqtt/bridge/response/permit_join': {
       const config = JSON.parse(message);
-      this.z2mPermitJoin = config.data.value;
+      // If time is 0, permit join is disabled
+      this.z2mPermitJoin = config.data.time !== undefined && config.data.time > 0;
 
       logger.debug('Getting permit_joint :', this.z2mPermitJoin);
 
@@ -74,6 +77,20 @@ async function handleMqttMessage(topic, message) {
         type: WEBSOCKET_MESSAGE_TYPES.ZIGBEE2MQTT.PERMIT_JOIN,
         payload: this.z2mPermitJoin,
       });
+      break;
+    }
+    case 'zigbee2mqtt/bridge/info': {
+      const info = JSON.parse(message);
+      const { coordinator } = info;
+      if (coordinator && coordinator.meta) {
+        this.coordinatorFirmware = {
+          ...coordinator.meta,
+          type: coordinator.type,
+        };
+      } else {
+        this.coordinatorFirmware = null;
+      }
+      this.emitStatusEvent();
       break;
     }
     case 'zigbee2mqtt/bridge/response/backup': {

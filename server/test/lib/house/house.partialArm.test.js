@@ -13,7 +13,10 @@ const event = {
 };
 
 describe('house.partialArm', () => {
-  const house = new House(event);
+  const session = {
+    setTabletModeLocked: fake.resolves(null),
+  };
+  const house = new House(event, {}, session);
   afterEach(() => {
     sinon.reset();
   });
@@ -45,5 +48,36 @@ describe('house.partialArm', () => {
     await house.partialArm('test-house');
     const promise = house.partialArm('test-house');
     return assertChai.isRejected(promise, 'House is already partially armed');
+  });
+  it('should call setTabletModeLocked when alarm_code is set', async () => {
+    const sessionMock = {
+      setTabletModeLocked: fake.resolves(null),
+    };
+    const houseInstance = new House(event, {}, sessionMock);
+    // Set alarm_code on the house
+    await houseInstance.update('test-house', {
+      alarm_code: '1234',
+      alarm_mode: 'disarmed',
+    });
+
+    await houseInstance.partialArm('test-house');
+
+    assert.calledOnce(sessionMock.setTabletModeLocked);
+    assert.calledWith(sessionMock.setTabletModeLocked, 'a741dfa6-24de-4b46-afc7-370772f068d5');
+  });
+  it('should not call setTabletModeLocked when alarm_code is null', async () => {
+    const sessionMock = {
+      setTabletModeLocked: fake.resolves(null),
+    };
+    const houseInstance = new House(event, {}, sessionMock);
+    // Ensure alarm_code is null
+    await houseInstance.update('test-house', {
+      alarm_code: null,
+      alarm_mode: 'disarmed',
+    });
+
+    await houseInstance.partialArm('test-house');
+
+    assert.notCalled(sessionMock.setTabletModeLocked);
   });
 });

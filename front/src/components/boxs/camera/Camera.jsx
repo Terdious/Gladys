@@ -8,6 +8,7 @@ import config from '../../../config';
 import { WEBSOCKET_MESSAGE_TYPES } from '../../../../../server/utils/constants';
 import get from 'get-value';
 import style from './style.css';
+import GladysPlusUpsellCard from '../../gateway/GladysPlusUpsellCard';
 
 const SEGMENT_DURATIONS_PER_LATENCY = {
   'ultra-low': 1,
@@ -29,6 +30,16 @@ class CameraBoxComponent extends Component {
     } catch (e) {
       console.error(e);
       this.setState({ error: true });
+    }
+  };
+
+  handleWebsocketConnected = ({ connected }) => {
+    // When the websocket is disconnected, we refresh the data when the websocket is reconnected
+    if (!connected) {
+      this.wasDisconnected = true;
+    } else if (this.wasDisconnected) {
+      this.refreshData();
+      this.wasDisconnected = false;
     }
   };
 
@@ -227,6 +238,7 @@ class CameraBoxComponent extends Component {
       WEBSOCKET_MESSAGE_TYPES.DEVICE.NEW_STRING_STATE,
       this.updateDeviceStateWebsocket
     );
+    this.props.session.dispatcher.addListener('websocket.connected', this.handleWebsocketConnected);
   }
 
   componentDidUpdate(previousProps) {
@@ -245,6 +257,7 @@ class CameraBoxComponent extends Component {
     if (this.state.streaming) {
       this.stopStreaming();
     }
+    this.props.session.dispatcher.removeListener('websocket.connected', this.handleWebsocketConnected);
   }
 
   render(
@@ -313,13 +326,14 @@ class CameraBoxComponent extends Component {
           </div>
         )}
         {upgradeGladysPlusPlanRequired && (
-          <div>
-            <p class="alert alert-warning">
-              <i class="fe fe-bell" />
-              <span class="pl-2">
-                <Text id="dashboard.boxes.camera.upgradeGladysPlusPlanError" />
-              </span>
-            </p>
+          <div class="p-2">
+            <GladysPlusUpsellCard
+              variant="upgrade"
+              icon="fe-video"
+              utmCampaign="dashboard_camera_upgrade"
+              titleKey="gladysPlusUpsell.camera.upgradeTitle"
+              descriptionKey="gladysPlusUpsell.camera.upgradeDescription"
+            />
           </div>
         )}
         {liveNotSupportedBrowser && (

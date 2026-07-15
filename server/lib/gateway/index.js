@@ -11,6 +11,7 @@ const { forwardDeviceStateToGoogleHome } = require('./gateway.forwardDeviceState
 const { checkIfBackupNeeded } = require('./gateway.checkIfBackupNeeded');
 const { handleGoogleHomeMessage } = require('./gateway.handleGoogleHomeMessage');
 const { handleAlexaMessage } = require('./gateway.handleAlexaMessage');
+const { handleMCPMessage } = require('./gateway.handleMCPMessage');
 const { handleNewMessage } = require('./gateway.handleNewMessage');
 const { login } = require('./gateway.login');
 const { loginTwoFactor } = require('./gateway.loginTwoFactor');
@@ -28,9 +29,19 @@ const { restoreBackupEvent } = require('./gateway.restoreBackupEvent');
 const { saveUsersKeys } = require('./gateway.saveUsersKeys');
 const { refreshUserKeys } = require('./gateway.refreshUserKeys');
 const { getEcowattSignals } = require('./gateway.getEcowattSignals');
-const { openAIAsk } = require('./gateway.openAIAsk');
+const { getEdfTempo } = require('./gateway.getEdfTempo');
+const { getEdfTempoHistorical } = require('./gateway.getEdfTempoHistorical');
 const { getTTSApiUrl } = require('./gateway.getTTSApiUrl');
-const { forwardMessageToOpenAI } = require('./gateway.forwardMessageToOpenAI');
+const { stt } = require('./gateway.stt');
+const { processVoiceMessage } = require('./gateway.processVoiceMessage');
+const { aiChat } = require('./gateway.aiChat');
+const { getOpenAIQuota } = require('./gateway.getOpenAIQuota');
+const { getAiChatModels } = require('./gateway.getAiChatModels');
+const { forwardMessageToAiChat } = require('./gateway.forwardMessageToAiChat');
+const { getAiChatDebugContext } = require('./gateway.getAiChatDebugContext');
+const { buildWeeklyDigestData } = require('./gateway.buildWeeklyDigestData');
+const { sendWeeklyDigest } = require('./gateway.sendWeeklyDigest');
+const { scheduleWeeklyDigest } = require('./gateway.scheduleWeeklyDigest');
 
 // Enedis API
 const { enedisGetConsumptionLoadCurve } = require('./enedis/gateway.enedisGetConsumptionLoadCurve');
@@ -50,6 +61,7 @@ const Gateway = function Gateway(
   scheduler,
   message,
   brain,
+  device = null,
 ) {
   this.variable = variable;
   this.event = event;
@@ -63,6 +75,8 @@ const Gateway = function Gateway(
   this.job = job;
   this.message = message;
   this.brain = brain;
+  this.device = device;
+  this.scene = null;
   this.connected = false;
   this.restoreInProgress = false;
   this.usersKeys = [];
@@ -81,6 +95,7 @@ const Gateway = function Gateway(
     logger,
   });
   this.backup = this.job.wrapper(JOB_TYPES.GLADYS_GATEWAY_BACKUP, this.backup.bind(this));
+  this.sendWeeklyDigest = this.job.wrapper(JOB_TYPES.AI_WEEKLY_DIGEST, this.sendWeeklyDigest.bind(this));
 
   this.event.on(EVENTS.GATEWAY.CREATE_BACKUP, eventFunctionWrapper(this.backup.bind(this)));
   this.event.on(EVENTS.GATEWAY.CHECK_IF_BACKUP_NEEDED, eventFunctionWrapper(this.checkIfBackupNeeded.bind(this)));
@@ -91,13 +106,15 @@ const Gateway = function Gateway(
   this.event.on(EVENTS.GATEWAY.USER_KEYS_CHANGED, eventFunctionWrapper(this.refreshUserKeys.bind(this)));
   this.event.on(EVENTS.TRIGGERS.CHECK, eventFunctionWrapper(this.forwardDeviceStateToGoogleHome.bind(this)));
   this.event.on(EVENTS.TRIGGERS.CHECK, eventFunctionWrapper(this.forwardDeviceStateToAlexa.bind(this)));
-  this.event.on(EVENTS.MESSAGE.NEW_FOR_OPEN_AI, eventFunctionWrapper(this.forwardMessageToOpenAI.bind(this)));
+  this.event.on(EVENTS.MESSAGE.NEW_FOR_OPEN_AI, eventFunctionWrapper(this.forwardMessageToAiChat.bind(this)));
+  this.event.on(EVENTS.GATEWAY.SEND_WEEKLY_DIGEST, eventFunctionWrapper(this.sendWeeklyDigest.bind(this)));
 };
 
 Gateway.prototype.backup = backup;
 Gateway.prototype.checkIfBackupNeeded = checkIfBackupNeeded;
 Gateway.prototype.handleGoogleHomeMessage = handleGoogleHomeMessage;
 Gateway.prototype.handleAlexaMessage = handleAlexaMessage;
+Gateway.prototype.handleMCPMessage = handleMCPMessage;
 Gateway.prototype.forwardDeviceStateToAlexa = forwardDeviceStateToAlexa;
 Gateway.prototype.forwardDeviceStateToGoogleHome = forwardDeviceStateToGoogleHome;
 Gateway.prototype.handleNewMessage = handleNewMessage;
@@ -117,8 +134,16 @@ Gateway.prototype.restoreBackupEvent = restoreBackupEvent;
 Gateway.prototype.saveUsersKeys = saveUsersKeys;
 Gateway.prototype.refreshUserKeys = refreshUserKeys;
 Gateway.prototype.getEcowattSignals = getEcowattSignals;
-Gateway.prototype.openAIAsk = openAIAsk;
-Gateway.prototype.forwardMessageToOpenAI = forwardMessageToOpenAI;
+Gateway.prototype.getEdfTempo = getEdfTempo;
+Gateway.prototype.getEdfTempoHistorical = getEdfTempoHistorical;
+Gateway.prototype.aiChat = aiChat;
+Gateway.prototype.getOpenAIQuota = getOpenAIQuota;
+Gateway.prototype.getAiChatModels = getAiChatModels;
+Gateway.prototype.forwardMessageToAiChat = forwardMessageToAiChat;
+Gateway.prototype.getAiChatDebugContext = getAiChatDebugContext;
+Gateway.prototype.buildWeeklyDigestData = buildWeeklyDigestData;
+Gateway.prototype.sendWeeklyDigest = sendWeeklyDigest;
+Gateway.prototype.scheduleWeeklyDigest = scheduleWeeklyDigest;
 
 // Enedis API
 Gateway.prototype.enedisGetConsumptionLoadCurve = enedisGetConsumptionLoadCurve;
@@ -127,5 +152,9 @@ Gateway.prototype.enedisGetDailyConsumptionMaxPower = enedisGetDailyConsumptionM
 
 // TTS API
 Gateway.prototype.getTTSApiUrl = getTTSApiUrl;
+
+// STT API
+Gateway.prototype.stt = stt;
+Gateway.prototype.processVoiceMessage = processVoiceMessage;
 
 module.exports = Gateway;

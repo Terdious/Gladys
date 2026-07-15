@@ -20,6 +20,19 @@ describe('message.sendToUser', () => {
     expect(message).to.have.property('id');
     expect(message).to.have.property('text', 'coucou');
   });
+  it('should persist notification message type', async () => {
+    const event = new EventEmitter();
+    const stateManager = new StateManager();
+    const service = {
+      getService: () => null,
+    };
+    const messageHandler = new MessageHandler(event, {}, service, stateManager);
+    stateManager.setState('user', 'test-user', {
+      id: '0cd30aef-9c4e-4a23-88e3-3547971296e5',
+    });
+    const message = await messageHandler.sendToUser('test-user', 'digest', null, { messageType: 'notification' });
+    expect(message).to.have.property('message_type', 'notification');
+  });
   it('should send message to and send telegram message', async () => {
     const event = new EventEmitter();
     const stateManager = new StateManager();
@@ -39,6 +52,33 @@ describe('message.sendToUser', () => {
     stateManager.setState('user', 'test-user', {
       id: '0cd30aef-9c4e-4a23-88e3-3547971296e5',
       telegram_user_id: 'one-id',
+    });
+    const message = await messageHandler.sendToUser('test-user', 'coucou');
+    expect(message).to.have.property('id');
+    expect(message).to.have.property('text', 'coucou');
+    assert.calledOnce(send);
+  });
+  it('should send message and send callmebot message', async () => {
+    const event = new EventEmitter();
+    const stateManager = new StateManager();
+    const send = fake.resolves(true);
+    const service = {
+      getService: stub()
+        .onFirstCall()
+        .returns(null)
+        .onSecondCall()
+        .returns(null)
+        .onThirdCall()
+        .returns({
+          message: {
+            send,
+          },
+        }),
+    };
+    const variable = {};
+    const messageHandler = new MessageHandler(event, {}, service, stateManager, variable);
+    stateManager.setState('user', 'test-user', {
+      id: '0cd30aef-9c4e-4a23-88e3-3547971296e5',
     });
     const message = await messageHandler.sendToUser('test-user', 'coucou');
     expect(message).to.have.property('id');

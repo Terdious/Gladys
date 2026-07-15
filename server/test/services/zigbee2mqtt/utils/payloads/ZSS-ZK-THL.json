@@ -22,7 +22,8 @@
           "label": "Illuminance",
           "name": "illuminance",
           "property": "illuminance",
-          "type": "numeric"
+          "type": "numeric",
+          "unit": "lx"
         },
         {
           "access": 1,
@@ -155,6 +156,7 @@
   },
   "gladysDevice": {
     "name": "0xe0798dfffedeae2b",
+    "ieee_address": "0xe0798dfffedeae2b",
     "model": "ZSS-ZK-THL",
     "external_id": "zigbee2mqtt:0xe0798dfffedeae2b",
     "features": [
@@ -178,7 +180,7 @@
         "max": 100000,
         "category": "light-sensor",
         "type": "decimal",
-        "unit": null,
+        "unit": "lux",
         "external_id": "zigbee2mqtt:0xe0798dfffedeae2b:light-sensor:decimal:illuminance",
         "selector": "zigbee2mqtt-0xe0798dfffedeae2b-light-sensor-decimal-illuminance"
       },

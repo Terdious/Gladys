@@ -12,18 +12,21 @@ const {
   roundDependencies,
   smallerDependencies,
   smallerEqDependencies,
+  randomDependencies,
 } = require('mathjs');
 const set = require('set-value');
 const get = require('get-value');
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 const timezone = require('dayjs/plugin/timezone');
+
 const { ACTIONS, DEVICE_FEATURE_CATEGORIES, DEVICE_FEATURE_TYPES, ALARM_MODES } = require('../../utils/constants');
 const { getDeviceFeature } = require('../../utils/device');
 const { AbortScene } = require('../../utils/coreErrors');
 const { compare } = require('../../utils/compare');
 const { parseJsonIfJson } = require('../../utils/json');
 const logger = require('../../utils/logger');
+const executeActionsFactory = require('./scene.executeActions');
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -38,10 +41,11 @@ const { evaluate } = create({
   modDependencies,
   smallerEqDependencies,
   roundDependencies,
+  randomDependencies,
 });
 
 const actionsFunc = {
-  [ACTIONS.DEVICE.SET_VALUE]: async (self, action, scope, columnIndex, rowIndex) => {
+  [ACTIONS.DEVICE.SET_VALUE]: async (self, action, scope) => {
     let device;
     let deviceFeature;
     if (action.device_feature) {
@@ -54,7 +58,11 @@ const actionsFunc = {
 
     let { value } = action;
     if (action.evaluate_value !== undefined) {
-      value = evaluate(Handlebars.compile(action.evaluate_value)(scope).replace(/\s/g, ''));
+      value = evaluate(
+        Handlebars.compile(action.evaluate_value, {
+          noEscape: true,
+        })(scope).replace(/\s/g, ''),
+      );
     }
 
     if (Number.isNaN(Number(value))) {
@@ -260,27 +268,56 @@ const actionsFunc = {
       }
     });
   },
-  [ACTIONS.TIME.DELAY]: async (self, action, scope) =>
-    new Promise((resolve) => {
-      let timeToWaitMilliseconds;
-      switch (action.unit) {
-        case 'milliseconds':
-          timeToWaitMilliseconds = action.value;
-          break;
-        case 'seconds':
-          timeToWaitMilliseconds = action.value * 1000;
-          break;
-        case 'minutes':
-          timeToWaitMilliseconds = action.value * 1000 * 60;
-          break;
-        case 'hours':
-          timeToWaitMilliseconds = action.value * 1000 * 60 * 60;
-          break;
-        default:
-          throw new Error(`Unit ${action.unit} not recognized`);
+  [ACTIONS.TIME.DELAY]: async (self, action, scope) => {
+    let { value } = action;
+
+    // If the value should be calculated from a formula
+    if (action.evaluate_value !== undefined) {
+      try {
+        value = evaluate(
+          Handlebars.compile(action.evaluate_value, {
+            noEscape: true,
+          })(scope).replace(/\s/g, ''),
+        );
+      } catch (e) {
+        logger.warn(`Delay: Error evaluating value: ${action.evaluate_value}`);
+        logger.warn(e);
+        throw new AbortScene('ACTION_VALUE_NOT_A_NUMBER');
       }
-      setTimeout(resolve, timeToWaitMilliseconds);
-    }),
+    }
+
+    if (Number.isNaN(Number(value))) {
+      logger.warn(`Delay: Value is not a number: ${value}`);
+      throw new AbortScene('ACTION_VALUE_NOT_A_NUMBER');
+    }
+
+    // We convert the value to a number
+    const valueInNumber = Number(value);
+
+    let timeToWaitMilliseconds;
+
+    switch (action.unit) {
+      case 'milliseconds':
+        timeToWaitMilliseconds = Math.round(valueInNumber);
+        break;
+      case 'seconds':
+        timeToWaitMilliseconds = Math.round(valueInNumber * 1000);
+        break;
+      case 'minutes':
+        timeToWaitMilliseconds = Math.round(valueInNumber * 1000 * 60);
+        break;
+      case 'hours':
+        timeToWaitMilliseconds = Math.round(valueInNumber * 1000 * 60 * 60);
+        break;
+      default:
+        throw new AbortScene(`Unit ${action.unit} not recognized`);
+    }
+
+    logger.debug(`Delay: Wait ${timeToWaitMilliseconds} milliseconds.`);
+
+    await Promise.delay(timeToWaitMilliseconds);
+  },
+
   [ACTIONS.SCENE.START]: async (self, action, scope) => {
     if (scope.alreadyExecutedScenes && scope.alreadyExecutedScenes.has(action.scene)) {
       logger.info(
@@ -293,34 +330,64 @@ const actionsFunc = {
     self.execute(action.scene, cloneDeep(scope));
   },
   [ACTIONS.MESSAGE.SEND]: async (self, action, scope) => {
-    const textWithVariables = Handlebars.compile(action.text)(scope);
+    const textWithVariables = Handlebars.compile(action.text, {
+      noEscape: true,
+    })(scope);
     await self.message.sendToUser(action.user, textWithVariables);
   },
   [ACTIONS.MESSAGE.SEND_CAMERA]: async (self, action, scope) => {
-    const textWithVariables = Handlebars.compile(action.text)(scope);
+    const textWithVariables = Handlebars.compile(action.text, {
+      noEscape: true,
+    })(scope);
     const image = await self.device.camera.getLiveImage(action.camera);
     await self.message.sendToUser(action.user, textWithVariables, image);
   },
-  [ACTIONS.DEVICE.GET_VALUE]: async (self, action, scope, columnIndex, rowIndex) => {
-    const deviceFeature = self.stateManager.get('deviceFeature', action.device_feature);
-    set(
-      scope,
-      `${columnIndex}`,
-      {
-        [rowIndex]: cloneDeep(deviceFeature),
+  [ACTIONS.AI.ASK]: async (self, action, scope, path) => {
+    const textWithVariables = Handlebars.compile(action.text, {
+      noEscape: true,
+    })(scope);
+    let image;
+    if (action.camera) {
+      image = await self.device.camera.getLiveImage(action.camera);
+      image = `data:${image}`;
+    }
+    const user = self.stateManager.get('user', action.user);
+    const message = {
+      source: 'AI',
+      user: {
+        id: user.id,
+        language: user.language,
+        selector: user.selector,
       },
-      { merge: true },
-    );
+      language: user.language,
+      text: textWithVariables,
+    };
+    const { answer } = await self.gateway.forwardMessageToAiChat({
+      message,
+      image,
+      context: {},
+    });
+    set(scope, path, { answer }, { merge: true });
+  },
+  [ACTIONS.DEVICE.GET_VALUE]: async (self, action, scope, path) => {
+    const deviceFeature = self.stateManager.get('deviceFeature', action.device_feature);
+    set(scope, path, cloneDeep(deviceFeature), { merge: true });
   },
   [ACTIONS.CONDITION.ONLY_CONTINUE_IF]: async (self, action, scope) => {
     let oneConditionVerified = false;
     action.conditions.forEach((condition) => {
       let { value } = condition;
       if (condition.evaluate_value !== undefined) {
-        value = evaluate(Handlebars.compile(condition.evaluate_value)(scope).replace(/\s/g, ''));
+        value = evaluate(
+          Handlebars.compile(condition.evaluate_value, {
+            noEscape: true,
+          })(scope).replace(/\s/g, ''),
+        );
       }
 
-      if (Number.isNaN(Number(value))) {
+      // For numeric comparison operators (>, >=, <, <=), value must be a number
+      const numericOperators = ['>', '>=', '<', '<='];
+      if (numericOperators.includes(condition.operator) && Number.isNaN(Number(value))) {
         throw new AbortScene('CONDITION_VALUE_NOT_A_NUMBER');
       }
 
@@ -423,32 +490,33 @@ const actionsFunc = {
   [ACTIONS.USER.SET_OUT_OF_HOME]: async (self, action) => {
     await self.house.userLeft(action.house, action.user);
   },
-  [ACTIONS.HTTP.REQUEST]: async (self, action, scope, columnIndex, rowIndex) => {
+  [ACTIONS.HTTP.REQUEST]: async (self, action, scope, path) => {
     const headersObject = {};
     action.headers.forEach((header) => {
       if (header.key && header.value) {
-        headersObject[header.key] = Handlebars.compile(header.value)(scope);
+        headersObject[header.key] = Handlebars.compile(header.value, {
+          noEscape: true,
+        })(scope);
       }
     });
-    const urlWithVariables = Handlebars.compile(action.url)(scope);
+    const urlWithVariables = Handlebars.compile(action.url, {
+      noEscape: true,
+    })(scope);
     // body can be empty
-    const bodyWithVariables = action.body ? Handlebars.compile(action.body)(scope) : undefined;
+    const bodyWithVariables = action.body
+      ? Handlebars.compile(action.body, {
+          noEscape: true,
+        })(scope)
+      : undefined;
     const response = await self.http.request(
       action.method,
       urlWithVariables,
       parseJsonIfJson(bodyWithVariables),
       headersObject,
     );
-    set(
-      scope,
-      `${columnIndex}`,
-      {
-        [rowIndex]: response,
-      },
-      { merge: true },
-    );
+    set(scope, path, response, { merge: true });
   },
-  [ACTIONS.USER.CHECK_PRESENCE]: async (self, action, scope, columnIndex, rowIndex) => {
+  [ACTIONS.USER.CHECK_PRESENCE]: async (self, action) => {
     let deviceSeenRecently = false;
     // we want to see if a device was seen before now - XX minutes
     const thresholdDate = new Date(Date.now() - action.minutes * 60 * 1000);
@@ -470,7 +538,7 @@ const actionsFunc = {
       await self.house.userLeft(action.house, action.user);
     }
   },
-  [ACTIONS.CALENDAR.IS_EVENT_RUNNING]: async (self, action, scope, columnIndex, rowIndex) => {
+  [ACTIONS.CALENDAR.IS_EVENT_RUNNING]: async (self, action, scope, path) => {
     // find if one event match the condition
     const events = await self.calendar.findCurrentlyRunningEvent(
       action.calendars,
@@ -506,11 +574,9 @@ const actionsFunc = {
       };
       set(
         scope,
-        `${columnIndex}`,
+        path,
         {
-          [rowIndex]: {
-            calendarEvent: eventFormatted,
-          },
+          calendarEvent: eventFormatted,
         },
         { merge: true },
       );
@@ -593,8 +659,20 @@ const actionsFunc = {
     const mqttService = self.service.getService('mqtt');
 
     if (mqttService) {
-      const messageWithVariables = Handlebars.compile(action.message)(scope);
+      const messageWithVariables = Handlebars.compile(action.message, {
+        noEscape: true,
+      })(scope);
       mqttService.device.publish(action.topic, messageWithVariables);
+    }
+  },
+  [ACTIONS.ZIGBEE2MQTT.SEND]: (self, action, scope) => {
+    const zigbee2mqttService = self.service.getService('zigbee2mqtt');
+
+    if (zigbee2mqttService) {
+      const messageWithVariables = Handlebars.compile(action.message, {
+        noEscape: true,
+      })(scope);
+      zigbee2mqttService.device.publish(action.topic, messageWithVariables);
     }
   },
   [ACTIONS.MUSIC.PLAY_NOTIFICATION]: async (self, action, scope) => {
@@ -606,14 +684,43 @@ const actionsFunc = {
       DEVICE_FEATURE_TYPES.MUSIC.PLAY_NOTIFICATION,
     );
     // replace variable in text
-    const messageWithVariables = Handlebars.compile(action.text)(scope);
+    const messageWithVariables = Handlebars.compile(action.text, { noEscape: true })(scope);
     // Get TTS URL
     const { url } = await self.gateway.getTTSApiUrl({ text: messageWithVariables });
     // Play TTS Notification on device
-    await self.device.setValue(device, deviceFeature, url);
+    await self.device.setValue(device, deviceFeature, url, { volume: action.volume });
+  },
+  [ACTIONS.SMS.SEND]: async (self, action, scope) => {
+    const freeMobileService = self.service.getService('free-mobile');
+
+    if (freeMobileService) {
+      const textWithVariables = Handlebars.compile(action.text, { noEscape: true })(scope);
+      freeMobileService.sms.send(textWithVariables);
+    }
+  },
+  [ACTIONS.CONDITION.IF_THEN_ELSE]: async (self, action, scope, path) => {
+    const { if: ifActions, then: thenActions, else: elseActions } = action;
+    const { executeActions } = executeActionsFactory(actionsFunc);
+
+    // verify the conditions
+    let conditionsVerified;
+    try {
+      await executeActions(self, [ifActions], scope, `${path}.if`, { throwUnknownError: true });
+      conditionsVerified = true;
+    } catch (e) {
+      if (e instanceof AbortScene) {
+        conditionsVerified = false;
+      } else {
+        throw e;
+      }
+    }
+    // Execute the correct branch of actions
+    if (conditionsVerified) {
+      await executeActions(self, thenActions, scope, `${path}.then`);
+    } else {
+      await executeActions(self, elseActions, scope, `${path}.else`);
+    }
   },
 };
 
-module.exports = {
-  actionsFunc,
-};
+module.exports = actionsFunc;

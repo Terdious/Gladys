@@ -4,6 +4,7 @@ import createStore from 'unistore';
 import get from 'get-value';
 import config from '../config';
 import { Provider, connect } from 'unistore/preact';
+import AsyncRoute from 'preact-async-route';
 import { IntlProvider } from 'preact-i18n';
 import translations from '../config/i18n';
 import actions from '../actions/main';
@@ -46,6 +47,7 @@ import NewDashboard from '../routes/dashboard/new-dashboard';
 import EditDashboard from '../routes/dashboard/edit-dashboard';
 
 import IntegrationPage from '../routes/integration';
+import HistoryPage from '../routes/history';
 import ChatPage from '../routes/chat';
 import MapPage from '../routes/map';
 import MapNewAreaPage from '../routes/map/NewArea';
@@ -86,9 +88,7 @@ import RtspCameraPage from '../routes/integration/all/rtsp-camera';
 import XiaomiPage from '../routes/integration/all/xiaomi';
 import EditXiaomiPage from '../routes/integration/all/xiaomi/edit-page';
 import NextcloudTalkPage from '../routes/integration/all/nextcloud-talk';
-
-// Deprecated integration
-import ZwaveNodePage from '../routes/integration/all/zwave/node-page';
+import MCPPage from '../routes/integration/all/mcp';
 
 // Broadlink integration
 import BroadlinkDevicePage from '../routes/integration/all/broadlink/device-page';
@@ -131,7 +131,13 @@ import EweLinkEditPage from '../routes/integration/all/ewelink/edit-page';
 import EweLinkDiscoverPage from '../routes/integration/all/ewelink/discover-page';
 import EweLinkSetupPage from '../routes/integration/all/ewelink/setup-page';
 
-// OpenAI integration
+// Nuki
+import NukiPage from '../routes/integration/all/nuki';
+import NukiSetupPage from '../routes/integration/all/nuki/setup-page';
+import NukiMqttDiscoverPage from '../routes/integration/all/nuki/discover-mqtt';
+import NukiHttpDiscoverPage from '../routes/integration/all/nuki/discover-http';
+
+// AI integration
 import OpenAIPage from '../routes/integration/all/openai/index';
 
 // Tuya integration
@@ -153,10 +159,19 @@ import SonosDiscoveryPage from '../routes/integration/all/sonos/discover-page';
 import GoogleCastDevicePage from '../routes/integration/all/google-cast/device-page';
 import GoogleCastDiscoveryPage from '../routes/integration/all/google-cast/discover-page';
 
+// Airplay integration
+import AirplayDevicePage from '../routes/integration/all/airplay/device-page';
+import AirplayDiscoveryPage from '../routes/integration/all/airplay/discover-page';
+
 // ZWaveJS-UI integration
 import ZwaveJSUIDevicePage from '../routes/integration/all/zwavejs-ui/device-page';
 import ZwaveJSUIDiscoveryPage from '../routes/integration/all/zwavejs-ui/discover-page';
 import ZwaveJSUISetupPage from '../routes/integration/all/zwavejs-ui/setup-page';
+
+// Matter integration
+import MatterDevices from '../routes/integration/all/matter/MatterDevices';
+import MatterDiscoverPage from '../routes/integration/all/matter/MatterDiscoverPage';
+import MatterSettingsPage from '../routes/integration/all/matter/MatterSettingsPage';
 
 // MELCloud integration
 import MELCloudPage from '../routes/integration/all/melcloud/device-page';
@@ -169,9 +184,25 @@ import NodeRedPage from '../routes/integration/all/node-red/setup-page';
 
 import { USER_ROLE } from '../../../server/utils/constants';
 
+// Matterbridge integration
+import MatterbridgePage from '../routes/integration/all/matterbridge/setup-page';
+
+// Free Mobile integration
+import FreeMobilePage from '../routes/integration/all/free-mobile';
+// CallMeBot integration
+import CallMeBotPage from '../routes/integration/all/callmebot/setup-page';
+
+// Energy Monitoring integration
+import EnergyMonitoringIntegration from '../routes/integration/all/energy-monitoring/index';
+
 const defaultState = getDefaultState();
 const store = createStore(defaultState);
 
+const SafeAsyncRoute = props => (
+  <div class="async-route-wrapper">
+    <AsyncRoute {...props} loading={() => <div class="loading-placeholder" />} />
+  </div>
+);
 
 const AppRouter = connect(
   'currentUrl,user,profilePicture,showDropDown,showCollapsedMenu,fullScreen',
@@ -186,14 +217,12 @@ const AppRouter = connect(
         profilePicture={props.profilePicture}
         toggleDropDown={props.toggleDropDown}
         showDropDown={props.showDropDown}
+        closeDropDown={props.closeDropDown}
         toggleCollapsedMenu={props.toggleCollapsedMenu}
         showCollapsedMenu={props.showCollapsedMenu}
         logout={props.logout}
       />
       <Router onChange={props.handleRoute}>
-        {console.log('Current URL:', props.currentUrl)}
-        {console.log('Gateway Mode:', config.gatewayMode)}
-        {/* {console.log('Router Rendering for Admins:', props.user ? props.user.role : 'undefined')} */}
         <Redirect path="/" to="/dashboard" />
         {/** ROUTE WHICH ARE DIFFERENT IN GATEWAY MODE */}
         {config.gatewayMode ? <LoginGateway path="/login" /> : <Login path="/login" />}
@@ -208,38 +237,33 @@ const AppRouter = connect(
           <ResetPassword path="/reset-password" />
         )}
         <Locked path="/locked" />
-        {config.gatewayMode ? <LinkGatewayUser path="/link-gateway-user" /> : <Error type="404" default />}
-        {config.gatewayMode ? <SignupGateway path="/signup-gateway" /> : <Error type="404" default />}
-        {config.gatewayMode ? (
-          <ConfigureTwoFactorGateway path="/gateway-configure-two-factor" />
-        ) : (
-          <Error type="404" default />
-        )}
-        {config.gatewayMode ? <GatewayConfirmEmail path="/confirm-email" /> : <Error type="404" default />}
-        {config.gatewayMode ? <SettingsBilling path="/dashboard/settings/billing" /> : <Error type="404" default />}
-        {config.gatewayMode ? (
-          <SettingsGatewayUsers path="/dashboard/settings/gateway-users" />
-        ) : (
-          <Error type="404" default />
-        )}
-        {config.gatewayMode ? (
-          <SettingsGatewayOpenApi path="/dashboard/settings/gateway-open-api" />
-        ) : (
-          <Error type="404" default />
-        )}
+        {config.gatewayMode && <LinkGatewayUser path="/link-gateway-user" />}
+        {config.gatewayMode && <SignupGateway path="/signup-gateway" />}
+        {config.gatewayMode && <ConfigureTwoFactorGateway path="/gateway-configure-two-factor" />}
+        {config.gatewayMode && <GatewayConfirmEmail path="/confirm-email" />}
+        {config.gatewayMode && <SettingsBilling path="/dashboard/settings/billing" />}
+        {config.gatewayMode && <SettingsGatewayUsers path="/dashboard/settings/gateway-users" />}
+        {config.gatewayMode && <SettingsGatewayOpenApi path="/dashboard/settings/gateway-open-api" />}
 
-        {!config.gatewayMode ? <SignupWelcomePage path="/signup" /> : <Error type="404" default />}
+        {!config.gatewayMode && <SignupWelcomePage path="/signup" />}
+        {/** END OF ROUTES WHICH ARE DIFFERENT IN GATEWAY MODE */}
         <SignupCreateAccountLocal path="/signup/create-account-local" />
         <SignupCreateAccountGladysGateway path="/signup/create-account-gladys-gateway" />
         <SignupPreferences path="/signup/preference" />
         <SignupConfigureHouse path="/signup/configure-house" />
         <SignupSuccess path="/signup/success" />
-        <Dashboard path="/dashboard" />
-        <Dashboard path="/dashboard/:dashboardSelector" />
+        <SafeAsyncRoute path="/dashboard" component={Dashboard} />
+        <SafeAsyncRoute path="/dashboard/:dashboardSelector" component={Dashboard} />
         <EditDashboard path="/dashboard/:dashboardSelector/edit" />
         <NewDashboard path="/dashboard/create/new" />
+        <SafeAsyncRoute path="/dashboard/integration" component={IntegrationPage} />
 
-        <IntegrationPage path="/dashboard/integration" />
+        <IntegrationPage path="/dashboard/integration/favorites" category="favorites" />
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <IntegrationPage path="/dashboard/integration/device" category="device" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
         <IntegrationPage path="/dashboard/integration/communication" category="communication" />
         <IntegrationPage path="/dashboard/integration/calendar" category="calendar" />
         <IntegrationPage path="/dashboard/integration/music" category="music" />
@@ -247,10 +271,6 @@ const AppRouter = connect(
         <IntegrationPage path="/dashboard/integration/weather" category="weather" />
         <IntegrationPage path="/dashboard/integration/navigation" category="navigation" />
 
-        <HomeKitPage path="/dashboard/integration/communication/homekit" />
-        <OpenAIPage path="/dashboard/integration/communication/openai" />
-        <GoogleHomeWelcomePage path="/dashboard/integration/communication/googlehome" />
-        <AlexaWelcomePage path="/dashboard/integration/communication/alexa" />
         <TelegramPage path="/dashboard/integration/communication/telegram" />
         <Redirect
           path="/dashboard/integration/communication/nextcloudtalk"
@@ -262,17 +282,6 @@ const AppRouter = connect(
         <CalDAVSyncPage path="/dashboard/integration/calendar/caldav/sync" />
         <CalDAVSharePage path="/dashboard/integration/calendar/caldav/share" />
         <OpenWeatherPage path="/dashboard/integration/weather/openweather" />
-
-        <ChatPage path="/dashboard/chat" />
-        <MapPage path="/dashboard/maps" />
-        <MapNewAreaPage path="/dashboard/maps/area/new" />
-        <MapNewAreaPage path="/dashboard/maps/area/edit/:areaSelector" />
-        <CalendarPage path="/dashboard/calendar" />
-        {props.user && props.user.role === USER_ROLE.ADMIN ? (
-          <IntegrationPage path="/dashboard/integration/device" category="device" />
-        ) : (
-          <ErrorNoAuthorize type="403" default />
-        )}
         {props.user && props.user.role === USER_ROLE.ADMIN ? (
           <Redirect
             path="/dashboard/integration/device/philips-hue"
@@ -298,16 +307,6 @@ const AppRouter = connect(
         )}
         {props.user && props.user.role === USER_ROLE.ADMIN ? (
           <TPLinkDevicePage path="/dashboard/integration/device/tp-link/device" />
-        ) : (
-          <ErrorNoAuthorize type="403" default />
-        )}
-        {props.user && props.user.role === USER_ROLE.ADMIN ? (
-          <Redirect path="/dashboard/integration/device/zwave" to="/dashboard/integration/device/zwave/node" />
-        ) : (
-          <ErrorNoAuthorize type="403" default />
-        )}
-        {props.user && props.user.role === USER_ROLE.ADMIN ? (
-          <ZwaveNodePage path="/dashboard/integration/device/zwave/node" />
         ) : (
           <ErrorNoAuthorize type="403" default />
         )}
@@ -367,6 +366,46 @@ const AppRouter = connect(
         ) : (
           <ErrorNoAuthorize type="403" default />
         )}
+
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <MatterbridgePage path="/dashboard/integration/device/matterbridge" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+
+        <FreeMobilePage path="dashboard/integration/communication/free-mobile" />
+        <CallMeBotPage path="dashboard/integration/communication/callmebot" />
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <EnergyMonitoringIntegration path="/dashboard/integration/device/energy-monitoring" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <EnergyMonitoringIntegration path="/dashboard/integration/device/energy-monitoring/prices" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <EnergyMonitoringIntegration path="/dashboard/integration/device/energy-monitoring/prices/create" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <EnergyMonitoringIntegration path="/dashboard/integration/device/energy-monitoring/prices/import" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <EnergyMonitoringIntegration path="/dashboard/integration/device/energy-monitoring/prices/edit/:id" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <EnergyMonitoringIntegration path="/dashboard/integration/device/energy-monitoring/settings" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+
         {props.user && props.user.role === USER_ROLE.ADMIN ? (
           <XiaomiPage path="/dashboard/integration/device/xiaomi" />
         ) : (
@@ -427,6 +466,8 @@ const AppRouter = connect(
         ) : (
           <ErrorNoAuthorize type="403" default />
         )}
+        <MCPPage path="/dashboard/integration/communication/mcp" />
+
         {props.user && props.user.role === USER_ROLE.ADMIN ? (
           <TuyaPage path="/dashboard/integration/device/tuya" />
         ) : (
@@ -447,6 +488,7 @@ const AppRouter = connect(
         ) : (
           <ErrorNoAuthorize type="403" default />
         )}
+
         {props.user && props.user.role === USER_ROLE.ADMIN ? (
           <NetatmoPage path="/dashboard/integration/device/netatmo" />
         ) : (
@@ -486,6 +528,17 @@ const AppRouter = connect(
         )}
 
         {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <AirplayDevicePage path="/dashboard/integration/device/airplay" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <AirplayDiscoveryPage path="/dashboard/integration/device/airplay/discover" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
           <ZwaveJSUIDevicePage path="/dashboard/integration/device/zwavejs-ui" />
         ) : (
           <ErrorNoAuthorize type="403" default />
@@ -497,6 +550,22 @@ const AppRouter = connect(
         )}
         {props.user && props.user.role === USER_ROLE.ADMIN ? (
           <ZwaveJSUISetupPage path="/dashboard/integration/device/zwavejs-ui/setup" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <MatterDevices path="/dashboard/integration/device/matter" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <MatterDiscoverPage path="/dashboard/integration/device/matter/discover" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <MatterSettingsPage path="/dashboard/integration/device/matter/settings" />
         ) : (
           <ErrorNoAuthorize type="403" default />
         )}
@@ -518,6 +587,27 @@ const AppRouter = connect(
         )}
         {props.user && props.user.role === USER_ROLE.ADMIN ? (
           <MELCloudSetupPage path="/dashboard/integration/device/melcloud/setup" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <NukiPage path="/dashboard/integration/device/nuki" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <NukiSetupPage path="/dashboard/integration/device/nuki/setup" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <NukiMqttDiscoverPage path="/dashboard/integration/device/nuki/mqtt" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <NukiHttpDiscoverPage path="/dashboard/integration/device/nuki/http" />
         ) : (
           <ErrorNoAuthorize type="403" default />
         )}
@@ -626,8 +716,14 @@ const AppRouter = connect(
           <ErrorNoAuthorize type="403" default />
         )}
 
+        <SafeAsyncRoute path="/dashboard/history" component={HistoryPage} />
+        <SafeAsyncRoute path="/dashboard/chat" component={ChatPage} />
+        <SafeAsyncRoute path="/dashboard/maps" component={MapPage} />
+        <MapNewAreaPage path="/dashboard/maps/area/new" />
+        <MapNewAreaPage path="/dashboard/maps/area/edit/:areaSelector" />
+        <SafeAsyncRoute path="/dashboard/calendar" component={CalendarPage} />
         {props.user && props.user.role === USER_ROLE.ADMIN ? (
-          <ScenePage path="/dashboard/scene" />
+          <SafeAsyncRoute path="/dashboard/scene" component={ScenePage} />
         ) : (
           <ErrorNoAuthorize type="403" default />
         )}
@@ -646,13 +742,14 @@ const AppRouter = connect(
         ) : (
           <ErrorNoAuthorize type="403" default />
         )}
+        <SafeAsyncRoute path="/dashboard/profile" component={ProfilePage} />
         {props.user && props.user.role === USER_ROLE.ADMIN ? (
           <SettingsSessionPage path="/dashboard/settings/session" />
         ) : (
           <ErrorNoAuthorize type="403" default />
         )}
         {props.user && props.user.role === USER_ROLE.ADMIN ? (
-          <SettingsHousePage path="/dashboard/settings/house" />
+          <SafeAsyncRoute path="/dashboard/settings/house" component={SettingsHousePage} />
         ) : (
           <ErrorNoAuthorize type="403" default />
         )}
@@ -691,10 +788,11 @@ const AppRouter = connect(
         ) : (
           <ErrorNoAuthorize type="403" default />
         )}
-
-        <ProfilePage path="/dashboard/profile" />
-        <SettingsBackgroundJobs path="/dashboard/settings/jobs" />
-        <ErrorNoAuthorize type="403" default />
+        {props.user && props.user.role === USER_ROLE.ADMIN ? (
+          <SettingsBackgroundJobs path="/dashboard/settings/jobs" />
+        ) : (
+          <ErrorNoAuthorize type="403" default />
+        )}
         <Error type="404" default />
       </Router>
     </Layout>
@@ -706,7 +804,23 @@ class MainApp extends Component {
     this.props.checkSession();
   }
 
-  render({ user }, { }) {
+  componentDidMount() {
+    // Listen for system preference change
+    const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+    prefersDarkMode.addEventListener('change', this.handleSystemPreferenceChange);
+  }
+
+  componentWillUnmount() {
+    // Remove event listener to prevent memory leaks
+    window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', this.handleSystemPreferenceChange);
+  }
+
+  handleSystemPreferenceChange = () => {
+    // Use the global action to update dark mode state based on system preference
+    this.props.updateDarkModeFromSystem();
+  };
+
+  render({ user }, {}) {
     const translationDefinition = get(translations, user.language, { default: translations.en });
     return (
       <IntlProvider definition={translationDefinition}>

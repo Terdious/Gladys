@@ -46,7 +46,7 @@ describe('Scene.triggers.alarmMode', () => {
   });
 
   it('should execute scene with alarm.arm trigger', async () => {
-    sceneManager.addScene({
+    await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [
@@ -80,7 +80,7 @@ describe('Scene.triggers.alarmMode', () => {
     });
   });
   it('should execute scene with alarm.arming trigger', async () => {
-    sceneManager.addScene({
+    await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [
@@ -114,7 +114,7 @@ describe('Scene.triggers.alarmMode', () => {
     });
   });
   it('should execute scene with alarm.disarm trigger', async () => {
-    sceneManager.addScene({
+    await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [
@@ -148,7 +148,7 @@ describe('Scene.triggers.alarmMode', () => {
     });
   });
   it('should execute scene with alarm.partial-arm trigger', async () => {
-    sceneManager.addScene({
+    await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [
@@ -182,7 +182,7 @@ describe('Scene.triggers.alarmMode', () => {
     });
   });
   it('should execute scene with alarm.panic trigger', async () => {
-    sceneManager.addScene({
+    await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [
@@ -215,8 +215,42 @@ describe('Scene.triggers.alarmMode', () => {
       });
     });
   });
+  it('should execute scene with alarm.too-many-codes-tests trigger', async () => {
+    await sceneManager.addScene({
+      selector: 'my-scene',
+      active: true,
+      actions: [
+        [
+          {
+            type: ACTIONS.LIGHT.TURN_OFF,
+            devices: ['light-1'],
+          },
+        ],
+      ],
+      triggers: [
+        {
+          type: EVENTS.ALARM.TOO_MANY_CODES_TESTS,
+          house: 'house-1',
+        },
+      ],
+    });
+    sceneManager.checkTrigger({
+      type: EVENTS.ALARM.TOO_MANY_CODES_TESTS,
+      house: 'house-1',
+    });
+    return new Promise((resolve, reject) => {
+      sceneManager.queue.start(() => {
+        try {
+          assert.calledOnce(device.setValue);
+          resolve();
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+  });
   it('should not execute scene (house not matching)', async () => {
-    sceneManager.addScene({
+    await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [

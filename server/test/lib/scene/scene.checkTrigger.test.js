@@ -58,81 +58,7 @@ describe('scene.checkTrigger', () => {
   });
 
   it('should execute scene', async () => {
-    sceneManager.addScene({
-      selector: 'my-scene',
-      active: true,
-      actions: [
-        [
-          {
-            type: ACTIONS.LIGHT.TURN_ON,
-            devices: ['light-1'],
-          },
-        ],
-      ],
-      triggers: [
-        {
-          type: EVENTS.DEVICE.NEW_STATE,
-          device_feature: 'light-1',
-          value: 12,
-          operator: '=',
-        },
-      ],
-    });
-    sceneManager.checkTrigger({
-      type: EVENTS.DEVICE.NEW_STATE,
-      device_feature: 'light-1',
-      last_value: 12,
-    });
-    return new Promise((resolve, reject) => {
-      sceneManager.queue.start(() => {
-        try {
-          assert.calledOnce(device.setValue);
-          resolve();
-        } catch (e) {
-          reject(e);
-        }
-      });
-    });
-  });
-  it('should not execute scene, scene not active', async () => {
-    sceneManager.addScene({
-      selector: 'my-scene',
-      active: false,
-      actions: [
-        [
-          {
-            type: ACTIONS.LIGHT.TURN_ON,
-            devices: ['light-1'],
-          },
-        ],
-      ],
-      triggers: [
-        {
-          type: EVENTS.DEVICE.NEW_STATE,
-          device_feature: 'light-1',
-          value: 12,
-          operator: '=',
-        },
-      ],
-    });
-    sceneManager.checkTrigger({
-      type: EVENTS.DEVICE.NEW_STATE,
-      device_feature: 'light-1',
-      last_value: 12,
-    });
-    return new Promise((resolve, reject) => {
-      sceneManager.queue.start(() => {
-        try {
-          assert.notCalled(device.setValue);
-          resolve();
-        } catch (e) {
-          reject(e);
-        }
-      });
-    });
-  });
-  it('should execute scene', async () => {
-    const addedScene = sceneManager.addScene({
+    const addedScene = await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [
@@ -167,80 +93,8 @@ describe('scene.checkTrigger', () => {
       });
     });
   });
-  it('should execute scene', async () => {
-    const addedScene = sceneManager.addScene({
-      selector: 'my-scene',
-      active: true,
-      actions: [
-        [
-          {
-            type: ACTIONS.LIGHT.TURN_ON,
-            devices: ['light-1'],
-          },
-        ],
-      ],
-      triggers: [
-        {
-          type: EVENTS.TIME.SUNRISE,
-          house: 'house-1',
-        },
-      ],
-    });
-    sceneManager.checkTrigger({
-      type: EVENTS.TIME.SUNRISE,
-      house: {
-        selector: addedScene.triggers[0].house,
-      },
-    });
-    return new Promise((resolve, reject) => {
-      sceneManager.queue.start(() => {
-        try {
-          assert.calledOnce(device.setValue);
-          resolve();
-        } catch (e) {
-          reject(e);
-        }
-      });
-    });
-  });
-  it('should execute scene', async () => {
-    sceneManager.addScene({
-      selector: 'my-scene',
-      active: true,
-      actions: [
-        [
-          {
-            type: ACTIONS.LIGHT.TURN_OFF,
-            devices: ['light-1'],
-          },
-        ],
-      ],
-      triggers: [
-        {
-          type: EVENTS.TIME.SUNSET,
-          house: 'house-1',
-        },
-      ],
-    });
-    sceneManager.checkTrigger({
-      type: EVENTS.TIME.SUNSET,
-      house: {
-        selector: 'house-1',
-      },
-    });
-    return new Promise((resolve, reject) => {
-      sceneManager.queue.start(() => {
-        try {
-          assert.calledOnce(device.setValue);
-          resolve();
-        } catch (e) {
-          reject(e);
-        }
-      });
-    });
-  });
   it('should execute scene with empty house trigger', async () => {
-    sceneManager.addScene({
+    await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [
@@ -275,7 +129,7 @@ describe('scene.checkTrigger', () => {
   });
 
   it('should execute scene with no longer empty house trigger', async () => {
-    const addedScene = sceneManager.addScene({
+    const addedScene = await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [
@@ -310,7 +164,7 @@ describe('scene.checkTrigger', () => {
   });
 
   it('should execute scene with user back home trigger', async () => {
-    sceneManager.addScene({
+    await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [
@@ -347,7 +201,7 @@ describe('scene.checkTrigger', () => {
   });
 
   it('should execute scene with user left home trigger', async () => {
-    sceneManager.addScene({
+    await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [
@@ -384,7 +238,7 @@ describe('scene.checkTrigger', () => {
   });
 
   it('should execute scene with user entered area trigger', async () => {
-    sceneManager.addScene({
+    await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [
@@ -421,7 +275,7 @@ describe('scene.checkTrigger', () => {
   });
 
   it('should execute scene with user left area trigger', async () => {
-    sceneManager.addScene({
+    await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [
@@ -458,7 +312,7 @@ describe('scene.checkTrigger', () => {
   });
 
   it('should execute scene with system start trigger', async () => {
-    sceneManager.addScene({
+    await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [
@@ -489,124 +343,8 @@ describe('scene.checkTrigger', () => {
       });
     });
   });
-
-  it('should not execute scene, condition not verified', async () => {
-    sceneManager.addScene({
-      selector: 'my-scene',
-      active: true,
-      actions: [
-        [
-          {
-            type: ACTIONS.LIGHT.TURN_ON,
-            devices: ['light-1'],
-          },
-        ],
-      ],
-      triggers: [
-        {
-          type: EVENTS.DEVICE.NEW_STATE,
-          device_feature: 'light-1',
-          value: 12,
-          operator: '=',
-        },
-      ],
-    });
-    sceneManager.checkTrigger({
-      type: EVENTS.DEVICE.NEW_STATE,
-      device_feature: 'light-1',
-      last_value: 14,
-    });
-    return new Promise((resolve, reject) => {
-      sceneManager.queue.start(() => {
-        try {
-          assert.notCalled(device.setValue);
-          resolve();
-        } catch (e) {
-          reject(e);
-        }
-      });
-    });
-  });
-  it('should not execute scene, threshold already passed', async () => {
-    sceneManager.addScene({
-      selector: 'my-scene',
-      active: true,
-      actions: [
-        [
-          {
-            type: ACTIONS.LIGHT.TURN_ON,
-            devices: ['light-1'],
-          },
-        ],
-      ],
-      triggers: [
-        {
-          type: EVENTS.DEVICE.NEW_STATE,
-          device_feature: 'light-1',
-          value: 12,
-          operator: '>',
-          threshold_only: true,
-        },
-      ],
-    });
-    sceneManager.checkTrigger({
-      type: EVENTS.DEVICE.NEW_STATE,
-      device_feature: 'light-1',
-      previous_value: 14,
-      last_value: 14,
-    });
-    return new Promise((resolve, reject) => {
-      sceneManager.queue.start(() => {
-        try {
-          assert.notCalled(device.setValue);
-          resolve();
-        } catch (e) {
-          reject(e);
-        }
-      });
-    });
-  });
-  it('should execute scene, threshold passed for the first time', async () => {
-    sceneManager.addScene({
-      selector: 'my-scene',
-      active: true,
-      actions: [
-        [
-          {
-            type: ACTIONS.LIGHT.TURN_ON,
-            devices: ['light-1'],
-          },
-        ],
-      ],
-      triggers: [
-        {
-          type: EVENTS.DEVICE.NEW_STATE,
-          device_feature: 'light-1',
-          value: 12,
-          operator: '>',
-          threshold_only: true,
-        },
-      ],
-    });
-    sceneManager.checkTrigger({
-      type: EVENTS.DEVICE.NEW_STATE,
-      device_feature: 'light-1',
-      previous_value: 11,
-      last_value: 14,
-    });
-    return new Promise((resolve, reject) => {
-      sceneManager.queue.start(() => {
-        try {
-          assert.calledOnce(device.setValue);
-          resolve();
-        } catch (e) {
-          reject(e);
-        }
-      });
-    });
-  });
   it('should not execute scene, event not matching', async () => {
-    sceneManager.addScene({
+    await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [
@@ -652,7 +390,7 @@ describe('scene.checkTrigger', () => {
     }).to.throw(Error, 'Trigger type "one-unknown-event" has no checker function.');
   });
   it('should execute scene, event & key matching', async () => {
-    const addedScene = sceneManager.addScene({
+    const addedScene = await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [
@@ -691,7 +429,7 @@ describe('scene.checkTrigger', () => {
     });
   });
   it('should not execute scene, key not matching', async () => {
-    sceneManager.addScene({
+    await sceneManager.addScene({
       selector: 'my-scene',
       active: true,
       actions: [

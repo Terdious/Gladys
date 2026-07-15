@@ -14,6 +14,8 @@ async function syncUserCalendars(userId) {
   const CALDAV_HOME_URL = await this.gladys.variable.getValue('CALDAV_HOME_URL', this.serviceId, userId);
   const CALDAV_USERNAME = await this.gladys.variable.getValue('CALDAV_USERNAME', this.serviceId, userId);
   const CALDAV_PASSWORD = await this.gladys.variable.getValue('CALDAV_PASSWORD', this.serviceId, userId);
+  const DISABLE_SSL_CHECK =
+    ((await this.gladys.variable.getValue('CALDAV_CHECK_SSL', this.serviceId, userId)) || '1') === '0';
 
   if (!CALDAV_HOST || !CALDAV_HOME_URL || !CALDAV_USERNAME || !CALDAV_PASSWORD) {
     throw new ServiceNotConfiguredError('CALDAV_NOT_CONFIGURED');
@@ -24,6 +26,9 @@ async function syncUserCalendars(userId) {
       username: CALDAV_USERNAME,
       password: CALDAV_PASSWORD,
     }),
+    {
+      disableSSLCheck: DISABLE_SSL_CHECK,
+    },
   );
 
   // Get list of calendars
@@ -32,7 +37,7 @@ async function syncUserCalendars(userId) {
     davCalendars = await this.requestCalendars(xhr, CALDAV_HOME_URL);
   } catch (e) {
     logger.error(e);
-    throw new NotFoundError('CALDAV_FAILED_REQUEST_CALENDARS');
+    throw new NotFoundError({ message: 'CALDAV_FAILED_REQUEST_CALENDARS', log: e.stack });
   }
 
   logger.info(`CalDAV : Found ${davCalendars.length} calendars.`);
@@ -71,7 +76,7 @@ async function syncUserCalendars(userId) {
         eventsToUpdate = await this.requestChanges(xhr, calendarToUpdate);
       } catch (e) {
         logger.error(e);
-        throw new NotFoundError('CALDAV_FAILED_REQUEST_CHANGES');
+        throw new NotFoundError({ message: 'CALDAV_FAILED_REQUEST_CHANGES', log: e.stack });
       }
 
       await Promise.map(
@@ -105,8 +110,21 @@ async function syncUserCalendars(userId) {
         jsonEvents = await this.requestEventsData(xhr, calendarToUpdate.external_id, eventsToUpdate, CALDAV_HOST);
       } catch (e) {
         logger.error(e);
-        throw new NotFoundError('CALDAV_FAILED_REQUEST_EVENTS');
+        throw new NotFoundError({ message: 'CALDAV_FAILED_REQUEST_EVENTS', log: e.stack });
       }
+
+      await Promise.map(
+        jsonEvents,
+        async (jsonEvent) => {
+          if (jsonEvent?.rrule?.options?.until && jsonEvent.href) {
+            await this.gladys.calendar.destroyEvents(calendarToUpdate.id, {
+              url: jsonEvent.href,
+              from: jsonEvent?.rrule?.options?.until,
+            });
+          }
+        },
+        { concurrency: 5 },
+      );
 
       const formatedEvents = this.formatEvents(jsonEvents, calendarToUpdate);
 

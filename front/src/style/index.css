@@ -230,15 +230,12 @@ body {
   pointer-events: auto;
   cursor: pointer;
 }
-.device-features {
-  min-height: 70px;
-}
 .loading-border {
   animation: borderBlink 2s infinite;
 }
 @keyframes borderBlink {
   50% {
-    border-color: #45aaf2 ;
+    border-color: #45aaf2;
   }
 }
 
@@ -260,7 +257,7 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  border: 1px solid rgb(73, 80,87);
+  border: 1px solid rgb(73, 80, 87);
   border-radius: 50%;
 }
 .react-clock__hand {
@@ -272,7 +269,7 @@ body {
 }
 .react-clock__hand__body {
   position: absolute;
-  background-color: rgb(73, 80,87);
+  background-color: rgb(73, 80, 87);
   transform: translateX(-50%);
 }
 .react-clock__mark {
@@ -284,7 +281,7 @@ body {
 }
 .react-clock__mark__body {
   position: absolute;
-  background-color: rgb(73, 80,87);
+  background-color: rgb(73, 80, 87);
   transform: translateX(-50%);
 }
 .react-clock__mark__number {
@@ -294,7 +291,7 @@ body {
   text-align: center;
 }
 .react-clock__second-hand__body {
-  background-color: rgb(205,32,31);
+  background-color: rgb(205, 32, 31);
 }
 
 .react-clock {
@@ -311,7 +308,6 @@ body {
 .opacity-60 {
   opacity: 60%;
 }
-
 
 .humidity-slider {
   width: 100%;
@@ -343,7 +339,7 @@ body {
 }
 
 .humidity-slider-track-2 {
-  background: #467fcf ;
+  background: #467fcf;
 }
 
 .humidity-slider .humidity-slider-track {
@@ -357,7 +353,6 @@ body {
   height: 24px;
   line-height: 22px;
 }
-
 
 .temperature-slider {
   width: 100%;
@@ -404,6 +399,111 @@ body {
   line-height: 22px;
 }
 
+.gauge-slider {
+  width: 100%;
+  max-width: 500px;
+  height: 30px;
+}
+
+.gauge-slider-thumb {
+  font-size: 0.9em;
+  text-align: center;
+  background-color: #fafafa;
+  cursor: pointer;
+  border: 1px solid gray;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.gauge-slider-thumb.active {
+  border: 1px solid #467fcf;
+}
+
+.gauge-slider-track {
+  position: relative;
+}
+
+.gauge-slider .gauge-slider-track {
+  top: 10px;
+  height: 10px;
+}
+
+.gauge-slider .gauge-slider-thumb {
+  top: 3px;
+  width: 60px;
+  height: 24px;
+  line-height: 22px;
+}
+
+.gauge-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.gauge-thresholds-legend {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.gauge-chart {
+  touch-action: pan-y;
+}
+
+.gauge-chart .apexcharts-canvas,
+.gauge-chart .apexcharts-svg {
+  pointer-events: none;
+}
+
 .rti--tag button:focus {
   outline: none !important;
+}
+
+.row-cards > [class*='col'] {
+  display: flex;
+}
+
+.row-cards > [class*='col'] > .card {
+  width: 100%;
+  flex: 1;
+}
+
+.favorite-star {
+  -webkit-appearance: none;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 4px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: none;
+  outline: none;
+}
+
+.favorite-star:focus,
+.favorite-star:active,
+.favorite-star:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border: none;
+}
+
+.favorite-star svg {
+  fill: none;
+  stroke: #9aa0a6;
+}
+
+.favorite-star--active svg {
+  fill: #ffa000;
+  stroke: #ffa000;
+}
+
+.integration-tag {
+  font-size: 0.7rem;
+  margin-right: 6px;
 }

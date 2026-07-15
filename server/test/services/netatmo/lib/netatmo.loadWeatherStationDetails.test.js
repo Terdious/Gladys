@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
-const nock = require('nock');
+const { MockAgent, setGlobalDispatcher, getGlobalDispatcher } = require('undici');
 
 const bodyGetWeatherStationMock = JSON.parse(JSON.stringify(require('../netatmo.getWeatherStation.mock.test.json')));
 const weatherStationsDetailsMock = JSON.parse(
@@ -14,9 +14,22 @@ const netatmoHandler = new NetatmoHandler(gladys, serviceId);
 const accessToken = 'testAccessToken';
 
 describe('Netatmo Load Weather Station Details', () => {
+  let mockAgent;
+  let netatmoMock;
+  let originalDispatcher;
+
   beforeEach(() => {
     sinon.reset();
-    nock.cleanAll();
+
+    // Store the original dispatcher
+    originalDispatcher = getGlobalDispatcher();
+
+    // MockAgent setup
+    mockAgent = new MockAgent();
+    setGlobalDispatcher(mockAgent);
+    mockAgent.disableNetConnect();
+
+    netatmoMock = mockAgent.get('https://api.netatmo.com');
 
     netatmoHandler.status = 'not_initialized';
     netatmoHandler.accessToken = accessToken;
@@ -24,14 +37,25 @@ describe('Netatmo Load Weather Station Details', () => {
 
   afterEach(() => {
     sinon.reset();
-    nock.cleanAll();
+    // Clean up the mock agent
+    mockAgent.close();
+    // Restore the original dispatcher
+    setGlobalDispatcher(originalDispatcher);
   });
 
   it('should load weather station details successfully with API not configured', async () => {
     netatmoHandler.configuration.weatherApi = false;
-    nock('https://api.netatmo.com')
-      .get('/api/getstationsdata?get_favorites=false')
-      .reply(200, { body: bodyGetWeatherStationMock, status: 'ok' });
+
+    // Intercept the HTTP/2 call via undici
+    netatmoMock
+      .intercept({
+        method: 'GET',
+        path: '/api/getstationsdata?get_favorites=false',
+      })
+      .reply(200, {
+        body: bodyGetWeatherStationMock,
+        status: 'ok',
+      });
 
     const { weatherStations, modulesWeatherStations } = await netatmoHandler.loadWeatherStationDetails();
     expect(weatherStations).to.deep.eq(weatherStationsDetailsMock.weatherStations);
@@ -42,31 +66,44 @@ describe('Netatmo Load Weather Station Details', () => {
 
   it('should load weather station details successfully with API configured', async () => {
     netatmoHandler.configuration.weatherApi = true;
-    weatherStationsDetailsMock.weatherStations.forEach((weatherStation) => {
+    const expectedDetails = JSON.parse(JSON.stringify(weatherStationsDetailsMock));
+    expectedDetails.weatherStations.forEach((weatherStation) => {
       weatherStation.apiNotConfigured = false;
       weatherStation.modules.forEach((module) => {
         module.apiNotConfigured = false;
         module.plug.apiNotConfigured = false;
       });
     });
-    weatherStationsDetailsMock.modulesWeatherStations.forEach((moduleWeatherStations) => {
+    expectedDetails.modulesWeatherStations.forEach((moduleWeatherStations) => {
       moduleWeatherStations.apiNotConfigured = false;
       moduleWeatherStations.plug.apiNotConfigured = false;
     });
-    nock('https://api.netatmo.com')
-      .get('/api/getstationsdata?get_favorites=false')
-      .reply(200, { body: bodyGetWeatherStationMock, status: 'ok' });
+
+    // Intercept the HTTP/2 call via undici
+    netatmoMock
+      .intercept({
+        method: 'GET',
+        path: '/api/getstationsdata?get_favorites=false',
+      })
+      .reply(200, {
+        body: bodyGetWeatherStationMock,
+        status: 'ok',
+      });
 
     const { weatherStations, modulesWeatherStations } = await netatmoHandler.loadWeatherStationDetails();
-    expect(weatherStations).to.deep.eq(weatherStationsDetailsMock.weatherStations);
-    expect(modulesWeatherStations).to.deep.eq(weatherStationsDetailsMock.modulesWeatherStations);
+    expect(weatherStations).to.deep.eq(expectedDetails.weatherStations);
+    expect(modulesWeatherStations).to.deep.eq(expectedDetails.modulesWeatherStations);
     expect(weatherStations).to.be.an('array');
     expect(modulesWeatherStations).to.be.an('array');
   });
 
   it('should handle API errors gracefully', async () => {
-    nock('https://api.netatmo.com')
-      .get('/api/getstationsdata?get_favorites=false')
+    // Intercept the HTTP/2 call via undici
+    netatmoMock
+      .intercept({
+        method: 'GET',
+        path: '/api/getstationsdata?get_favorites=false',
+      })
       .reply(400, {
         error: {
           code: {
@@ -87,9 +124,16 @@ describe('Netatmo Load Weather Station Details', () => {
   });
 
   it('should handle unexpected API responses', async () => {
-    nock('https://api.netatmo.com')
-      .get('/api/getstationsdata?get_favorites=false')
-      .reply(200, { body: bodyGetWeatherStationMock, status: 'error' });
+    // Intercept the HTTP/2 call via undici
+    netatmoMock
+      .intercept({
+        method: 'GET',
+        path: '/api/getstationsdata?get_favorites=false',
+      })
+      .reply(200, {
+        body: bodyGetWeatherStationMock,
+        status: 'error',
+      });
 
     const { weatherStations, modulesWeatherStations } = await netatmoHandler.loadWeatherStationDetails();
     expect(weatherStations).to.deep.eq(bodyGetWeatherStationMock.devices);
@@ -97,5 +141,23 @@ describe('Netatmo Load Weather Station Details', () => {
     expect(weatherStations).to.be.an('array');
     expect(modulesWeatherStations).to.be.an('array');
     expect(modulesWeatherStations).to.have.lengthOf(0);
+  });
+
+  it('should trigger handleApiAuthError on 403 from getstationsdata', async () => {
+    const authErrorSpy = sinon.spy(netatmoHandler, 'handleApiAuthError');
+    try {
+      netatmoMock
+        .intercept({
+          method: 'GET',
+          path: '/api/getstationsdata?get_favorites=false',
+        })
+        .reply(403, { error: { code: 13, message: 'forbidden' } });
+
+      await netatmoHandler.loadWeatherStationDetails();
+
+      sinon.assert.calledWith(authErrorSpy, 403);
+    } finally {
+      authErrorSpy.restore();
+    }
   });
 });

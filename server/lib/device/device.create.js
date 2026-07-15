@@ -2,31 +2,50 @@ const Promise = require('bluebird');
 const { BadParameters } = require('../../utils/coreErrors');
 const db = require('../../models');
 const { EVENTS } = require('../../utils/constants');
+const { resolveEnergyParentId } = require('../../utils/resolveEnergyParentId');
+const { getStandardDeviceIncludes } = require('../../utils/deviceQueryIncludes');
+const logger = require('../../utils/logger');
+const { syncFeatureSupportedOptions } = require('./device.syncFeatureSupportedOptions');
+
+const getById = async (id) => {
+  return db.Device.findOne({
+    where: {
+      id,
+    },
+    include: getStandardDeviceIncludes(),
+  });
+};
 
 const getByExternalId = async (externalId) => {
   return db.Device.findOne({
     where: {
       external_id: externalId,
     },
-    include: [
-      {
-        model: db.DeviceFeature,
-        as: 'features',
-      },
-      {
-        model: db.DeviceParam,
-        as: 'params',
-      },
-      {
-        model: db.Room,
-        as: 'room',
-      },
-      {
-        model: db.Service,
-        as: 'service',
-      },
-    ],
+    include: getStandardDeviceIncludes(),
   });
+};
+
+const getDeviceInDb = async (device) => {
+  if (device.id) {
+    const deviceById = await getById(device.id);
+    if (deviceById) {
+      return deviceById;
+    }
+  }
+  const deviceByExternalId = await getByExternalId(device.external_id);
+  return deviceByExternalId;
+};
+
+const matchFeatureInList = (existingFeature, features) => {
+  // We are matching on both external_id and id, so we can match a device that changed external_id but kept the same id
+  return features.find(
+    (newFeature) => newFeature.id === existingFeature.id || newFeature.external_id === existingFeature.external_id,
+  );
+};
+
+const matchParamInList = (existingParam, params) => {
+  // We are matching on both name & id, so we can match a param that changed name but kept the same id
+  return params.find((newParam) => newParam.id === existingParam.id || newParam.name === existingParam.name);
 };
 
 /**
@@ -73,8 +92,9 @@ async function create(device) {
     if (!device.external_id) {
       throw new BadParameters('A device must have an external_id.');
     }
+
     // first verify that device doesn't already exist
-    let deviceInDb = await getByExternalId(device.external_id);
+    let deviceInDb = await getDeviceInDb(device);
 
     let deviceToReturn = null;
 
@@ -82,8 +102,6 @@ async function create(device) {
     if (deviceInDb === null) {
       deviceInDb = await db.Device.create(device, { transaction });
     } else {
-      this.brain.removeNamedEntity('device', deviceInDb.identifier, deviceInDb.name);
-
       actionEvent = EVENTS.DEVICE.UPDATE;
       oldPollFrequency = deviceInDb.poll_frequency;
 
@@ -94,18 +112,20 @@ async function create(device) {
       }
 
       // or update it
-      await deviceInDb.update(device, { transaction });
+      const deviceToUpdate = { ...device };
+      delete deviceToUpdate.selector;
+      await deviceInDb.update(deviceToUpdate, { transaction });
 
       // we delete all features which doesn't exist anymore
       await Promise.map(deviceInDb.features, async (existingFeature, index) => {
-        if (!features.find((newFeature) => newFeature.external_id === existingFeature.external_id)) {
+        if (!matchFeatureInList(existingFeature, features)) {
           await existingFeature.destroy({ transaction });
         }
       });
 
       // we delete all params which doesn't exist anymore
       await Promise.map(deviceInDb.params, async (existingParam) => {
-        if (!params.find((newParam) => newParam.name === existingParam.name)) {
+        if (!matchParamInList(existingParam, params)) {
           await existingParam.destroy({ transaction });
         }
       });
@@ -115,19 +135,30 @@ async function create(device) {
     deviceToReturn.features = deviceToReturn.features || [];
     deviceToReturn.params = deviceToReturn.params || [];
 
-    this.brain.addNamedEntity('device', deviceToReturn.selector, deviceToReturn.name);
+    const energyParentIdByExternalId = new Map();
+    const featuresToSave = features.map((feature) => {
+      if (Object.prototype.hasOwnProperty.call(feature, 'energy_parent_id')) {
+        energyParentIdByExternalId.set(feature.external_id, feature.energy_parent_id);
+      }
+      const featureToSave = { ...feature };
+      delete featureToSave.energy_parent_id;
+      delete featureToSave.supported_options;
+      return featureToSave;
+    });
 
-    // if we need to create features
-    const newFeatures = await Promise.map(features, async (feature) => {
+    // Save features first without energy_parent_id, then resolve parent links in a second pass
+    const newFeatures = await Promise.map(featuresToSave, async (feature) => {
       // if the device feature already exist
-      const featureIndex = deviceToReturn.features.findIndex((f) => f.external_id === feature.external_id);
-      if (featureIndex !== -1) {
+      const matchedFeature = matchFeatureInList(feature, deviceToReturn.features);
+      if (matchedFeature) {
         const deviceFeature = await db.DeviceFeature.findOne({
           where: {
-            id: deviceToReturn.features[featureIndex].id,
+            id: matchedFeature.id,
           },
         });
-        await deviceFeature.update(feature, { transaction });
+        const featureToUpdate = { ...feature };
+        delete featureToUpdate.selector;
+        await deviceFeature.update(featureToUpdate, { transaction });
         if (deviceFeature.keep_history === false) {
           deviceFeaturesIdsToPurge.push(deviceFeature.id);
         }
@@ -138,15 +169,55 @@ async function create(device) {
       const featureCreated = await db.DeviceFeature.create(feature, { transaction });
       return featureCreated.get({ plain: true });
     });
-    deviceToReturn.features = newFeatures;
+
+    await Promise.map(newFeatures, async (savedFeature) => {
+      if (!energyParentIdByExternalId.has(savedFeature.external_id)) {
+        return;
+      }
+
+      const requestedParentId = energyParentIdByExternalId.get(savedFeature.external_id);
+      const validParentId = await resolveEnergyParentId(requestedParentId, { transaction });
+
+      if (requestedParentId && !validParentId) {
+        logger.warn(
+          `Invalid energy_parent_id "${requestedParentId}" for feature "${savedFeature.selector}", clearing parent link`,
+        );
+      }
+
+      if (savedFeature.energy_parent_id === validParentId) {
+        return;
+      }
+
+      await db.DeviceFeature.update(
+        { energy_parent_id: validParentId },
+        { where: { id: savedFeature.id }, transaction },
+      );
+      savedFeature.energy_parent_id = validParentId;
+    });
+
+    deviceToReturn.features = await Promise.map(newFeatures, async (savedFeature) => {
+      const payloadFeature = matchFeatureInList(savedFeature, features);
+      if (!payloadFeature || !Object.prototype.hasOwnProperty.call(payloadFeature, 'supported_options')) {
+        const existingFeature = matchFeatureInList(savedFeature, deviceToReturn.features);
+        savedFeature.supported_options = existingFeature?.supported_options ?? [];
+        return savedFeature;
+      }
+
+      savedFeature.supported_options = await syncFeatureSupportedOptions(
+        savedFeature.id,
+        payloadFeature.supported_options,
+        transaction,
+      );
+      return savedFeature;
+    });
 
     const newParams = await Promise.map(params, async (param) => {
       // if the param already already exist
-      const paramIndex = deviceToReturn.params.findIndex((p) => p.name === param.name);
-      if (paramIndex !== -1) {
+      const matchedParam = matchParamInList(param, deviceToReturn.params);
+      if (matchedParam) {
         const deviceParam = await db.DeviceParam.findOne({
           where: {
-            id: deviceToReturn.params[paramIndex].id,
+            id: matchedParam.id,
           },
         });
         await deviceParam.update(param, { transaction });

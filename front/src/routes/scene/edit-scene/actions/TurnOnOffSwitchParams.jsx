@@ -56,23 +56,13 @@ class TurnOnOffSwitch extends Component {
       console.error(e);
     }
   };
- /* handleChange = selectedOptions => {
-    if (selectedOptions) {
-      const switches = selectedOptions.map(selectedOption => selectedOption.value);
-      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'devices', switches);
-    } else {
-      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'devices', []);
-    }
-  };*/
   handleChange = selectedOptions => {
-    //const { deviceFeaturesDictionnary, deviceDictionnary } = this.state;
     const switches = selectedOptions.map(selectedOption => selectedOption.value);
     if (selectedOptions) {
-      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'device_features', switches);
+      this.props.updateActionProperty(this.props.path, 'device_features', switches);
     } else {
-      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'device_features', []);
+      this.props.updateActionProperty(this.props.path, 'device_features', []);
     }
-    //this.setState({ selectedOptions }); // this.setState({ deviceFeature, device });
   };
   refreshSelectedOptions = nextProps => {
     const selectedOptions = [];
@@ -122,10 +112,12 @@ class TurnOnOffSwitch extends Component {
           value={selectedOptions}
           onChange={this.handleChange}
           options={deviceOptions}
+          className="react-select-container"
+          classNamePrefix="react-select"
         />
       </div>
     );
   }
 }
 
-export default connect('httpClient', {})(TurnOnOffSwitch);
+export default withIntlAsProp(connect('httpClient', {})(TurnOnOffSwitch));

@@ -37,6 +37,9 @@ async function get(userId, options) {
     order: [[optionsWithDefault.order_by, optionsWithDefault.order_dir]],
     where: {
       revoked: false,
+      user_id: userId,
+      ...(options?.token_type ? { token_type: options?.token_type } : {}),
+      ...(options?.scope ? { scope: options?.scope } : {}),
     },
   });
 

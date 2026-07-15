@@ -66,7 +66,8 @@ describe('Broadlink edit remote - learn all', () => {
     cy.contains('.card-header', 'Light Remote').should('exist');
     cy.get('.card-body').within(() => {
       // Check device name
-      cy.get('input')
+      cy.get('input').as('nameInput');
+      cy.get('@nameInput')
         .should('have.value', 'Light Remote')
         .should('not.be.disabled');
       // Check selects
@@ -112,11 +113,10 @@ describe('Broadlink edit remote - learn all', () => {
       { learn: true }
     ).as('learnMode');
 
-    cy.contains('button', 'integration.broadlink.setup.learnAllLabel')
-      .should('not.be.disabled')
-      .click()
-      .should('not.exist');
-
+    // Learn all mode button
+    cy.contains('button', 'integration.broadlink.setup.learnAllLabel').as('learnButton');
+    cy.get('@learnButton').should('not.be.disabled');
+    cy.get('@learnButton').click();
     cy.contains('button', 'integration.broadlink.setup.quitLearnModeLabel')
       .should('exist')
       .should('not.be.disabled');
@@ -138,10 +138,12 @@ describe('Broadlink edit remote - learn all', () => {
 
     cy.get('.tag-info').should('be.length', 0);
 
-    cy.get('.tag-secondary')
-      .should('be.length', 1)
+    cy.get('.tag-secondary').as('tagSecondary');
+    cy.get('@tagSecondary').should('be.length', 1);
+    cy.get('@tagSecondary')
       .first()
-      .i18n('deviceFeatureCategory.light.binary');
+      .as('firstTag');
+    cy.get('@firstTag').i18n('deviceFeatureCategory.light.binary');
   });
 
   [
@@ -153,12 +155,28 @@ describe('Broadlink edit remote - learn all', () => {
     { from: 'temperature', payload: 'temperature-1' }
   ].forEach((feature, index) => {
     it(`Learn button: ${feature.from} (${index})`, () => {
+      const serverUrl = Cypress.env('serverUrl');
+
       cy.get('.tag-secondary')
         .should('be.length', 1)
         .first()
         .i18n(`deviceFeatureCategory.light.${feature.from}`);
 
       cy.contains('div', 'integration.broadlink.setup.learningModeInProgress').should('exist');
+
+      if (!feature.to) {
+        // Learning the last code leaves learn-all mode and fires a learn/cancel
+        // request. Stub it before it happens and wait for it below: against the
+        // real server it resolves seconds later and its setLearning(false) side
+        // effect would land in a later test.
+        cy.intercept(
+          {
+            method: 'POST',
+            url: `${serverUrl}/api/v1/service/broadlink/learn/cancel`
+          },
+          {}
+        ).as('cancelLearnMode');
+      }
 
       // Handle WebSocket message
       cy.sendWebSocket({
@@ -167,7 +185,6 @@ describe('Broadlink edit remote - learn all', () => {
       });
 
       if (feature.to) {
-        const serverUrl = Cypress.env('serverUrl');
         cy.intercept(
           {
             method: 'POST',
@@ -186,6 +203,8 @@ describe('Broadlink edit remote - learn all', () => {
           .i18n(`deviceFeatureCategory.light.${feature.to}`);
       } else {
         cy.get('.tag-secondary').should('not.exist');
+
+        cy.wait('@cancelLearnMode');
       }
     });
   });
@@ -271,7 +290,32 @@ describe('Broadlink edit remote - learn all', () => {
     });
 
     it('Cancel capture mode', () => {
+      const serverUrl = Cypress.env('serverUrl');
+      // The learn-all countdown can re-trigger a learn POST at any time:
+      // keep it stubbed so a real server error does not re-render the panel.
+      cy.intercept(
+        {
+          method: 'POST',
+          url: `${serverUrl}/api/v1/service/broadlink/learn`
+        },
+        { learn: true }
+      );
+
+      // Stub the cancel request so it resolves instantly instead of waiting
+      // for the real server to give up on the fake peripheral.
+      cy.intercept(
+        {
+          method: 'POST',
+          url: `${serverUrl}/api/v1/service/broadlink/learn/cancel`
+        },
+        {}
+      ).as('cancelLearnMode');
+
+      // Let pending re-renders settle, then re-query so the click targets an attached node.
+      cy.contains('button', 'integration.broadlink.setup.cancelLearnModeButton').should('be.visible');
       cy.contains('button', 'integration.broadlink.setup.cancelLearnModeButton').click();
+
+      cy.wait('@cancelLearnMode');
 
       cy.contains('button', 'integration.broadlink.setup.testLabel').should('not.be.disabled');
       cy.contains('button', 'integration.broadlink.setup.deleteLabel').should('not.be.disabled');

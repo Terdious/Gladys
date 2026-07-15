@@ -101,7 +101,7 @@ class EditDashboard extends Component {
         }
       }
     });
-    await this.setState(newState);
+    await this.setState({ ...newState, boxNotEmptyError: false });
   };
 
   addBox = x => {
@@ -110,6 +110,19 @@ class EditDashboard extends Component {
         boxes: {
           [x]: {
             $push: [{}]
+          }
+        }
+      }
+    });
+    this.setState(newState);
+  };
+
+  addBoxAtPosition = (x, y) => {
+    const newState = update(this.state, {
+      currentDashboard: {
+        boxes: {
+          [x]: {
+            $splice: [[y + 1, 0, {}]]
           }
         }
       }
@@ -127,7 +140,7 @@ class EditDashboard extends Component {
         }
       }
     });
-    await this.setState(newState);
+    await this.setState({ ...newState, boxNotEmptyError: false });
   };
 
   updateCurrentDashboardName = e => {
@@ -153,18 +166,20 @@ class EditDashboard extends Component {
   };
 
   updateBoxConfig = (x, y, data) => {
-    const newState = update(this.state, {
-      currentDashboard: {
-        boxes: {
-          [x]: {
-            [y]: {
-              $merge: data
+    this.setState(prevState => {
+      const newState = update(prevState, {
+        currentDashboard: {
+          boxes: {
+            [x]: {
+              [y]: {
+                $merge: data
+              }
             }
           }
         }
-      }
+      });
+      return { ...newState, boxNotEmptyError: false };
     });
-    this.setState(newState);
   };
 
   updateNewSelectedBox = (x, y, type) => {
@@ -252,6 +267,36 @@ class EditDashboard extends Component {
     }
   };
 
+  addColumn = () => {
+    const newState = update(this.state, {
+      currentDashboard: {
+        boxes: {
+          $push: [[]]
+        }
+      }
+    });
+    this.setState({ ...newState, boxNotEmptyError: false });
+  };
+
+  deleteCurrentColumn = async x => {
+    const { boxes } = this.state.currentDashboard;
+    if (boxes[x].length === 0) {
+      const newState = update(this.state, {
+        currentDashboard: {
+          boxes: {
+            $splice: [[x, 1]]
+          }
+        }
+      });
+      await this.setState({ ...newState, boxNotEmptyError: false });
+    } else {
+      this.setState({
+        boxNotEmptyError: true,
+        columnBoxNotEmptyError: x
+      });
+    }
+  };
+
   askDeleteCurrentDashboard = async () => {
     await this.setState({
       askDeleteDashboard: true
@@ -313,6 +358,8 @@ class EditDashboard extends Component {
       dashboards: [],
       newSelectedBoxType: {},
       askDeleteDashboard: false,
+      boxNotEmptyError: false,
+      columnBoxNotEmptyError: null,
       isMobileReordering: false
     };
   }
@@ -337,6 +384,8 @@ class EditDashboard extends Component {
       dashboardAlreadyExistError,
       unknownError,
       askDeleteDashboard,
+      boxNotEmptyError,
+      columnBoxNotEmptyError,
       savingNewDashboardList,
       isMobileReordering
     }
@@ -359,6 +408,7 @@ class EditDashboard extends Component {
         moveBoxUp={this.moveBoxUp}
         moveCard={this.moveCard}
         addBox={this.addBox}
+        addBoxAtPosition={this.addBoxAtPosition}
         removeBox={this.removeBox}
         updateNewSelectedBox={this.updateNewSelectedBox}
         saveDashboard={this.saveDashboard}
@@ -373,6 +423,10 @@ class EditDashboard extends Component {
         savingNewDashboardList={savingNewDashboardList}
         toggleMobileReorder={this.toggleMobileReorder}
         isMobileReordering={isMobileReordering}
+        addColumn={this.addColumn}
+        deleteCurrentColumn={this.deleteCurrentColumn}
+        boxNotEmptyError={boxNotEmptyError}
+        columnBoxNotEmptyError={columnBoxNotEmptyError}
       />
     );
   }

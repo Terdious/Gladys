@@ -96,8 +96,26 @@ const GladysGatewayClientMock = function GladysGatewayClientMock() {
       enedisFunction: 'enedisGetDailyConsumptionMaxPower',
     }),
     getEcowattSignals: fake.resolves({ signals: [] }),
+    getEdfTempo: fake.resolves({ today: 'blue', tomorrow: 'unknown' }),
+    getEdfTempoHistoricalData: fake.resolves([
+      { created_at: '2025-01-01', day_type: 'blue' },
+      { created_at: '2025-01-02', day_type: 'white' },
+      { created_at: '2025-01-03', day_type: 'red' },
+    ]),
     ttsGetToken: fake.resolves({ url: 'http://test.com' }),
-    openAIAsk: fake.resolves({ answer: 'this is the answer' }),
+    stt: fake.resolves({ text: 'hello world' }),
+    openAIGetQuota: fake.resolves({
+      text: {
+        remaining: 100,
+        max: 100,
+        reset_in_seconds: 0,
+      },
+      image: {
+        remaining: 100,
+        max: 100,
+        reset_in_seconds: 0,
+      },
+    }),
   };
 };
 

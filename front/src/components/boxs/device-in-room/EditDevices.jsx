@@ -5,9 +5,8 @@ import Select from 'react-select';
 import update from 'immutability-helper';
 import BaseEditBox from '../baseEditBox';
 import { getDeviceFeatureName } from '../../../utils/device';
-import { DeviceListWithDragAndDrop } from './DeviceListWithDragAndDrop';
+import { DeviceListWithDragAndDrop } from '../../drag-and-drop/DeviceListWithDragAndDrop';
 import withIntlAsProp from '../../../utils/withIntlAsProp';
-import SUPPORTED_FEATURE_TYPES from './SupportedFeatureTypes';
 
 class EditDevices extends Component {
   addDeviceFeature = async selectedDeviceFeatureOption => {
@@ -24,7 +23,7 @@ class EditDevices extends Component {
 
   refreshDeviceFeaturesNames = () => {
     const newDeviceFeatureNames = this.state.selectedDeviceFeaturesOptions.map(o => {
-      return o.new_label !== undefined ? o.new_label : o.label;
+      return o.new_label !== undefined && o.new_label !== '' ? o.new_label : o.label;
     });
     const newDeviceFeature = this.state.selectedDeviceFeaturesOptions.map(o => {
       return o.value;
@@ -62,7 +61,10 @@ class EditDevices extends Component {
       }
     });
     await this.setState(newState);
-    this.refreshDeviceFeaturesNames();
+
+    if (name !== '') {
+      this.refreshDeviceFeaturesNames();
+    }
   };
 
   getSelectedDeviceFeaturesAndOptions = devices => {
@@ -76,9 +78,7 @@ class EditDevices extends Component {
           value: feature.selector,
           label: getDeviceFeatureName(this.props.intl.dictionary, device, feature)
         };
-        if (feature.read_only || SUPPORTED_FEATURE_TYPES.includes(feature.type)) {
-          deviceFeatures.push(featureOption);
-        }
+        deviceFeatures.push(featureOption);
         // If the feature is already selected
         if (this.props.box.device_features) {
           const featureIndex = this.props.box.device_features.indexOf(feature.selector);
@@ -211,7 +211,14 @@ class EditDevices extends Component {
                 <label>
                   <Text id="dashboard.boxes.devices.addADeviceLabel" />
                 </label>
-                <Select onChange={this.addDeviceFeature} value={[]} options={deviceOptions} maxMenuHeight={220} />
+                <Select
+                  onChange={this.addDeviceFeature}
+                  value={[]}
+                  options={deviceOptions}
+                  maxMenuHeight={220}
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                />
               </div>
             )}
           </div>

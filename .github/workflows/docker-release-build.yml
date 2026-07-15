@@ -21,7 +21,7 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
       - name: 📦 Install Global NPM Packages
         run: |
-          sudo npm install typescript node-gyp npm@latest -g
+          sudo npm install typescript node-gyp -g
       - name: 📦 Install NPM front packages
         working-directory: ./front
         run: |
@@ -58,7 +58,7 @@ jobs:
           sudo apt-get install -y libudev-dev sqlite3 openssl python-is-python3
       - name: 📦 Install Global NPM Packages
         run: |
-          sudo npm install typescript node-gyp npm@latest -g
+          sudo npm install typescript node-gyp -g
       - name: 📦 Install NPM server packages
         working-directory: ./server
         run: |
@@ -114,7 +114,7 @@ jobs:
         run: |
           npm run build
       - name: ↗️ Upload build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: static
           path: front/build
@@ -148,7 +148,7 @@ jobs:
         with:
           version: v0.9.1
       - name: ↙️ Download build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: static
           path: static
@@ -168,7 +168,7 @@ jobs:
         with:
           context: .
           file: ./docker/Dockerfile.buildx
-          platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
+          platforms: linux/amd64,linux/arm64/v8
           push: true
           pull: true
           tags: ${{ steps.docker_meta.outputs.tags }}
@@ -184,3 +184,10 @@ jobs:
           docker pull ${{ env.DOCKERHUB_REPO }}@$DIGESTAMD64
           docker tag ${{ env.DOCKERHUB_REPO }}@$DIGESTAMD64 ${{ env.DOCKERHUB_REPO }}:v4-amd64
           docker push ${{ env.DOCKERHUB_REPO }}:v4-amd64
+  publish-gladys-plus:
+    name: Publish Gladys Plus front
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Cloudflare Pages deploy hook
+        run: curl -X POST "https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/${{ secrets.CLOUDFLARE_PAGES_GLADYS_PLUS_DEPLOY_HOOK }}"

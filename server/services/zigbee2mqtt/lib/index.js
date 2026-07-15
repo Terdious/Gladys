@@ -4,6 +4,7 @@ const { getConfiguration } = require('./getConfiguration');
 const { saveConfiguration } = require('./saveConfiguration');
 const { disconnect } = require('./disconnect');
 const { handleMqttMessage } = require('./handleMqttMessage');
+const { publish } = require('./publish');
 const { getDiscoveredDevices } = require('./getDiscoveredDevices');
 const { findMatchingExpose } = require('./findMatchingExpose');
 const { readValue } = require('./readValue');
@@ -24,6 +25,8 @@ const { saveZ2mBackup } = require('./saveZ2mBackup');
 const { restoreZ2mBackup } = require('./restoreZ2mBackup');
 const { backup } = require('./backup');
 const { getManagedAdapters } = require('./getManagedAdapters');
+const { readZ2mContainerLogs } = require('./readZ2mContainerLogs');
+const { reset } = require('./reset');
 const { JOB_TYPES } = require('../../../utils/constants');
 
 // EVENTS
@@ -55,6 +58,8 @@ const Zigbee2mqttManager = function Zigbee2mqttManager(gladys, mqttLibrary, serv
   this.zigbee2mqttConnected = false;
   this.z2mPermitJoin = false;
   this.networkModeValid = false;
+  this.coordinatorFirmware = null;
+  this.z2mContainerError = null;
   this.dockerBased = false;
 
   this.containerRestartWaitTimeInMs = 5 * 1000;
@@ -70,6 +75,7 @@ Zigbee2mqttManager.prototype.getConfiguration = getConfiguration;
 Zigbee2mqttManager.prototype.saveConfiguration = saveConfiguration;
 Zigbee2mqttManager.prototype.disconnect = disconnect;
 Zigbee2mqttManager.prototype.handleMqttMessage = handleMqttMessage;
+Zigbee2mqttManager.prototype.publish = publish;
 Zigbee2mqttManager.prototype.getDiscoveredDevices = getDiscoveredDevices;
 Zigbee2mqttManager.prototype.findMatchingExpose = findMatchingExpose;
 Zigbee2mqttManager.prototype.readValue = readValue;
@@ -90,6 +96,8 @@ Zigbee2mqttManager.prototype.saveZ2mBackup = saveZ2mBackup;
 Zigbee2mqttManager.prototype.restoreZ2mBackup = restoreZ2mBackup;
 Zigbee2mqttManager.prototype.backup = backup;
 Zigbee2mqttManager.prototype.getManagedAdapters = getManagedAdapters;
+Zigbee2mqttManager.prototype.readZ2mContainerLogs = readZ2mContainerLogs;
+Zigbee2mqttManager.prototype.reset = reset;
 
 // EVENTS
 Zigbee2mqttManager.prototype.emitStatusEvent = emitStatusEvent;

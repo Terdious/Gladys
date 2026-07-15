@@ -39,7 +39,7 @@ describe('scene.execute', () => {
         ],
       ],
     };
-    sceneManager.addScene(scene);
+    await sceneManager.addScene(scene);
     await sceneManager.execute('my-scene');
     return new Promise((resolve, reject) => {
       sceneManager.queue.start(() => {
@@ -82,7 +82,7 @@ describe('scene.execute', () => {
         ],
       ],
     };
-    sceneManager.addScene(scene);
+    await sceneManager.addScene(scene);
     const scope = {};
     await sceneManager.execute('my-scene', scope);
     return new Promise((resolve, reject) => {
@@ -90,7 +90,7 @@ describe('scene.execute', () => {
         try {
           assert.notCalled(device.setValue);
           expect(scope).to.have.property('0');
-          expect(scope['0']).to.deep.equal({ '0': { category: 'light', type: 'binary', last_value: 15 } });
+          expect(scope['0']).to.deep.equal([{ category: 'light', type: 'binary', last_value: 15 }]);
           resolve();
         } catch (e) {
           reject(e);
@@ -116,7 +116,7 @@ describe('scene.execute', () => {
         ],
       ],
     };
-    sceneManager.addScene(scene);
+    await sceneManager.addScene(scene);
     const scope = {};
     await sceneManager.execute('my-scene', scope);
     return new Promise((resolve, reject) => {
@@ -155,8 +155,8 @@ describe('scene.execute', () => {
         ],
       ],
     };
-    sceneManager.addScene(scene);
-    sceneManager.addScene(secondScene);
+    await sceneManager.addScene(scene);
+    await sceneManager.addScene(secondScene);
     await sceneManager.execute('my-scene', scope);
     return new Promise((resolve, reject) => {
       sceneManager.queue.start(() => {
@@ -203,8 +203,8 @@ describe('scene.execute', () => {
         ],
       ],
     };
-    sceneManager.addScene(scene);
-    sceneManager.addScene(secondScene);
+    await sceneManager.addScene(scene);
+    await sceneManager.addScene(secondScene);
     await sceneManager.execute('my-scene', scope);
     return new Promise((resolve, reject) => {
       sceneManager.queue.start(() => {

@@ -16,21 +16,30 @@ class SendMessageParams extends Component {
           value: user.selector
         });
       });
-      await this.setState({ userOptions });
-      this.refreshSelectedOptions(this.props);
+      let selectedOption = '';
+      const actionUpdates = [];
+      if (!this.props.action.user && userOptions.length > 0) {
+        actionUpdates.push(['user', userOptions[0].value]);
+        selectedOption = userOptions[0];
+      } else if (this.props.action.user) {
+        selectedOption = userOptions.find(option => option.value === this.props.action.user) || '';
+      }
+      this.setState({ userOptions, selectedOption }, () => {
+        actionUpdates.forEach(([key, value]) => this.props.updateActionProperty(this.props.path, key, value));
+      });
       return userOptions;
     } catch (e) {
       console.error(e);
     }
   };
   updateText = text => {
-    this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'text', text);
+    this.props.updateActionProperty(this.props.path, 'text', text);
   };
   handleChange = selectedOption => {
     if (selectedOption && selectedOption.value) {
-      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'user', selectedOption.value);
+      this.props.updateActionProperty(this.props.path, 'user', selectedOption.value);
     } else {
-      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'user', null);
+      this.props.updateActionProperty(this.props.path, 'user', null);
     }
   };
   refreshSelectedOptions = nextProps => {
@@ -75,6 +84,8 @@ class SendMessageParams extends Component {
             options={userOptions}
             value={selectedOption}
             onChange={this.handleChange}
+            className="react-select-container"
+            classNamePrefix="react-select"
           />
         </div>
         <div class="form-group">
@@ -90,6 +101,7 @@ class SendMessageParams extends Component {
           <div className="tags-input">
             <TextWithVariablesInjected
               text={props.action.text}
+              path={props.path}
               triggersVariables={props.triggersVariables}
               actionsGroupsBefore={props.actionsGroupsBefore}
               variables={props.variables}

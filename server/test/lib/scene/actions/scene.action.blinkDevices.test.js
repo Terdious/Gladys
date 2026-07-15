@@ -2,14 +2,16 @@ const { fake, assert, useFakeTimers } = require('sinon');
 const EventEmitter = require('events');
 
 const { ACTIONS, DEVICE_FEATURE_CATEGORIES, DEVICE_FEATURE_TYPES } = require('../../../../utils/constants');
-const { executeActions } = require('../../../../lib/scene/scene.executeActions');
+const executeActionsFactory = require('../../../../lib/scene/scene.executeActions');
 
 const StateManager = require('../../../../lib/state');
+const actionsFunc = require('../../../../lib/scene/scene.actions');
 
 const event = new EventEmitter();
 
 describe('scene.blink-lights', () => {
   let clock;
+  const { executeActions } = executeActionsFactory(actionsFunc);
 
   beforeEach(() => {
     clock = useFakeTimers();
@@ -217,11 +219,11 @@ describe('scene.blink-lights', () => {
   it('should throw error when blinking light', async () => {
     const stateManager = new StateManager(event);
     const device = {
-      setValue: fake.throws('An error occured'),
+      setValue: fake.throws('An error occurred'),
       features: {
         category: DEVICE_FEATURE_CATEGORIES.LIGHT,
         type: DEVICE_FEATURE_TYPES.LIGHT.BINARY,
-        find: fake.throws('An error occured'),
+        find: fake.throws('An error occurred'),
       },
     };
 

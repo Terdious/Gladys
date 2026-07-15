@@ -11,6 +11,7 @@ import { getApexChartBarOptions } from './ApexChartBarOptions';
 import { getApexChartAreaOptions } from './ApexChartAreaOptions';
 import { getApexChartLineOptions } from './ApexChartLineOptions';
 import { getApexChartStepLineOptions } from './ApexChartStepLineOptions';
+import { getApexChartTimelineOptions } from './ApexChartTimelineOptions';
 import mergeArray from '../../../utils/mergeArray';
 
 dayjs.extend(localizedFormat);
@@ -45,21 +46,95 @@ class ApexChartComponent extends Component {
           .format('LL');
       };
     }
+    // Configure tooltip with fixed position and date formatter
     options.tooltip = {
+      followCursor: false,
+      fixed: {
+        enabled: true,
+        position: 'topLeft',
+        offsetX: 0,
+        offsetY: -30
+      },
       x: {
         formatter
       }
     };
   }
+  addDateFormatterRangeBar(options) {
+    const createTooltipContent = (opts, startDate, endDate) => {
+      const w = opts.ctx.w;
+      const seriesName = w.config.series[opts.seriesIndex].name ? w.config.series[opts.seriesIndex].name : '';
+      const ylabel = w.globals.seriesX[opts.seriesIndex][opts.dataPointIndex];
+      const color = w.globals.colors[opts.seriesIndex];
+
+      return `<div class="apexcharts-tooltip-rangebar">
+          <div> <span class="series-name" style="color: ${color}">
+            ${seriesName ? seriesName : ''}
+          </span></div>
+          <div> <span class="category">
+            ${ylabel}: 
+          </span> <span class="value start-value"></br>&nbsp;&nbsp;
+              ${dictionnary.start_date}${startDate}
+          </span> <span class="value end-value"></br>&nbsp;&nbsp;
+              ${dictionnary.end_date}${endDate}
+          </span></div>
+        </div>`;
+    };
+
+    let formatter_custom;
+    const dictionnary = this.props.dictionary.dashboard.boxes.chart;
+    if (this.props.interval <= 24 * 60) {
+      formatter_custom = opts => {
+        const startDate = dayjs(opts.y1)
+          .locale(this.props.user.language)
+          .format('LL - LTS');
+        const endDate = dayjs(opts.y2)
+          .locale(this.props.user.language)
+          .format('LL - LTS');
+
+        return createTooltipContent(opts, startDate, endDate);
+      };
+    } else {
+      formatter_custom = opts => {
+        const startDate = dayjs(opts.y1)
+          .locale(this.props.user.language)
+          .format('LL');
+        const endDate = dayjs(opts.y2)
+          .locale(this.props.user.language)
+          .format('LL');
+
+        return createTooltipContent(opts, startDate, endDate);
+      };
+    }
+    options.tooltip.custom = function(opts) {
+      return formatter_custom(opts);
+    };
+  }
   getBarChartOptions = () => {
     const options = getApexChartBarOptions({
       displayAxes: this.props.display_axes,
+      hideLegend: this.props.hide_legend,
       series: this.props.series,
       colors: mergeArray(this.props.colors, DEFAULT_COLORS),
       locales: [fr, en, de],
-      defaultLocale: this.props.user.language
+      defaultLocale: this.props.user.language,
+      yAxisFormatter: this.props.y_axis_formatter,
+      yAxisUnit: this.props.y_axis_unit,
+      disableZoom: this.props.disable_zoom
     });
     this.addDateFormatter(options);
+    // Apply custom tooltip formatters if provided
+    if (this.props.tooltip_x_formatter || this.props.tooltip_y_formatter) {
+      if (!options.tooltip) {
+        options.tooltip = {};
+      }
+      if (this.props.tooltip_x_formatter) {
+        options.tooltip.x = { formatter: this.props.tooltip_x_formatter };
+      }
+      if (this.props.tooltip_y_formatter) {
+        options.tooltip.y = { formatter: this.props.tooltip_y_formatter };
+      }
+    }
     return options;
   };
   getAreaChartOptions = () => {
@@ -69,7 +144,7 @@ class ApexChartComponent extends Component {
     } else if (this.props.size === 'big' && !this.props.display_axes) {
       height = 80;
     } else {
-      height = 200;
+      height = 200 + this.props.additionalHeight;
     }
     const options = getApexChartAreaOptions({
       height,
@@ -90,7 +165,7 @@ class ApexChartComponent extends Component {
     } else if (this.props.size === 'big' && !this.props.display_axes) {
       height = 80;
     } else {
-      height = 200;
+      height = 200 + this.props.additionalHeight;
     }
     const options = getApexChartLineOptions({
       height,
@@ -110,7 +185,7 @@ class ApexChartComponent extends Component {
     } else if (this.props.size === 'big' && !this.props.display_axes) {
       height = 80;
     } else {
-      height = 200;
+      height = 200 + this.props.additionalHeight;
     }
     const options = getApexChartStepLineOptions({
       height,
@@ -123,9 +198,32 @@ class ApexChartComponent extends Component {
     this.addDateFormatter(options);
     return options;
   };
+  getTimelineChartOptions = () => {
+    let height;
+    if (this.props.size === 'small' && !this.props.display_axes) {
+      height = 40;
+    } else if (this.props.size === 'big' && !this.props.display_axes) {
+      height = 80;
+    } else {
+      // 95 is the height display of the timeline chart when there is no additional height
+      height = 95 + this.props.additionalHeight;
+    }
+    const options = getApexChartTimelineOptions({
+      height,
+      colors: mergeArray(this.props.colors, DEFAULT_COLORS),
+      displayAxes: this.props.display_axes,
+      series: this.props.series,
+      locales: [fr, en, de],
+      defaultLocale: this.props.user.language
+    });
+    this.addDateFormatterRangeBar(options);
+    return options;
+  };
   displayChart = () => {
     let options;
-    if (this.props.chart_type === 'area') {
+    if (this.props.chart_type === 'timeline') {
+      options = this.getTimelineChartOptions();
+    } else if (this.props.chart_type === 'area') {
       options = this.getAreaChartOptions();
     } else if (this.props.chart_type === 'line') {
       options = this.getLineChartOptions();
@@ -140,6 +238,7 @@ class ApexChartComponent extends Component {
       this.chart.updateOptions(options);
     } else {
       this.chart = new ApexCharts(this.chartRef.current, options);
+
       this.chart.render();
     }
   };
@@ -150,9 +249,25 @@ class ApexChartComponent extends Component {
     const seriesDifferent = nextProps.series !== this.props.series;
     const chartTypeDifferent = nextProps.chart_type !== this.props.chart_type;
     const displayAxesDifferent = nextProps.display_axes !== this.props.display_axes;
+    const hideLegendDifferent = nextProps.hide_legend !== this.props.hide_legend;
     const intervalDifferent = nextProps.interval !== this.props.interval;
     const sizeDifferent = nextProps.size !== this.props.size;
-    if (seriesDifferent || chartTypeDifferent || displayAxesDifferent || intervalDifferent || sizeDifferent) {
+    const additionalHeightDifferent = nextProps.additionalHeight !== this.props.additionalHeight;
+    const yAxisFormatterDifferent = nextProps.y_axis_formatter !== this.props.y_axis_formatter;
+    const yAxisUnitDifferent = nextProps.y_axis_unit !== this.props.y_axis_unit;
+    const colorsDifferent = nextProps.colors !== this.props.colors;
+    if (
+      seriesDifferent ||
+      chartTypeDifferent ||
+      displayAxesDifferent ||
+      hideLegendDifferent ||
+      intervalDifferent ||
+      sizeDifferent ||
+      additionalHeightDifferent ||
+      yAxisFormatterDifferent ||
+      yAxisUnitDifferent ||
+      colorsDifferent
+    ) {
       this.displayChart();
     }
   }

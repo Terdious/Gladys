@@ -8,7 +8,6 @@ const { expect } = require('chai');
 const Device = require('../../../lib/device');
 const StateManager = require('../../../lib/state');
 const Job = require('../../../lib/job');
-const { NotFoundError } = require('../../../utils/coreErrors');
 
 const event = new EventEmitter();
 const job = new Job(event);
@@ -59,10 +58,59 @@ describe('Device.newStateEvent', () => {
       updated_at: '2019-02-12 07:49:07.556 +00:00',
     });
     stateManager.setState('deviceById', '7f85c2f8-86cc-4600-84db-6c074dadb4e8', {});
+    stateManager.setState('deviceFeature', 'test-device-feature', {
+      last_value_string: 'old-text',
+    });
     const device = new Device(event, {}, stateManager, {}, {}, {}, job);
+    const triggersCheckListener = sinon.fake();
+    event.on('trigger.check', triggersCheckListener);
     await device.newStateEvent({ device_feature_external_id: 'hue:binary:1', text: 'my-text' });
     const newDeviceFeature = stateManager.get('deviceFeatureByExternalId', 'hue:binary:1');
     expect(newDeviceFeature).to.have.property('last_value_string', 'my-text');
+    // Verify that EVENTS.TRIGGERS.CHECK was emitted for scene triggers
+    assert.calledOnce(triggersCheckListener);
+    expect(triggersCheckListener.firstCall.args[0]).to.have.property('type', 'device.new-state');
+    expect(triggersCheckListener.firstCall.args[0]).to.have.property('device_feature', 'test-device-feature');
+    expect(triggersCheckListener.firstCall.args[0]).to.have.property('previous_value', 'old-text');
+    expect(triggersCheckListener.firstCall.args[0]).to.have.property('last_value', 'my-text');
+    event.removeListener('trigger.check', triggersCheckListener);
+  });
+  it('should save new string state in text feature', async () => {
+    const stateManager = new StateManager(event);
+    stateManager.setState('deviceFeatureByExternalId', 'text:feature', {
+      id: 'ca91dfdf-55b2-4cf8-a58b-99c0fbf6f5e4',
+      name: 'Test device feature',
+      selector: 'test-device-feature',
+      external_id: 'text:feature',
+      category: 'text',
+      type: 'text',
+      read_only: false,
+      has_feedback: false,
+      min: 0,
+      max: 1,
+      last_value_string: null,
+      last_value_changed: '2019-02-12 07:49:07.556 +00:00',
+      device_id: '7f85c2f8-86cc-4600-84db-6c074dadb4e8',
+      created_at: '2019-02-12 07:49:07.556 +00:00',
+      updated_at: '2019-02-12 07:49:07.556 +00:00',
+    });
+    stateManager.setState('deviceById', '7f85c2f8-86cc-4600-84db-6c074dadb4e8', {});
+    stateManager.setState('deviceFeature', 'test-device-feature', {
+      last_value_string: 'S',
+    });
+    const device = new Device(event, {}, stateManager, {}, {}, {}, job);
+    const triggersCheckListener = sinon.fake();
+    event.on('trigger.check', triggersCheckListener);
+    await device.newStateEvent({ device_feature_external_id: 'text:feature', state: 'SS' });
+    const newDeviceFeature = stateManager.get('deviceFeatureByExternalId', 'text:feature');
+    expect(newDeviceFeature).to.have.property('last_value_string', 'SS');
+    // Verify that EVENTS.TRIGGERS.CHECK was emitted for scene triggers (text feature like Shelly Button)
+    assert.calledOnce(triggersCheckListener);
+    expect(triggersCheckListener.firstCall.args[0]).to.have.property('type', 'device.new-state');
+    expect(triggersCheckListener.firstCall.args[0]).to.have.property('device_feature', 'test-device-feature');
+    expect(triggersCheckListener.firstCall.args[0]).to.have.property('previous_value', 'S');
+    expect(triggersCheckListener.firstCall.args[0]).to.have.property('last_value', 'SS');
+    event.removeListener('trigger.check', triggersCheckListener);
   });
   it('should save new historical state', async () => {
     const stateManager = new StateManager(event);
@@ -135,16 +183,12 @@ describe('Device.newStateEvent', () => {
   it('should not save state missing device feature', async () => {
     const stateManager = new StateManager(event);
     const device = new Device(event, {}, stateManager, {}, {}, {}, job);
-    try {
-      await device.newStateEvent({
-        device_feature_external_id: 'hue:binary:1',
-        state: 12,
-        created_at: '2019-02-12 07:49:07.556 +00:00',
-      });
-      assert.fail();
-    } catch (e) {
-      expect(e).to.be.instanceOf(NotFoundError);
-    }
+    // Should not throw, just log and return early
+    await device.newStateEvent({
+      device_feature_external_id: 'hue:binary:1',
+      state: 12,
+      created_at: '2019-02-12 07:49:07.556 +00:00',
+    });
     const newDeviceFeature = stateManager.get('deviceFeatureByExternalId', 'hue:binary:1');
     // eslint-disable-next-line no-unused-expressions
     expect(newDeviceFeature).to.be.null;
@@ -160,16 +204,12 @@ describe('Device.newStateEvent', () => {
     };
     stateManager.setState('deviceFeatureByExternalId', 'hue:binary:1', currentDeviceFeature);
     const device = new Device(event, {}, stateManager, {}, {}, {}, job);
-    try {
-      await device.newStateEvent({
-        device_feature_external_id: 'hue:binary:1',
-        state: 12,
-        created_at: '2019-02-12 07:49:07.556 +00:00',
-      });
-      assert.fail();
-    } catch (e) {
-      expect(e).to.be.instanceOf(NotFoundError);
-    }
+    // Should not throw, just log and return early
+    await device.newStateEvent({
+      device_feature_external_id: 'hue:binary:1',
+      state: 12,
+      created_at: '2019-02-12 07:49:07.556 +00:00',
+    });
     const newDeviceFeature = stateManager.get('deviceFeatureByExternalId', 'hue:binary:1');
     expect(newDeviceFeature).not.to.have.property('last_value');
     expect(newDeviceFeature).not.to.have.property('last_value_changed');

@@ -6,6 +6,31 @@ import style from './style.css';
 import { MAX_LENGTH_TAG } from './constant';
 
 class SceneCard extends Component {
+  getSceneUrl = () => {
+    const urlParams = new URLSearchParams();
+
+    // If there is a search
+    if (this.props.sceneSearch) {
+      urlParams.set('search', this.props.sceneSearch);
+    }
+
+    // If there is an order dir
+    if (this.props.orderDir) {
+      urlParams.set('order_dir', this.props.orderDir);
+    }
+
+    // If there are tags
+    if (this.props.sceneTagSearch && this.props.sceneTagSearch.length > 0) {
+      this.props.sceneTagSearch.forEach(tag => urlParams.append('tags', tag));
+    }
+    // Redirect to the scene with the url params
+    if (urlParams.toString()) {
+      return `/dashboard/scene/${this.props.scene.selector}?${urlParams.toString()}`;
+    }
+    // Redirect to the scene without url params
+    return `/dashboard/scene/${this.props.scene.selector}`;
+  };
+
   startScene = async () => {
     try {
       await this.setState({ saving: true });
@@ -24,7 +49,52 @@ class SceneCard extends Component {
     await this.setState({ saving: false });
   };
 
-  render(props, { saving }) {
+  getMobileView = (props, { saving }) => {
+    return (
+      <div class="list-group-item">
+        <div class="row align-items-center">
+          <a
+            href={`/dashboard/scene/${props.scene.selector}`}
+            class={cx('col-auto', {
+              [style.disabledSceneRow]: !props.scene.active
+            })}
+          >
+            <i class={`fe fe-${props.scene.icon}`} />
+          </a>
+          <a
+            href={this.getSceneUrl()}
+            class={cx('col', {
+              [style.disabledSceneRow]: !props.scene.active
+            })}
+          >
+            <div class="text-reset d-block">{props.scene.name}</div>
+            <div class="d-block text-secondary mt-n1">{props.scene.description}</div>
+            <div>
+              {props.scene.tags &&
+                props.scene.tags.map(tag => (
+                  <span class="badge badge-secondary mr-1">
+                    {tag.name.length > MAX_LENGTH_TAG ? `${tag.name.substring(0, MAX_LENGTH_TAG - 3)}...` : tag.name}
+                  </span>
+                ))}
+            </div>
+          </a>
+          <div class="col-auto">
+            <button
+              onClick={this.startScene}
+              type="button"
+              class={cx('btn', 'btn-outline-success', 'btn-sm', style.btnLoading, {
+                'btn-loading': saving
+              })}
+            >
+              <i class="fe fe-play" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  getDesktopView = (props, { saving }) => {
     return (
       <div class="col-lg-3 p-2">
         <div
@@ -68,7 +138,7 @@ class SceneCard extends Component {
               <div class="mt-auto">
                 <div class="card-footer">
                   <div class="btn-list text-center">
-                    <Link href={`${props.currentUrl}/${props.scene.selector}`} class="btn btn-outline-primary btn-sm">
+                    <Link href={this.getSceneUrl()} class="btn btn-outline-primary btn-sm">
                       <i class="fe fe-edit" />
                       <Text id="scene.editButton" />
                     </Link>
@@ -84,6 +154,13 @@ class SceneCard extends Component {
         </div>
       </div>
     );
+  };
+
+  render(props, state) {
+    if (props.showMobileView) {
+      return this.getMobileView(props, state);
+    }
+    return this.getDesktopView(props, state);
   }
 }
 

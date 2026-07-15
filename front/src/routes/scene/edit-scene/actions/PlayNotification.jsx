@@ -6,6 +6,7 @@ import { Text } from 'preact-i18n';
 import { DEVICE_FEATURE_CATEGORIES, DEVICE_FEATURE_TYPES } from '../../../../../../server/utils/constants';
 
 import TextWithVariablesInjected from '../../../../components/scene/TextWithVariablesInjected';
+import GladysPlusUpsell from '../../../../components/gateway/GladysPlusUpsell';
 
 class PlayNotification extends Component {
   getOptions = async () => {
@@ -26,14 +27,17 @@ class PlayNotification extends Component {
       console.error(e);
     }
   };
+  updateVolume = e => {
+    this.props.updateActionProperty(this.props.path, 'volume', e.target.value);
+  };
   updateText = text => {
-    this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'text', text);
+    this.props.updateActionProperty(this.props.path, 'text', text);
   };
   handleDeviceChange = selectedOption => {
     if (selectedOption && selectedOption.value) {
-      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'device', selectedOption.value);
+      this.props.updateActionProperty(this.props.path, 'device', selectedOption.value);
     } else {
-      this.props.updateActionProperty(this.props.columnIndex, this.props.index, 'device', null);
+      this.props.updateActionProperty(this.props.path, 'device', null);
     }
   };
 
@@ -64,6 +68,13 @@ class PlayNotification extends Component {
   render(props, { selectedDeviceFeatureOption, devicesOptions }) {
     return (
       <div>
+        <GladysPlusUpsell
+          compact
+          icon="fe-volume-2"
+          utmCampaign="scene_action_tts"
+          titleKey="gladysPlusUpsell.tts.title"
+          descriptionKey="gladysPlusUpsell.tts.compactDescription"
+        />
         <p>
           <Text id="editScene.actionsCard.playNotification.description" />
         </p>
@@ -82,6 +93,26 @@ class PlayNotification extends Component {
             options={devicesOptions}
             value={selectedDeviceFeatureOption}
             onChange={this.handleDeviceChange}
+            className="react-select-container"
+            classNamePrefix="react-select"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            <Text id="editScene.actionsCard.playNotification.volumeLabel" />
+            <span class="form-required">
+              <Text id="global.requiredField" />
+            </span>
+          </label>
+          <input type="text" class="form-control" value={props.action.volume} disabled />
+          <input
+            type="range"
+            value={props.action.volume}
+            onChange={this.updateVolume}
+            class="form-control custom-range"
+            step="1"
+            min={0}
+            max={100}
           />
         </div>
         <div class="form-group">
@@ -97,6 +128,7 @@ class PlayNotification extends Component {
           <div className="tags-input">
             <TextWithVariablesInjected
               text={props.action.text}
+              path={props.path}
               triggersVariables={props.triggersVariables}
               actionsGroupsBefore={props.actionsGroupsBefore}
               variables={props.variables}
@@ -104,9 +136,6 @@ class PlayNotification extends Component {
             />
           </div>
         </div>
-        <p class="small">
-          <Text id="editScene.actionsCard.playNotification.needGladysPlus" />
-        </p>
       </div>
     );
   }

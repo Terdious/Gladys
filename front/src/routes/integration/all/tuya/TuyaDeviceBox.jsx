@@ -99,7 +99,10 @@ const getLocalValidationState = (device, baselineDevice, localPollValidation) =>
     hasLocalChanges: hasDeviceChanged(device, baselineDevice),
     requiresLocalPollValidation,
     localPollValidated,
-    canSave: !requiresLocalPollValidation || localPollValidated
+    // Diagnostics/test branch: saving an unvalidated local config stays allowed (with a warning)
+    // so the persistent connection can be probed on devices whose one-shot DP reads fail
+    // (cameras/doorbells). The stable branches keep the strict gating.
+    canSave: true
   };
 };
 
@@ -485,8 +488,9 @@ class TuyaDeviceBox extends Component {
 
                 <div class="form-group">
                   {requiresLocalPollValidation && !localPollValidated && (
-                    <div class="text-muted mb-2">
-                      <Text id="integration.tuya.device.localPollRequired" />
+                    <div class="alert alert-warning mb-2" role="alert">
+                      <Text id="integration.tuya.device.localPollRequired" />{' '}
+                      <Text id="integration.tuya.device.localPollForcedSaveWarning" />
                     </div>
                   )}
                   <div class="d-flex flex-wrap align-items-center justify-content-between">

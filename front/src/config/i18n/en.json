@@ -1214,6 +1214,7 @@
         "localInfoHelp": "Use the Cloud/Local button to choose the communication mode. Local mode lets you edit the local IP. Cloud mode shows the cloud IP (read-only).",
         "localPollButton": "Poll local DPS",
         "localPollInProgress": "Local poll in progress (protocol {{protocol}})...",
+        "localPollForcedSaveWarning": "Test image: saving without a validated read stays possible — the persistent local connection will still try to establish (useful to diagnose cameras/doorbells).",
         "localPollHelp": "If you know the protocol, select it then click the button to verify. If you don't, just click the button for a full scan (it takes longer).",
         "localPollRequired": "Local mode is enabled and local settings changed. Run \"Poll local DPS\" successfully before saving. If local mode doesn't work, switch back to cloud mode.",
         "localPollSuccess": "Local poll OK.",

@@ -1452,6 +1452,7 @@
         "localInfoHelp": "Utilisez le bouton Cloud/Local pour choisir le mode de communication. Le mode local permet de modifier l'IP locale. Le mode cloud affiche l'IP cloud (lecture seule).",
         "localPollButton": "Lecture locale des DP",
         "localPollInProgress": "Lecture locale en cours... protocole {{protocol}}.",
+        "localPollForcedSaveWarning": "Image de test : la sauvegarde reste possible sans lecture validée — la connexion locale persistante tentera quand même de s'établir (utile pour diagnostiquer les caméras/sonnettes).",
         "localPollHelp": "Si vous connaissez le protocole, sélectionnez-le puis cliquez pour vérifier. Sinon, cliquez directement pour une analyse complète (plus longue).",
         "localPollRequired": "Le mode local est activé et les paramètres locaux ont changé. Lancez une lecture locale des DP avec succès avant de sauvegarder. Si vous n'arrivez pas à faire fonctionner le local, repassez en mode cloud.",
         "localPollSuccess": "Lecture locale OK.",

@@ -1319,6 +1319,7 @@
         "localInfoHelp": "Mit der Cloud/Lokal-Schaltfläche wählst du den Kommunikationsmodus. Im lokalen Modus kannst du die lokale IP bearbeiten. Im Cloud-Modus wird die Cloud-IP nur angezeigt (schreibgeschützt).",
         "localPollButton": "Lokales DPS abfragen",
         "localPollInProgress": "Lokale Abfrage läuft... Protokoll {{protocol}}.",
+        "localPollForcedSaveWarning": "Test-Image: Speichern ohne validierte Abfrage bleibt möglich — die persistente lokale Verbindung versucht trotzdem, sich aufzubauen (nützlich zur Diagnose von Kameras/Türklingeln).",
         "localPollHelp": "Wenn du das Protokoll kennst, wähle es aus und klicke zum Prüfen. Wenn nicht, klicke direkt für einen vollständigen Scan (dauert länger).",
         "localPollRequired": "Lokaler Modus ist aktiv und lokale Einstellungen wurden geändert. Bitte \"Lokales DPS abfragen\" erfolgreich ausführen, bevor du speicherst. Wenn der lokale Modus nicht funktioniert, schalte zurück in den Cloud-Modus.",
         "localPollSuccess": "Lokale Abfrage OK.",

@@ -522,11 +522,11 @@ async function poll(device) {
     this.isPersistentConnectionConnected(topic);
   if (persistentConnected) {
     // Some firmwares only report on change and ignore the heartbeat refresh: their socket looks
-    // silent while being alive. Probe it with an active local read before sacrificing it — an
+    // silent while being alive. Probe it with an active local read before sacrificing it — a DPS
     // answer refreshes the states over the same socket (zero cloud) and ends the cycle here.
-    const probeAnswered =
-      typeof this.probePersistentConnection === 'function' && (await this.probePersistentConnection(topic));
-    if (probeAnswered) {
+    const probeResult =
+      typeof this.probePersistentConnection === 'function' ? await this.probePersistentConnection(topic) : 'dead';
+    if (probeResult === 'refreshed') {
       fallbackReason = 'persistent_probe_refreshed';
       logger.debug(`[Tuya][poll] device=${topic} silent persistent socket answered the probe: state refreshed locally`);
       diag(
@@ -538,18 +538,38 @@ async function poll(device) {
       );
       return;
     }
-    // Recycle the stale-but-open socket so the single local session frees up: the next cycles then
-    // follow the intended priority (persistent -> local poll -> cloud) instead of staying on cloud.
-    this.recyclePersistentConnection(topic);
-    fallbackReason = 'persistent_stale_cloud_refresh';
-    logger.debug(`[Tuya][poll] device=${topic} persistent connected but silent: recycling + cloud refresh this cycle`);
-    diag(
-      this,
-      'info',
-      topic,
-      'persistent_recycled',
-      'Persistent socket connected but silent: recycling it, cloud refresh this cycle',
-    );
+    if (probeResult === 'alive') {
+      // Alive socket that answers without DPS (device22-style cameras/doorbells): keep it
+      // listening for event pushes (ring), but the states were NOT refreshed — fall through to
+      // the cloud refresh below instead of freezing on a mute socket.
+      fallbackReason = 'persistent_alive_cloud_refresh';
+      logger.debug(
+        `[Tuya][poll] device=${topic} persistent socket alive without DPS: keeping it, cloud refresh this cycle`,
+      );
+      diag(
+        this,
+        'debug',
+        topic,
+        'persistent_alive_no_dps',
+        'Persistent socket alive without DPS: keeping it, cloud refresh this cycle',
+      );
+    } else {
+      // Recycle the stale-but-open socket so the single local session frees up: the next cycles
+      // then follow the intended priority (persistent -> local poll -> cloud) instead of staying
+      // on cloud.
+      this.recyclePersistentConnection(topic);
+      fallbackReason = 'persistent_stale_cloud_refresh';
+      logger.debug(
+        `[Tuya][poll] device=${topic} persistent connected but silent: recycling + cloud refresh this cycle`,
+      );
+      diag(
+        this,
+        'info',
+        topic,
+        'persistent_recycled',
+        'Persistent socket connected but silent: recycling it, cloud refresh this cycle',
+      );
+    }
   }
 
   if (hasLocalConfig && !localSkipped && !persistentConnected) {

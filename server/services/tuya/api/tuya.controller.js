@@ -70,7 +70,7 @@ module.exports = function TuyaController(tuyaManager) {
       'local_dp_read_ok',
       `Manual local DP read succeeded (protocol=${payload.protocolVersion || 'auto'}, ${
         Object.keys(result.dps || {}).length
-      } DPS${result.via === 'dp_refresh' ? ', via DP_REFRESH fallback' : ''})`,
+      } DPS${result.via ? `, via ${result.via}` : ''})`,
       result.dps,
     );
     const updatedDevice = updateDiscoveredDeviceAfterLocalPoll(tuyaManager, {

@@ -509,13 +509,14 @@ describe('TuyaHandler.localPoll', () => {
   });
 
   describe('DP_REFRESH fallback (device22-style devices)', () => {
-    const buildStub = ({ get, refresh }) => {
+    const buildStub = ({ get, refresh, set }) => {
       const connect = sinon.stub().resolves();
       const disconnect = sinon.stub().resolves();
       function TuyAPIStub() {
         this.connect = connect;
         this.get = get;
         this.refresh = refresh;
+        this.set = set;
         this.disconnect = disconnect;
         attachEventHandlers(this);
       }
@@ -579,10 +580,35 @@ describe('TuyaHandler.localPoll', () => {
       expect(refresh.firstCall.args[0]).to.deep.equal({ requestedDPS: [101] });
     });
 
-    it('should combine both failures when the DP_REFRESH fallback also fails', async () => {
+    it('should query via null-value SET when DP_REFRESH is also rejected', async () => {
+      const get = sinon.stub().resolves('parse data error');
+      const refresh = sinon.stub().resolves('parse data error');
+      const set = sinon.stub().resolves({ dps: { 101: false, 136: '' } });
+      const { localPoll } = buildStub({ get, refresh, set });
+
+      const result = await localPoll({
+        deviceId: 'device',
+        ip: '1.1.1.1',
+        localKey: 'key',
+        protocolVersion: '3.1',
+        requestedDps: [101, 136],
+      });
+
+      expect(result.dps).to.deep.equal({ 101: false, 136: '' });
+      expect(result.via).to.equal('set_null_query');
+      expect(set.calledOnce).to.equal(true);
+      expect(set.firstCall.args[0]).to.deep.equal({
+        multiple: true,
+        data: { '101': null, '136': null },
+        isSetCallToGetData: true,
+      });
+    });
+
+    it('should combine every failure when all fallback queries fail', async () => {
       const get = sinon.stub().resolves('parse data error');
       const refresh = sinon.stub().rejects(new Error('refresh timeout'));
-      const { localPoll } = buildStub({ get, refresh });
+      const set = sinon.stub().resolves('still not dps');
+      const { localPoll } = buildStub({ get, refresh, set });
 
       try {
         await localPoll({
@@ -595,13 +621,38 @@ describe('TuyaHandler.localPoll', () => {
       } catch (e) {
         expect(e).to.be.instanceOf(BadParameters);
         expect(e.message).to.include('Invalid local poll response: parse data error');
-        expect(e.message).to.include('DP_REFRESH fallback also failed: refresh timeout');
+        expect(e.message).to.include('DP_REFRESH fallback failed: refresh timeout');
+        expect(e.message).to.include('null-value SET query answered without DPS: still not dps');
         return;
       }
       throw new Error('Expected error');
     });
 
-    it('should flag an invalid DP_REFRESH response with the fallback origin', async () => {
+    it('should not try the fallback queries when the device is unreachable at the TCP level', async () => {
+      const get = sinon.stub().rejects(new Error('Error from socket: connect ECONNREFUSED 10.5.0.191:6668'));
+      const refresh = sinon.stub().resolves({ dps: { 101: true } });
+      const set = sinon.stub().resolves({ dps: { 101: true } });
+      const { localPoll } = buildStub({ get, refresh, set });
+
+      try {
+        await localPoll({
+          deviceId: 'device',
+          ip: '10.5.0.191',
+          localKey: 'key',
+          protocolVersion: '3.1',
+          requestedDps: [1],
+        });
+      } catch (e) {
+        expect(e.message).to.include('ECONNREFUSED');
+        expect(e.message).to.not.include('DP_REFRESH');
+        expect(refresh.called).to.equal(false);
+        expect(set.called).to.equal(false);
+        return;
+      }
+      throw new Error('Expected error');
+    });
+
+    it('should skip the SET query when the local API does not expose set', async () => {
       const get = sinon.stub().resolves('parse data error');
       const refresh = sinon.stub().resolves('still not dps');
       const { localPoll } = buildStub({ get, refresh });
@@ -616,7 +667,9 @@ describe('TuyaHandler.localPoll', () => {
         });
       } catch (e) {
         expect(e).to.be.instanceOf(BadParameters);
-        expect(e.message).to.equal('Invalid local poll response: still not dps (via DP_REFRESH fallback)');
+        expect(e.message).to.equal(
+          'Invalid local poll response: parse data error ; DP_REFRESH fallback answered without DPS: still not dps',
+        );
         return;
       }
       throw new Error('Expected error');

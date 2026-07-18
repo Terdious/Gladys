@@ -133,6 +133,13 @@ async function localPoll(payload) {
   const requestedDpsList = Array.isArray(requestedDps)
     ? Array.from(new Set(requestedDps.map(Number).filter((dpId) => Number.isFinite(dpId))))
     : [];
+  // Device unreachable at the TCP level (port closed, host down — typically a sleeping
+  // battery device): retrying with qualified queries would just open more doomed sockets.
+  // The device22 fallbacks target devices that ANSWER but reject the query format.
+  const isUnreachableError = (error) =>
+    Boolean(
+      error && error.message && /ECONNREFUSED|EHOSTUNREACH|ENETUNREACH|EHOSTDOWN|unreachable/.test(error.message),
+    );
 
   try {
     // Protocol 3.5 sometimes rejects a bare `schema:true` get on first contact.
@@ -157,25 +164,68 @@ async function localPoll(payload) {
     } catch (e) {
       getError = e;
     }
-    let viaFallback = false;
-    if ((getError || !data || typeof data !== 'object' || !data.dps) && requestedDpsList.length > 0) {
-      // Cameras/doorbells often reject DP_QUERY with a raw error string ("parse data error")
-      // or ignore it entirely (timeout) while still answering a DP_REFRESH scoped to their
-      // known DP ids — the tinytuya "device22" behaviour. tuyapi itself falls back to a
-      // null-value SET when the device rejects the refresh, so this single retry covers both
-      // documented query paths. Only attempted when the caller knows the device's DP list.
+    let viaFallback = null;
+    if (
+      (getError || !data || typeof data !== 'object' || !data.dps) &&
+      requestedDpsList.length > 0 &&
+      !isUnreachableError(getError)
+    ) {
+      // Cameras/doorbells (tinytuya "device22" class, 22-char device ids) never answer DP_QUERY:
+      // they reject it with a raw error string ("parse data error") or ignore it (timeout). Two
+      // documented alternative query paths exist, tried in order: a DP_REFRESH scoped to the
+      // known DP ids, then a null-value SET on those same ids (the tinytuya device22 query;
+      // tuyapi only triggers its own set-null fallback on 'json obj data unvalid', so a device
+      // answering 'parse data error' needs this explicit attempt). Only attempted when the
+      // caller knows the device's DP list.
       const initialFailure = getError
         ? getError.message
         : `Invalid local poll response${typeof data === 'string' ? `: ${data}` : ''}`;
       logger.debug(
-        `[Tuya][localPoll] device=${deviceId} DP_QUERY failed (${initialFailure}): trying DP_REFRESH on ${requestedDpsList.length} known DPS`,
+        `[Tuya][localPoll] device=${deviceId} DP_QUERY failed (${initialFailure}): trying qualified queries on ${requestedDpsList.length} known DPS`,
       );
-      try {
-        data = await runLocalRequest(() => tuyaLocal.refresh({ requestedDPS: requestedDpsList }));
-        getError = null;
-        viaFallback = true;
-      } catch (refreshError) {
-        throw new BadParameters(`${initialFailure} (DP_REFRESH fallback also failed: ${refreshError.message})`);
+      const nullDpsMap = requestedDpsList.reduce((accumulator, dpId) => {
+        accumulator[String(dpId)] = null;
+        return accumulator;
+      }, {});
+      const fallbackAttempts = [
+        {
+          via: 'dp_refresh',
+          label: 'DP_REFRESH fallback',
+          available: typeof tuyaLocal.refresh === 'function',
+          run: () => tuyaLocal.refresh({ requestedDPS: requestedDpsList }),
+        },
+        {
+          via: 'set_null_query',
+          label: 'null-value SET query',
+          available: typeof tuyaLocal.set === 'function',
+          run: () => tuyaLocal.set({ multiple: true, data: nullDpsMap, isSetCallToGetData: true }),
+        },
+      ];
+      const failures = [initialFailure];
+      data = null;
+      getError = null;
+      const availableFallbacks = fallbackAttempts.filter((fallbackAttempt) => fallbackAttempt.available);
+      // eslint-disable-next-line no-restricted-syntax
+      for (const fallbackAttempt of availableFallbacks) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const fallbackData = await runLocalRequest(fallbackAttempt.run);
+          if (fallbackData && typeof fallbackData === 'object' && fallbackData.dps) {
+            data = fallbackData;
+            viaFallback = fallbackAttempt.via;
+            break;
+          }
+          failures.push(
+            `${fallbackAttempt.label} answered without DPS${
+              typeof fallbackData === 'string' ? `: ${fallbackData}` : ''
+            }`,
+          );
+        } catch (fallbackError) {
+          failures.push(`${fallbackAttempt.label} failed: ${fallbackError.message}`);
+        }
+      }
+      if (!data) {
+        throw new BadParameters(failures.join(' ; '));
       }
     } else if (getError) {
       throw getError;
@@ -183,10 +233,10 @@ async function localPoll(payload) {
     if (!data || typeof data !== 'object' || !data.dps) {
       const errorMessage =
         typeof data === 'string' ? `Invalid local poll response: ${data}` : 'Invalid local poll response';
-      throw new BadParameters(viaFallback ? `${errorMessage} (via DP_REFRESH fallback)` : errorMessage);
+      throw new BadParameters(errorMessage);
     }
     if (viaFallback) {
-      data.via = 'dp_refresh';
+      data.via = viaFallback;
     }
     if (logDps) {
       logger.debug(`[Tuya][localPoll] device=${deviceId} dps=${JSON.stringify(data)}`);

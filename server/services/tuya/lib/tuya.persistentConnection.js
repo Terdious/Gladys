@@ -35,7 +35,14 @@ const extractPushedDps = (payload) => {
   if (payload.dps && typeof payload.dps === 'object') {
     return payload.dps;
   }
-  return payload;
+  // Some firmwares push the DPS map unwrapped. Only treat a bare object as one when every key
+  // looks like a DP id — heartbeat echoes, probe answers and device metadata frames must not be
+  // routed into the state pipeline (they froze the doorbell investigation by faking activity).
+  const keys = Object.keys(payload);
+  if (keys.length > 0 && keys.every((key) => /^\d+$/.test(key))) {
+    return payload;
+  }
+  return null;
 };
 
 // Tuya lib parser errors ("Prefix does not match: <hex>") embed the whole raw TCP buffer in the
@@ -189,8 +196,16 @@ function openPersistentConnection(self, entry) {
       return;
     }
     const dps = extractPushedDps(payload);
-    diag(self, 'debug', topic, 'push_dps', 'DPS pushed by the device', dps);
-    self.handlePushedDps(device, dps);
+    if (dps && Object.keys(dps).length > 0) {
+      diag(self, 'debug', topic, 'push_dps', 'DPS pushed by the device', dps);
+      self.handlePushedDps(device, dps);
+      return;
+    }
+    // Non-DPS frame (heartbeat echo, probe answer, rejected-query string): keep the verbatim
+    // payload in the diagnostics so unknown-device investigations can see what the socket carries.
+    diag(self, 'debug', topic, 'push_frame_raw', 'Non-DPS frame received on the persistent socket', {
+      payload: payload === undefined ? 'undefined' : payload,
+    });
   };
   api.on('data', onPush);
   api.on('dp-refresh', onPush);
@@ -492,18 +507,21 @@ async function sendCommandViaPersistentConnection(topic, dps, value) {
 
 /**
  * @description Probe a connected-but-silent persistent socket with an active local read to tell
- * "alive but nothing to say" from "dead". The response flows through the regular data listener
- * (states emitted + lastDataAt refreshed), so a successful probe fully replaces a cloud refresh;
- * no answer within the timeout means the socket is really stale and should be recycled.
+ * "alive with fresh states" from "alive but mute" from "dead". A DPS answer flows through the
+ * regular data listener (states emitted + lastDataAt refreshed) and fully replaces a cloud
+ * refresh. Some devices (device22-style cameras/doorbells) answer the probe with a rejection
+ * string instead of DPS: their socket is alive — keep it listening for event pushes — but the
+ * states were NOT refreshed, so the caller must still refresh via cloud. No answer within the
+ * timeout means the socket is really stale and should be recycled.
  * @param {string} topic - The Tuya device id.
- * @returns {Promise<boolean>} True when the device answered over the persistent socket.
+ * @returns {Promise<string>} 'refreshed' (DPS answer), 'alive' (non-DPS answer) or 'dead'.
  * @example
- * const alive = await this.probePersistentConnection('device-id');
+ * const probeResult = await this.probePersistentConnection('device-id');
  */
 async function probePersistentConnection(topic) {
   const entry = this.persistentConnections && this.persistentConnections[topic];
   if (!entry || entry.status !== 'connected' || !entry.api || typeof entry.api.get !== 'function') {
-    return false;
+    return 'dead';
   }
   let timer;
   try {
@@ -513,14 +531,23 @@ async function probePersistentConnection(topic) {
         timer.unref();
       }
     });
-    await Promise.race([entry.api.get({ schema: true }), timeout]);
+    const answer = await Promise.race([entry.api.get({ schema: true }), timeout]);
+    const deliveredDps = extractPushedDps(answer);
+    if (!deliveredDps || Object.keys(deliveredDps).length === 0) {
+      // Alive socket, but the answer carries no states: do NOT stamp freshness, the poll must
+      // keep refreshing via cloud while this socket waits for real event pushes.
+      diag(this, 'debug', topic, 'push_frame_raw', 'Non-DPS probe answer on the persistent socket', {
+        payload: answer === undefined ? 'undefined' : answer,
+      });
+      return 'alive';
+    }
     // The get response also arrives as a data event, but stamp freshness here too so the health
     // check never depends on the event listener having run first.
     entry.lastDataAt = Date.now();
-    return true;
+    return 'refreshed';
   } catch (e) {
     logger.debug(`[Tuya][persistent] probe failed device=${topic}: ${formatSocketError(e)}`);
-    return false;
+    return 'dead';
   } finally {
     clearTimeout(timer);
   }

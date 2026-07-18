@@ -46,6 +46,19 @@ const getLocalDpsFromCode = (code, device) => {
   return null;
 };
 
+const isListenOnlyLocalDevice = (device) => {
+  if (!device) {
+    return false;
+  }
+  try {
+    const deviceType = device.device_type ? device.device_type : getDeviceType(device);
+    const localMapping = getLocalMapping(deviceType, getProductIdFromDevice(device));
+    return Boolean(localMapping && localMapping.listenOnly === true);
+  } catch (e) {
+    return false;
+  }
+};
+
 const getKnownLocalDps = (device) => {
   if (!device) {
     return null;
@@ -114,4 +127,5 @@ module.exports = {
   addFallbackBinaryFeature,
   getKnownLocalDps,
   getLocalDpsFromCode,
+  isListenOnlyLocalDevice,
 };

@@ -4,12 +4,12 @@ const logger = require('../../../utils/logger');
 const { DEVICE_PARAM_NAME, GLADYS_VARIABLES } = require('./utils/tuya.constants');
 const { getParamValue } = require('./utils/tuya.deviceParams');
 const { normalizeBoolean } = require('./utils/tuya.normalize');
-const { recordLocalFailure, recordLocalSuccess } = require('./utils/tuya.degraded');
+const { recordLocalFailure, recordLocalSuccess, resetLocalStatus } = require('./utils/tuya.degraded');
 // Reuse the poll's DPS -> feature -> state pipeline so pushed updates and the scheduled poll apply the
 // exact same transformation (scale, temperature conversion, ...).
 const { emitLocalDpsStates, getFeatureCode, hasDpsKey } = require('./tuya.poll');
 const { mapDpsToMediaCodes } = require('./tuya.media');
-const { getLocalDpsFromCode } = require('./device/tuya.localMapping');
+const { getLocalDpsFromCode, isListenOnlyLocalDevice } = require('./device/tuya.localMapping');
 
 // A persistent local connection stays open and receives pushed DP updates in real time (events),
 // instead of the one-shot poll. Devices that cannot sustain the socket (battery/asleep, offline,
@@ -146,6 +146,10 @@ const scheduleReconnect = (self, entry) => {
 function openPersistentConnection(self, entry) {
   const { topic, ip, localKey, protocolVersion, device } = entry;
   const TuyaLocalApi = isNewGenProtocol(protocolVersion) ? TuyAPINewGen : TuyAPI;
+  // Listen-only devices (device22-style cameras/doorbells) drop the socket when they receive an
+  // encrypted query: open a mute socket (no initial/periodic query) and just wait for their
+  // unsolicited event pushes. The scheduled poll keeps refreshing the states via cloud meanwhile.
+  entry.listenOnly = isListenOnlyLocalDevice(device);
   const options = {
     id: topic,
     key: localKey,
@@ -157,9 +161,9 @@ function openPersistentConnection(self, entry) {
     // keeps the connection "fresh" for devices that never push unsolicited updates (e.g. an idle
     // thermostat), so the scheduled poll skips entirely instead of falling back to cloud — all local,
     // no cloud quota, while state changes still arrive in real time.
-    issueGetOnConnect: true,
-    issueRefreshOnConnect: true,
-    issueRefreshOnPing: true,
+    issueGetOnConnect: !entry.listenOnly,
+    issueRefreshOnConnect: !entry.listenOnly,
+    issueRefreshOnPing: !entry.listenOnly,
   };
   if (protocolVersion === '3.5') {
     options.socketTimeout = 5000;
@@ -200,6 +204,19 @@ function openPersistentConnection(self, entry) {
       diag(self, 'debug', topic, 'push_dps', 'DPS pushed by the device', dps);
       self.handlePushedDps(device, dps);
       return;
+    }
+    // Undecoded frames start with their protocol version in PLAIN TEXT (e.g. "3.3" + encrypted
+    // payload): when it differs from the connection's version, tell the user exactly which
+    // protocol to re-save instead of leaving them to guess from a mute socket.
+    const frameVersion = typeof payload === 'string' && /^3\.\d/.test(payload) ? payload.slice(0, 3) : null;
+    if (frameVersion && frameVersion !== protocolVersion) {
+      diag(
+        self,
+        'warn',
+        topic,
+        'push_frame_version_mismatch',
+        `Device pushes ${frameVersion}-framed data but the connection uses ${protocolVersion}: save the device with protocol ${frameVersion}`,
+      );
     }
     // Non-DPS frame (heartbeat echo, probe answer, rejected-query string): keep the verbatim
     // payload in the diagnostics so unknown-device investigations can see what the socket carries.
@@ -423,6 +440,12 @@ function postCreate(device) {
     return;
   }
   this.stopPersistentConnectionForDevice(topic);
+  if (!parseLocalConfig(device)) {
+    // Device saved back to cloud mode: clear the degraded backoff so the stale "local mode
+    // unstable" state does not survive a deliberate return to cloud.
+    resetLocalStatus(this.degradedDevices, topic);
+    return;
+  }
   this.startPersistentConnectionForDevice(device);
 }
 
@@ -522,6 +545,11 @@ async function probePersistentConnection(topic) {
   const entry = this.persistentConnections && this.persistentConnections[topic];
   if (!entry || entry.status !== 'connected' || !entry.api || typeof entry.api.get !== 'function') {
     return 'dead';
+  }
+  if (entry.listenOnly) {
+    // Probing a listen-only device would make it drop the socket (any query does): trust the
+    // TCP-level connected state, keep listening for pushes, let the poll refresh via cloud.
+    return 'alive';
   }
   let timer;
   try {

@@ -203,6 +203,23 @@ class TuyaDeviceBox extends Component {
       if (shouldFallbackToBaselineFeatures) {
         payload.features = baselineFeatures;
       }
+      if (Array.isArray(payload.features)) {
+        // DB-loaded supported_options carry their table columns (device_feature_id, created_at,
+        // updated_at): the core device schema only accepts { value, label, sort_order } and
+        // rejects the whole save with a 400 otherwise.
+        payload.features = payload.features.map(feature =>
+          feature && Array.isArray(feature.supported_options)
+            ? {
+                ...feature,
+                supported_options: feature.supported_options.map(option => ({
+                  value: option.value,
+                  label: option.label,
+                  sort_order: option.sort_order
+                }))
+              }
+            : feature
+        );
+      }
       const savedDevice = await this.props.httpClient.post(`/api/v1/device`, payload);
       // Gladys core does not persist Tuya transient enrichment (tuya_mapping,
       // specifications, tuya_report). Carry them forward so the partial-support

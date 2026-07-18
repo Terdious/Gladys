@@ -3,6 +3,7 @@ const childProcess = require('child_process');
 const fs = require('fs/promises');
 const path = require('path');
 const logger = require('../../../utils/logger');
+const { BUTTON_STATUS, EVENTS } = require('../../../utils/constants');
 
 // Doorbell event DPs carrying a snapshot reference: the raw value is the base64 of a JSON
 // { bucket, files: [[path?param=<signature>, aesKey]], v } document (observed on a real
@@ -82,9 +83,21 @@ const decodeMediaPayload = (rawValue) => {
   if (typeof rawValue !== 'string' || rawValue.length === 0) {
     return null;
   }
+  let decoded;
+  try {
+    decoded = Buffer.from(rawValue, 'base64').toString('utf8');
+  } catch (e) {
+    return null;
+  }
+  // Pulsar alert payloads carry the presigned download URL directly (base64 of a full https
+  // URL with AWS SigV4 query params, ~60s validity) — the only observed format that is
+  // actually downloadable; the bucket/files shadow variant needs a signature we cannot build.
+  if (/^https?:\/\//.test(decoded)) {
+    return { directUrl: decoded };
+  }
   let parsed;
   try {
-    parsed = JSON.parse(Buffer.from(rawValue, 'base64').toString('utf8'));
+    parsed = JSON.parse(decoded);
   } catch (e) {
     return null;
   }
@@ -117,7 +130,7 @@ async function handleMediaValue(device, code, rawValue) {
     diag(this, 'debug', topic, 'media_invalid_payload', `Media payload of ${code} could not be decoded`, rawValue);
     return false;
   }
-  if (media.encryptionKey !== '') {
+  if (!media.directUrl && media.encryptionKey !== '') {
     // Payload-driven: the observed real doorbell sends an empty key (unencrypted image). AES
     // decryption will be added once a real encrypted payload documents the IV layout.
     diag(this, 'warn', topic, 'media_encrypted_unsupported', `Encrypted ${code} image not supported yet`);
@@ -125,7 +138,7 @@ async function handleMediaValue(device, code, rawValue) {
   }
 
   let imageBuffer = null;
-  const candidates = buildMediaUrlCandidates(media.bucket, media.filePath);
+  const candidates = media.directUrl ? [media.directUrl] : buildMediaUrlCandidates(media.bucket, media.filePath);
   for (let i = 0; i < candidates.length && imageBuffer === null; i += 1) {
     const url = candidates[i];
     const { host } = new URL(url);
@@ -180,10 +193,27 @@ async function handleMediaValue(device, code, rawValue) {
   }
 }
 
+// The SAME event image is published in several payload shapes (Pulsar presigned URL first, then
+// the shadow bucket/files JSON on the next poll): fingerprint the underlying image path so one
+// event fires exactly once whatever the shape. Falls back to the raw value for undecodable payloads.
+const getMediaFingerprint = (rawValue) => {
+  const media = decodeMediaPayload(rawValue);
+  if (!media) {
+    return typeof rawValue === 'string' ? rawValue : '';
+  }
+  try {
+    return media.directUrl ? new URL(media.directUrl).pathname : String(media.filePath).split('?')[0];
+  } catch (e) {
+    return String(media.directUrl || media.filePath);
+  }
+};
+
 /**
- * @description Gate the doorbell media DPs on their RAW payload and trigger the snapshot download
- * on a NEW non-empty payload — same semantics as the ring event gate (first observation only seeds
- * the memory: the signed URL of a payload seen at startup is expired anyway).
+ * @description Gate the doorbell media DPs on the underlying image (fingerprint) and trigger the
+ * snapshot download on a NEW non-empty one — same semantics as the ring event gate (first
+ * observation only seeds the memory: the signed URL of a payload seen at startup is expired
+ * anyway). A new ring snapshot also fires the doorbell CLICK event (the ring DP itself never
+ * reports a value on the observed device).
  * @param {object} device - The Gladys device.
  * @param {object} valuesByCode - The observed raw values keyed by Tuya code.
  * @example
@@ -199,12 +229,33 @@ function processMediaCodes(device, valuesByCode) {
       return;
     }
     const rawValue = valuesByCode[code];
+    const fingerprint = getMediaFingerprint(rawValue);
     const memoryKey = `${device.external_id}:media:${code}`;
     const hadPrevious = Object.prototype.hasOwnProperty.call(this.eventDpMemory, memoryKey);
-    const previousRaw = this.eventDpMemory[memoryKey];
-    this.eventDpMemory[memoryKey] = rawValue;
-    if (!hadPrevious || previousRaw === rawValue || !rawValue) {
+    const previousFingerprint = this.eventDpMemory[memoryKey];
+    this.eventDpMemory[memoryKey] = fingerprint;
+    if (!hadPrevious || previousFingerprint === fingerprint || !fingerprint) {
       return;
+    }
+    // The doorbell never reports a value on its ring DP (136, observed on cloud, Pulsar and
+    // local): a NEW ring snapshot IS the ring — fire the button CLICK from here.
+    if (code === 'doorbell_pic') {
+      const ringFeature = Array.isArray(device.features)
+        ? device.features.find((feature) => feature && feature.external_id === `${device.external_id}:doorbell_active`)
+        : null;
+      if (ringFeature && this.gladys && this.gladys.event && typeof this.gladys.event.emit === 'function') {
+        this.gladys.event.emit(EVENTS.DEVICE.NEW_STATE, {
+          device_feature_external_id: ringFeature.external_id,
+          state: BUTTON_STATUS.CLICK,
+        });
+        diag(
+          this,
+          'info',
+          getTopicFromDevice(device),
+          'doorbell_ring_event',
+          'Doorbell ring derived from a new ring snapshot',
+        );
+      }
     }
     // Fire and forget: the poll/push pipeline must never wait on a media download.
     (async () => {

@@ -145,6 +145,21 @@ describe('TuyaController POST /api/v1/service/tuya/local-poll', () => {
     ]);
   });
 
+  it('should return the resolved ignored lists so DB-loaded devices can classify their DPS', async () => {
+    const req = {
+      body: { deviceId: 'device1', ip: '1.1.1.1', localKey: 'key', protocolVersion: '3.3' },
+    };
+    const res = { json: fake.returns([]) };
+    tuyaManager.discoveredDevices = [{ external_id: 'tuya:device1', device_type: 'video-doorbell', params: [] }];
+
+    await controller['post /api/v1/service/tuya/local-poll'].controller(req, res);
+
+    const responsePayload = res.json.firstCall.args[0];
+    expect(responsePayload.tuya_mapping).to.be.an('object');
+    expect(responsePayload.tuya_mapping.ignored_local_dps).to.include('115');
+    expect(responsePayload.tuya_mapping.ignored_cloud_codes).to.be.an('array');
+  });
+
   it('should resolve the known local dps from the state manager when the device is not discovered', async () => {
     const req = {
       body: { deviceId: 'device2', ip: '1.1.1.1', localKey: 'key', protocolVersion: '3.3' },

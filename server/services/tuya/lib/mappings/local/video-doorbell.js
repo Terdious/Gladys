@@ -6,6 +6,12 @@
 // is correct per the device model and used as soon as a unit responds locally.
 module.exports = {
   strict: true,
+  // Runtime-observed (i5e3a4qxcsthszin): the doorbell rejects every local query format
+  // (DP_QUERY/DP_REFRESH/null-SET answer 'parse data error' or time out, and an initial
+  // encrypted query makes it drop a 3.3 socket) but PUSHES 3.3-framed status on an idle
+  // socket at ring/motion time. Local mode is therefore listen-only: connect without any
+  // initial/periodic query and let the pushes come; commands go straight to cloud.
+  listenOnly: true,
   ignoredDps: ['106', '108', '109', '110', '111', '115', '117', '151', '154', '160'],
   codeAliases: {},
   dps: {

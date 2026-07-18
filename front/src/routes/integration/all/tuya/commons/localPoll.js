@@ -73,6 +73,7 @@ export const pollLocalDevice = async ({ httpClient, device, onProtocolAttempt })
   let result = null;
   let usedProtocol = selectedProtocol;
   let latestDevice = null;
+  let resolvedTuyaMapping = null;
   const isValidResult = data => data && typeof data === 'object' && data.dps;
 
   for (let i = 0; i < protocolList.length; i += 1) {
@@ -93,6 +94,9 @@ export const pollLocalDevice = async ({ httpClient, device, onProtocolAttempt })
       const updatedDevice = response && response.device ? response.device : null;
       if (updatedDevice) {
         latestDevice = updatedDevice;
+      }
+      if (response && response.tuya_mapping) {
+        resolvedTuyaMapping = response.tuya_mapping;
       }
       if (!isValidResult(result)) {
         throw new Error('Invalid local poll response');
@@ -118,6 +122,9 @@ export const pollLocalDevice = async ({ httpClient, device, onProtocolAttempt })
   return {
     device: {
       ...baseDevice,
+      // DB-loaded devices have no persisted tuya_mapping: use the server-resolved ignored lists
+      // so the partial-support card does not flag deliberately-ignored DPS as unknown.
+      ...(resolvedTuyaMapping && !baseDevice.tuya_mapping ? { tuya_mapping: resolvedTuyaMapping } : {}),
       params: newParams
     },
     dps: result ? result.dps : null,

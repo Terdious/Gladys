@@ -190,7 +190,7 @@ class TuyaLocalPollSection extends Component {
 
     return (
       <>
-        {isDegraded && (
+        {isDegraded && !showCloudIp && (
           <div class="alert alert-warning mb-2" role="alert">
             <Text id="integration.tuya.device.localStatusDegraded" fields={{ time: degradedUntilLabel }} />
           </div>

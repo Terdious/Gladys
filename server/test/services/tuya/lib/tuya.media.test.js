@@ -63,6 +63,13 @@ describe('Tuya doorbell media', () => {
       const media = decodeMediaPayload(buildPayload({ files: [['/path.jpeg?param=x', null]] }));
       expect(media.encryptionKey).to.equal('');
     });
+
+    it('decodes a Pulsar direct-URL payload (base64 of a presigned https URL)', () => {
+      const url =
+        'https://ty-eu-storage30-pic.s3.eu-central-1.amazonaws.com/000000/detect/1784367887.jpeg?X-Amz-Signature=abc&X-Amz-Expires=60';
+      const media = decodeMediaPayload(Buffer.from(url).toString('base64'));
+      expect(media).to.deep.equal({ directUrl: url });
+    });
   });
 
   describe('mapDpsToMediaCodes', () => {
@@ -94,6 +101,25 @@ describe('Tuya doorbell media', () => {
       expect(axiosStub.get.firstCall.args[0]).to.equal(
         'https://ty-eu-storage30-pic.oss-eu-central-1.aliyuncs.com/000000-000000000-pp00000000000000000000/detect/1783285843.jpeg?param=QUFBQUFBQUFBQUFBQQ==',
       );
+      sinon.assert.calledWith(
+        self.gladys.device.camera.setImage,
+        'tuya-doorbell',
+        `image/jpg;base64,${Buffer.from('jpeg-bytes').toString('base64')}`,
+      );
+    });
+
+    it('downloads a Pulsar direct URL as-is without trying the candidate hosts', async () => {
+      const url =
+        'https://ty-eu-storage30-pic.s3.eu-central-1.amazonaws.com/000000/detect/1784367887.jpeg?X-Amz-Signature=abc';
+      const axiosStub = { get: sinon.stub().resolves({ data: Buffer.from('jpeg-bytes') }) };
+      const media = load(axiosStub);
+      const self = buildSelf(media);
+
+      const stored = await self.handleMediaValue(device, 'doorbell_pic', Buffer.from(url).toString('base64'));
+
+      expect(stored).to.equal(true);
+      sinon.assert.calledOnce(axiosStub.get);
+      expect(axiosStub.get.firstCall.args[0]).to.equal(url);
       sinon.assert.calledWith(
         self.gladys.device.camera.setImage,
         'tuya-doorbell',
@@ -218,6 +244,60 @@ describe('Tuya doorbell media', () => {
       // Cleared payload: silent.
       self.processMediaCodes(device, { movement_detect_pic: '' });
       sinon.assert.calledOnce(self.handleMediaValue);
+    });
+
+    it('fires only once when the same image arrives as a Pulsar URL then a shadow JSON payload', () => {
+      const self = buildSelf(media);
+      self.handleMediaValue = sinon.stub().resolves(true);
+      const imagePath = '/000000-000000000-pp00000000000000000000/detect/1784367887.jpeg';
+      const pulsarPayload = Buffer.from(
+        `https://ty-eu-storage30-pic.s3.eu-central-1.amazonaws.com${imagePath}?X-Amz-Signature=abc`,
+      ).toString('base64');
+      const shadowPayload = buildPayload({ files: [[`${imagePath}?param=QUFBQQ==`, '']] });
+
+      self.processMediaCodes(device, { movement_detect_pic: 'seed' });
+      self.processMediaCodes(device, { movement_detect_pic: pulsarPayload });
+      self.processMediaCodes(device, { movement_detect_pic: shadowPayload });
+      sinon.assert.calledOnce(self.handleMediaValue);
+
+      // A DIFFERENT image path fires again.
+      const nextRing = buildPayload({ files: [['/000000/detect/1784368111.jpeg?param=QUFBQQ==', '']] });
+      self.processMediaCodes(device, { movement_detect_pic: nextRing });
+      sinon.assert.calledTwice(self.handleMediaValue);
+    });
+
+    it('fires the doorbell CLICK event on a new ring snapshot', () => {
+      const self = buildSelf(media);
+      self.handleMediaValue = sinon.stub().resolves(true);
+      self.gladys.event = { emit: sinon.stub() };
+      const ringDevice = {
+        external_id: 'tuya:doorbell-id',
+        selector: 'tuya-doorbell',
+        features: [{ external_id: 'tuya:doorbell-id:doorbell_active', category: 'button', type: 'click' }],
+      };
+
+      // Seed: no ghost ring at startup.
+      self.processMediaCodes(ringDevice, { doorbell_pic: 'ring-seed' });
+      sinon.assert.notCalled(self.gladys.event.emit);
+
+      self.processMediaCodes(ringDevice, { doorbell_pic: 'ring-1' });
+      sinon.assert.calledOnce(self.gladys.event.emit);
+      const [eventName, payload] = self.gladys.event.emit.firstCall.args;
+      expect(eventName).to.equal('device.new-state');
+      expect(payload).to.deep.equal({
+        device_feature_external_id: 'tuya:doorbell-id:doorbell_active',
+        state: 1,
+      });
+
+      // A motion snapshot never fires the ring.
+      self.processMediaCodes(ringDevice, { movement_detect_pic: 'motion-seed' });
+      self.processMediaCodes(ringDevice, { movement_detect_pic: 'motion-1' });
+      sinon.assert.calledOnce(self.gladys.event.emit);
+
+      // Without the ring feature (or event emitter), no crash and no emit.
+      self.processMediaCodes(device, { doorbell_pic: 'ring-seed' });
+      self.processMediaCodes(device, { doorbell_pic: 'ring-2' });
+      sinon.assert.calledOnce(self.gladys.event.emit);
     });
 
     it('ignores unrelated values and tolerates a failing handler', async () => {

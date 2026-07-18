@@ -23,10 +23,9 @@ module.exports = {
     device: './poll-device.json',
     featureExternalId: 'tuya:bf0e59548489fcb4ea62of:motion_switch',
     inputValue: 1,
-    expectedLocalSet: {
-      dps: 134,
-      set: true,
-    },
-    expectedCloudRequests: 0,
+    // Listen-only local channel (device22): the doorbell never acknowledges a local SET, so the
+    // command goes straight to cloud without attempting the doomed local writes.
+    expectedLocalSet: null,
+    expectedCloudRequests: 1,
   },
 };

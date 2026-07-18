@@ -9,6 +9,7 @@ const {
   addFallbackBinaryFeature,
   getKnownLocalDps,
   getLocalDpsFromCode,
+  isListenOnlyLocalDevice,
 } = require('../../../../../services/tuya/lib/device/tuya.localMapping');
 
 describe('Tuya local mapping', () => {
@@ -126,6 +127,15 @@ describe('Tuya local mapping', () => {
     expect(getLocalDpsFromCode('window_state', device)).to.equal(123);
     expect(getLocalDpsFromCode('temp_set', device)).to.equal(125);
     expect(getLocalDpsFromCode('running_mode', device)).to.equal(131);
+  });
+
+  describe('isListenOnlyLocalDevice', () => {
+    it('flags the video doorbell and only it', () => {
+      expect(isListenOnlyLocalDevice({ device_type: 'video-doorbell' })).to.equal(true);
+      expect(isListenOnlyLocalDevice({ device_type: 'smart-meter' })).to.equal(false);
+      expect(isListenOnlyLocalDevice({ name: 'Unknown device' })).to.equal(false);
+      expect(isListenOnlyLocalDevice(null)).to.equal(false);
+    });
   });
 
   describe('getKnownLocalDps', () => {

@@ -207,6 +207,7 @@ const getLocalMapping = (deviceType, productId) => {
     const current = mapping && typeof mapping === 'object' ? mapping : {};
     return {
       strict: current.strict === true,
+      listenOnly: current.listenOnly === true,
       codeAliases: { ...(current.codeAliases || {}) },
       dps: { ...(current.dps || {}) },
       ignoredDps: Array.from(

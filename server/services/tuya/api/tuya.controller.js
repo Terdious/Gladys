@@ -2,6 +2,7 @@ const asyncMiddleware = require('../../../api/middlewares/asyncMiddleware');
 const logger = require('../../../utils/logger');
 const { updateDiscoveredDeviceAfterLocalPoll } = require('../lib/tuya.localPoll');
 const { getKnownLocalDps } = require('../lib/device/tuya.localMapping');
+const { getDeviceType, getIgnoredCloudCodes, getLocalMapping, getProductIdFromDevice } = require('../lib/mappings');
 const { buildLocalScanResponse } = require('../lib/tuya.localScan');
 const { getAllDegraded, getLocalStatus, resetLocalStatus } = require('../lib/utils/tuya.degraded');
 
@@ -78,15 +79,28 @@ module.exports = function TuyaController(tuyaManager) {
       dps: result.dps,
     });
 
-    if (updatedDevice) {
-      res.json({
-        ...result,
-        device: updatedDevice,
-      });
-      return;
+    // DB-loaded devices lose the transient tuya_mapping enrichment (the core does not persist
+    // it): re-resolve the deliberately-ignored lists so the front can tell "unknown DPS" from
+    // "ignored DPS" after a manual read, instead of wrongly flagging partial support.
+    let resolvedTuyaMapping = null;
+    if (knownDevice) {
+      try {
+        const deviceType = knownDevice.device_type ? knownDevice.device_type : getDeviceType(knownDevice);
+        const productId = getProductIdFromDevice(knownDevice);
+        resolvedTuyaMapping = {
+          ignored_local_dps: getLocalMapping(deviceType, productId).ignoredDps,
+          ignored_cloud_codes: getIgnoredCloudCodes(deviceType, productId),
+        };
+      } catch (e) {
+        resolvedTuyaMapping = null;
+      }
     }
 
-    res.json(result);
+    res.json({
+      ...result,
+      ...(resolvedTuyaMapping ? { tuya_mapping: resolvedTuyaMapping } : {}),
+      ...(updatedDevice ? { device: updatedDevice } : {}),
+    });
   }
 
   /**

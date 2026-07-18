@@ -312,6 +312,57 @@ describe('Tuya persistent connection', () => {
     sinon.assert.calledWith(self.recordDiagnostic, 'debug', 'testid', 'push_frame_raw');
   });
 
+  it('should open a mute socket and never probe a listen-only device', async () => {
+    const self = buildSelf();
+    self.startPersistentConnectionForDevice({ ...buildDevice('3.3'), device_type: 'video-doorbell' });
+    const instance = lastTuyapi();
+
+    // No initial nor periodic query: any encrypted query makes these devices drop the socket.
+    expect(instance.options.issueGetOnConnect).to.equal(false);
+    expect(instance.options.issueRefreshOnConnect).to.equal(false);
+    expect(instance.options.issueRefreshOnPing).to.equal(false);
+    expect(self.persistentConnections.testid.listenOnly).to.equal(true);
+
+    instance.emit('connected');
+    instance.get = sandbox.stub();
+    expect(await self.probePersistentConnection('testid')).to.equal('alive');
+    sinon.assert.notCalled(instance.get);
+  });
+
+  it('should name the protocol to save when the device pushes frames in another version', () => {
+    const self = buildSelf();
+    self.recordDiagnostic = sandbox.stub();
+    self.startPersistentConnectionForDevice({ ...buildDevice('3.1'), device_type: 'video-doorbell' });
+    const instance = lastTuyapi();
+    instance.emit('connected');
+
+    instance.emit('data', '3.3      XB<encrypted-bytes>');
+
+    sinon.assert.calledWith(
+      self.recordDiagnostic,
+      'warn',
+      'testid',
+      'push_frame_version_mismatch',
+      'Device pushes 3.3-framed data but the connection uses 3.1: save the device with protocol 3.3',
+    );
+
+    // A frame matching the connection version (or a plain rejection string) raises no mismatch.
+    self.recordDiagnostic.resetHistory();
+    instance.emit('data', '3.1  rest');
+    instance.emit('data', 'parse data error');
+    sinon.assert.neverCalledWith(self.recordDiagnostic, 'warn', 'testid', 'push_frame_version_mismatch');
+  });
+
+  it('should keep the query options for regular devices', () => {
+    const self = buildSelf();
+    self.startPersistentConnectionForDevice(buildDevice());
+    const instance = lastTuyapi();
+    expect(instance.options.issueGetOnConnect).to.equal(true);
+    expect(instance.options.issueRefreshOnConnect).to.equal(true);
+    expect(instance.options.issueRefreshOnPing).to.equal(true);
+    expect(self.persistentConnections.testid.listenOnly).to.equal(false);
+  });
+
   it('should trace non-DPS frames verbatim instead of routing them as pushed DPS', () => {
     const self = buildSelf();
     self.recordDiagnostic = sandbox.stub();

@@ -52,10 +52,16 @@ describe('TuyaHandler.setValue fixtures', () => {
 
       await setValue.call(ctx, currentDevice, currentFeature, inputValue);
 
-      expect(connect.calledOnce).to.equal(true);
-      expect(set.calledOnce).to.equal(true);
-      expect(disconnect.calledOnce).to.equal(true);
-      expect(set.firstCall.args[0]).to.deep.equal(expectedLocalSet);
+      if (expectedLocalSet === null) {
+        // Listen-only local channel: the local write is skipped entirely, cloud takes over.
+        expect(connect.called).to.equal(false);
+        expect(set.called).to.equal(false);
+      } else {
+        expect(connect.calledOnce).to.equal(true);
+        expect(set.calledOnce).to.equal(true);
+        expect(disconnect.calledOnce).to.equal(true);
+        expect(set.firstCall.args[0]).to.deep.equal(expectedLocalSet);
+      }
       expect(ctx.connector.request.callCount).to.equal(expectedCloudRequests);
     });
   });

@@ -10,7 +10,7 @@ const { DEVICE_PARAM_NAME } = require('./utils/tuya.constants');
 const { CLOUD_STRATEGY, getConfiguredCloudStrategy } = require('./utils/tuya.cloudStrategy');
 const { normalizeBoolean, normalizeTemperatureUnit } = require('./utils/tuya.normalize');
 const { getParamValue } = require('./utils/tuya.deviceParams');
-const { getLocalDpsFromCode } = require('./device/tuya.localMapping');
+const { getLocalDpsFromCode, isListenOnlyLocalDevice } = require('./device/tuya.localMapping');
 const { getDeviceType, getFeatureMapping, getProductIdFromDevice } = require('./mappings');
 const { isLocalSkipNeeded, recordLocalFailure, recordLocalSuccess } = require('./utils/tuya.degraded');
 
@@ -159,9 +159,16 @@ async function setValue(device, deviceFeature, value) {
   const hasLocalConfig = ipAddress && localKey && protocolVersion && localOverride === true;
 
   const localDps = getLocalDpsFromCode(command, effectiveDevice);
-  const localSkipped = hasLocalConfig && isLocalSkipNeeded(this.degradedDevices, topic);
+  let localSkipped = hasLocalConfig && isLocalSkipNeeded(this.degradedDevices, topic);
   if (localSkipped) {
     logger.debug(`[Tuya][setValue] device=${topic} skipping local (degraded backoff active), using cloud`);
+  }
+  if (hasLocalConfig && !localSkipped && isListenOnlyLocalDevice(effectiveDevice)) {
+    // Listen-only devices (device22 cameras/doorbells) never acknowledge a local SET: attempting
+    // it just adds two 5s timeouts before the inevitable cloud fallback. Go cloud directly.
+    localSkipped = true;
+    logger.debug(`[Tuya][setValue] device=${topic} local channel is listen-only, using cloud directly`);
+    diag(this, 'debug', topic, 'set_skipped_listen_only', 'Local channel is listen-only: command sent via cloud');
   }
 
   if (hasLocalConfig && localDps !== null && !localSkipped) {

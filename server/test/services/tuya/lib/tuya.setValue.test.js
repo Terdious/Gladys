@@ -262,6 +262,51 @@ describe('TuyaHandler.setValue', () => {
     expect(ctx.connector.request.called).to.equal(false);
   });
 
+  it('should skip the local attempts and go cloud directly on a listen-only device', async () => {
+    const set = sinon.stub().resolves();
+    function TuyAPIStub() {
+      this.connect = sinon.stub().resolves();
+      this.set = set;
+      this.disconnect = sinon.stub().resolves();
+    }
+    const { setValue } = proxyquire('../../../../services/tuya/lib/tuya.setValue', {
+      tuyapi: TuyAPIStub,
+      '@demirdeniz/tuyapi-newgen': function TuyAPINewGenStub() {},
+    });
+
+    const device = {
+      device_type: 'video-doorbell',
+      params: [
+        { name: DEVICE_PARAM_NAME.IP_ADDRESS, value: '10.0.0.2' },
+        { name: DEVICE_PARAM_NAME.LOCAL_KEY, value: 'key' },
+        { name: DEVICE_PARAM_NAME.PROTOCOL_VERSION, value: '3.1' },
+        { name: DEVICE_PARAM_NAME.LOCAL_OVERRIDE, value: true },
+      ],
+    };
+    const deviceFeature = {
+      external_id: 'tuya:device:motion_switch',
+      category: DEVICE_FEATURE_CATEGORIES.SWITCH,
+      type: DEVICE_FEATURE_TYPES.SWITCH.BINARY,
+    };
+    const sendCommandViaPersistentConnection = sinon.stub().resolves(true);
+    const recordDiagnostic = sinon.stub();
+    const ctx = {
+      connector: { request: sinon.stub().resolves({ success: true }) },
+      gladys: {},
+      degradedDevices: {},
+      sendCommandViaPersistentConnection,
+      recordDiagnostic,
+    };
+
+    await setValue.call(ctx, device, deviceFeature, 1);
+
+    // No doomed 5s local attempts: the listen-only channel never acknowledges a SET.
+    expect(sendCommandViaPersistentConnection.called).to.equal(false);
+    expect(set.called).to.equal(false);
+    expect(ctx.connector.request.calledOnce).to.equal(true);
+    sinon.assert.calledWith(recordDiagnostic, 'debug', 'device', 'set_skipped_listen_only');
+  });
+
   it('should fall back to a dedicated local connection when the persistent set fails', async () => {
     const connect = sinon.stub().resolves();
     const set = sinon.stub().resolves();

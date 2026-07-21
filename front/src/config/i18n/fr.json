@@ -3883,7 +3883,9 @@
           "off": "Off",
           "frost-protection": "Hors Gel",
           "comfort_-1": "Confort -1°C",
-          "comfort_-2": "Confort -2°C"
+          "comfort_-2": "Confort -2°C",
+          "programming": "Programmation",
+          "thermostat": "Thermostat"
         }
       },
       "siren": {
@@ -4067,7 +4069,9 @@
           "2": "Eco",
           "3": "Confort -1°C",
           "4": "Confort -2°C",
-          "5": "Confort"
+          "5": "Confort",
+          "6": "Programmation",
+          "7": "Thermostat"
         }
       },
       "shutter": {

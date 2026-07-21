@@ -18,6 +18,7 @@ import NoRecentValueBadge from './NoRecentValueBadge';
 import TemperatureSensorDeviceValue from './TemperatureSensorDeviceValue';
 import LevelSensorDeviceValue from './LevelSensorDeviceValue';
 import PressureSensorDeviceValue from './PressureSensorDeviceValue';
+import PilotWireModeDeviceValue from './PilotWireModeDeviceValue';
 import FanSensorDeviceValue from './FanSensorDeviceValue';
 import VacuumCleanerStateDeviceValue from './VacuumCleanerStateDeviceValue';
 
@@ -54,6 +55,7 @@ const DISPLAY_BY_FEATURE_TYPE = {
   [DEVICE_FEATURE_TYPES.ELECTRICAL_VEHICLE_BATTERY.BATTERY_RANGE_ESTIMATE]: DistanceSensorDeviceValue,
   [DEVICE_FEATURE_TYPES.ELECTRICAL_VEHICLE_STATE.ODOMETER]: DistanceSensorDeviceValue,
   [DEVICE_FEATURE_TYPES.ELECTRICAL_VEHICLE_STATE.TIRE_PRESSURE]: PressureSensorDeviceValue,
+  [DEVICE_FEATURE_TYPES.HEATER.PILOT_WIRE_MODE]: PilotWireModeDeviceValue,
   [DEVICE_FEATURE_TYPES.VACUUM_CLEANER.STATE]: VacuumCleanerStateDeviceValue
 };
 

@@ -149,7 +149,7 @@ class TurnOnLight extends Component {
           </div>
           {binaryDevice && <BinaryDeviceState {...props} selectedDeviceFeature={selectedDeviceFeature} />}
           {presenceDevice && <PresenceSensorDeviceState {...props} selectedDeviceFeature={selectedDeviceFeature} />}
-          {buttonClickDevice && <ButtonClickDeviceState {...props} />}
+          {buttonClickDevice && <ButtonClickDeviceState {...props} selectedDeviceFeature={selectedDeviceFeature} />}
           {pilotWireModeDevice && <PilotWireModeDeviceState {...props} />}
           {fanModeDevice && <FanModeDeviceState {...props} />}
           {fanLabeledDevice && <FanLabeledDeviceState {...props} selectedDeviceFeature={selectedDeviceFeature} />}

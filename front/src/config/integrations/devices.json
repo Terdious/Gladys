@@ -145,6 +145,11 @@
     "categories": ["climate", "security", "environment"]
   },
   {
+    "key": "tesla",
+    "link": "tesla",
+    "img": "/assets/integrations/cover/tesla-fleet.jpg"
+  },
+  {
     "key": "sonos",
     "link": "sonos",
     "img": "/assets/integrations/cover/sonos.jpg",

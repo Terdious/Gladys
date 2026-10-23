@@ -29,6 +29,7 @@ module.exports.melcloud = require('./melcloud');
 module.exports['node-red'] = require('./node-red');
 module.exports.matterbridge = require('./matterbridge');
 module.exports.netatmo = require('./netatmo');
+module.exports.tesla = require('./tesla');
 module.exports.sonos = require('./sonos');
 module.exports.nuki = require('./nuki');
 module.exports['zwavejs-ui'] = require('./zwavejs-ui');
